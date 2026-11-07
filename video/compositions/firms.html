@@ -1,0 +1,183 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      font-family: "Inter", sans-serif;
+      color: #eef8f5;
+    }
+    #f-ground {
+      position: absolute;
+      inset: 0;
+      background: #fafaf7;
+    }
+    #f-stage {
+      position: absolute;
+      inset: 0;
+    }
+    #f-kick {
+      position: absolute;
+      left: 166px;
+      top: 236px;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #b4f768;
+      white-space: nowrap;
+    }
+    .f-line {
+      position: absolute;
+      left: 160px;
+      font-weight: 800;
+      font-size: 92px;
+      line-height: 1.1;
+      letter-spacing: -0.05em;
+      white-space: nowrap;
+    }
+    .f-line span {
+      display: inline-block;
+    }
+    #f-l1 { top: 300px; }
+    #f-l2 { top: 420px; }
+    #f-l3 { top: 540px; color: #b4f768; }
+    /* White-label client portal card (Kerdaxis site, "Built for accounting firms") */
+    #f-card {
+      position: absolute;
+      left: 1240px;
+      top: 300px;
+      width: 520px;
+      height: 400px;
+      border: 2px solid #365145;
+      border-radius: 28px;
+      background: #111a22;
+    }
+    #f-eye {
+      position: absolute;
+      left: 1276px;
+      top: 340px;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #a3b4b9;
+      white-space: nowrap;
+    }
+    .f-brand {
+      position: absolute;
+      left: 1276px;
+      top: 420px;
+      width: 470px;
+      height: 64px;
+      white-space: nowrap;
+    }
+    .f-mark {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      border: 2px solid rgba(180, 247, 104, 0.5);
+      color: #b4f768;
+      font-weight: 900;
+      font-size: 36px;
+      line-height: 60px;
+      text-align: center;
+    }
+    .f-name {
+      position: absolute;
+      left: 84px;
+      top: 6px;
+      font-weight: 800;
+      font-size: 38px;
+      line-height: 52px;
+      letter-spacing: -0.03em;
+    }
+    #f-b1 .f-mark {
+      transform: rotate(-8deg);
+    }
+    #f-b2 .f-mark {
+      background: #1b2a26;
+      border-color: #365145;
+      font-size: 34px;
+    }
+    #f-b2 {
+      clip-path: inset(0 100% 0 0);
+    }
+    #f-line2 {
+      position: absolute;
+      left: 1276px;
+      top: 520px;
+      font-size: 32px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    #f-foot {
+      position: absolute;
+      left: 1276px;
+      top: 610px;
+      font-size: 28px;
+      color: #a3b4b9;
+      white-space: nowrap;
+    }
+    #f-foot b {
+      color: #eef8f5;
+      font-weight: 700;
+    }
+    #f-kick,
+    #f-card,
+    #f-eye,
+    #f-b1,
+    #f-line2,
+    #f-foot,
+    .f-line span {
+      opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="firms" data-width="1920" data-height="1080">
+    <div id="f-ground"></div>
+    <div id="f-stage">
+      <div id="f-kick">Built for accounting firms</div>
+      <div id="f-l1" class="f-line"><span>Your</span> <span>brand.</span></div>
+      <div id="f-l2" class="f-line"><span>Your</span> <span>clients.</span></div>
+      <div id="f-l3" class="f-line"><span>Real</span> <span>financial</span> <span>impact.</span></div>
+
+      <div id="f-card"></div>
+      <div id="f-eye">YOUR FIRM'S CLIENT PORTAL</div>
+      <div id="f-b1" class="f-brand"><div class="f-mark">K</div><div class="f-name">KERDAXIS</div></div>
+      <div id="f-b2" class="f-brand"><div class="f-mark">✳</div><div class="f-name">Northstar Advisory</div></div>
+      <div id="f-line2">Client savings dashboard</div>
+      <div id="f-foot">Illustrative · powered by <b>Kerdaxis</b></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const words = (sel, t) =>
+        tl.fromTo(sel + " span", { opacity: 0, filter: "blur(6px)" },
+          { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power4.out" }, t);
+
+      // Colour flood: the app's paper becomes the brand ground.
+      tl.to("#f-ground", { backgroundColor: "#080D13", duration: 0.4, ease: "power2.inOut" }, 0);
+      tl.fromTo("#f-kick", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.3);
+      tl.fromTo(["#f-card", "#f-eye", "#f-b1", "#f-line2"], { opacity: 0, filter: "blur(10px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.3, stagger: 0.05, ease: "expo.out" }, 0.3);
+      words("#f-l1", 0.4);
+      words("#f-l2", 0.95);
+      words("#f-l3", 1.5);
+
+      // White label: the firm's own name replaces Kerdaxis in the client's portal.
+      tl.to("#f-b1", { opacity: 0, filter: "blur(8px)", duration: 0.16, ease: "power3.in" }, 1.6);
+      tl.to("#f-b2", { clipPath: "inset(0 0% 0 0)", duration: 0.38, ease: "power3.out" }, 1.72);
+      tl.fromTo("#f-foot", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 2.05);
+
+      // Blur swap into the end card on the same ground.
+      tl.to("#f-stage", { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, 4.4);
+
+      window.__timelines["firms"] = tl;
+    })();
+  </script>
+</template>

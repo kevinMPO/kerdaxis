@@ -1,0 +1,237 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #fafaf7;
+      font-family: "Inter", sans-serif;
+      color: #17140f;
+    }
+    #u-eye {
+      position: absolute;
+      left: 160px;
+      top: 92px;
+      font-weight: 700;
+      font-size: 28px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #2f6f5b;
+      white-space: nowrap;
+    }
+    #u-title {
+      position: absolute;
+      left: 160px;
+      top: 132px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 72px;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    #u-title span {
+      display: inline-block;
+    }
+    /* The agent's screen: recorded H session captures, 1280x720 shown at 0.9x. */
+    #u-screen {
+      position: absolute;
+      left: 160px;
+      top: 262px;
+      width: 1156px;
+      height: 652px;
+      border: 2px solid #e4e0d6;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #f6f7fb;
+      box-shadow: 0 24px 60px rgba(17, 24, 39, 0.14);
+    }
+    #u-screen img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1152px;
+      height: 648px;
+      opacity: 0;
+    }
+    #u-screen #u-i0 {
+      opacity: 1;
+    }
+    #u-side {
+      position: absolute;
+      left: 1376px;
+      top: 262px;
+      width: 400px;
+    }
+    #u-clk-l {
+      position: absolute;
+      left: 1376px;
+      top: 270px;
+      font-weight: 600;
+      font-size: 28px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    #u-clk {
+      position: absolute;
+      left: 1372px;
+      top: 312px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+      font-size: 80px;
+      line-height: 96px;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    #u-speed {
+      position: absolute;
+      left: 1376px;
+      top: 420px;
+      height: 44px;
+      padding: 0 18px;
+      border-radius: 22px;
+      background: #e7f0ec;
+      color: #2f6f5b;
+      font-weight: 700;
+      font-size: 28px;
+      line-height: 44px;
+      white-space: nowrap;
+    }
+    .u-log {
+      position: absolute;
+      left: 1376px;
+      width: 420px;
+      font-weight: 600;
+      font-size: 32px;
+      line-height: 40px;
+      white-space: nowrap;
+      opacity: 0;
+    }
+    .u-log i {
+      display: inline-block;
+      width: 40px;
+      font-style: normal;
+      color: #2f6f5b;
+    }
+    #u-l0 { top: 500px; }
+    #u-l1 { top: 556px; }
+    #u-l2 { top: 612px; color: #8c5f1c; }
+    #u-l2 i { color: #b9812b; }
+    #u-l3 { top: 668px; }
+    #u-demo {
+      position: absolute;
+      left: 1376px;
+      top: 834px;
+      width: 400px;
+      font-size: 28px;
+      line-height: 1.3;
+      color: #5b554c;
+    }
+    #u-sub {
+      position: absolute;
+      left: 160px;
+      top: 952px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 48px;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    #u-sub b {
+      font-weight: 600;
+      color: #2f6f5b;
+    }
+    #u-eye,
+    #u-title span,
+    #u-screen,
+    #u-clk-l,
+    #u-clk,
+    #u-speed,
+    #u-demo,
+    #u-sub {
+      opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="run" data-width="1920" data-height="1080"
+>
+    <div id="u-eye">Recorded H Company session · 7 Nov 2026</div>
+    <div id="u-title"><span>The</span> <span>whole</span> <span>run,</span> <span>sped</span> <span>up.</span></div>
+
+    <div id="u-screen" data-layout-allow-overflow>
+      <img id="u-i0" src="assets/h-session/obs-01-184315-account.png" alt="H session capture 18:43:15, dashboard" />
+      <img id="u-i1" src="assets/h-session/obs-02-184320-billing.png" alt="H session capture 18:43:20, billing" />
+      <img id="u-i2" src="assets/h-session/obs-03-184324-subscription.png" alt="H session capture 18:43:24, subscription" />
+      <img id="u-i3" src="assets/h-session/obs-04-184328-reason-empty.png" alt="H session capture 18:43:28, cancellation reason" />
+      <img id="u-i4" src="assets/h-session/obs-05-184331-reason.png" alt="H session capture 18:43:31, reason selected" />
+      <img id="u-i5" src="assets/h-session/obs-06-184336-offer.png" alt="H session capture 18:43:36, retention offer" />
+      <img id="u-i6" src="assets/h-session/obs-07-184340-confirm-paused.png" alt="H session capture 18:43:40, final confirmation page, agent paused" />
+      <img id="u-i7" src="assets/h-session/obs-08-184349-confirm-resumed.png" alt="H session capture 18:43:49, resumed after the final go" />
+      <img id="u-i8" src="assets/h-session/obs-09-184354-confirm-checked.png" alt="H session capture 18:43:54, box ticked" />
+      <img id="u-i9" src="assets/h-session/obs-10-184357-done.png" alt="H session capture 18:43:57, cancellation confirmed" />
+    </div>
+
+    <div id="u-clk-l">Session clock · Paris</div>
+    <div id="u-clk">18:43:15</div>
+    <div id="u-speed">Sped up ×12</div>
+    <div id="u-l0" class="u-log"><i>✓</i>Reason: no longer used</div>
+    <div id="u-l1" class="u-log"><i>✓</i>Offer declined</div>
+    <div id="u-l2" class="u-log"><i>Ⅱ</i>Paused 9 s for your go</div>
+    <div id="u-l3" class="u-log"><i>✓</i>Confirmed · NUV-RW3L2Y</div>
+    <div id="u-demo">Demo supplier portal (fictional)</div>
+
+    <div id="u-sub">~45 s · under $0.03 · <b>supplier-confirmed</b></div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const IN = { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "expo.out" };
+      const FROM = { opacity: 0, filter: "blur(8px)" };
+
+      // Arrives on the bare paper left by the proof.
+      tl.fromTo("#u-screen", { opacity: 0, scale: 1.04, filter: "blur(10px)", transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "expo.out" }, 0);
+      tl.fromTo("#u-eye", FROM, IN, 0.05);
+      tl.fromTo("#u-title span", { opacity: 0, filter: "blur(6px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power4.out" }, 0.1);
+      tl.fromTo(["#u-clk-l", "#u-clk", "#u-speed", "#u-demo"], FROM, { ...IN, stagger: 0.05 }, 0.15);
+      tl.fromTo("#u-sub", FROM, { ...IN, duration: 0.3 }, 0.3);
+
+      // The real session clock (Paris), 18:43:15 -> 18:44:00, played at x12 (45 s in 3.75 s).
+      const clk = document.querySelector("#u-clk");
+      const two = (n) => (n < 10 ? "0" : "") + n;
+      const T0 = 0.3, RATE = 12;
+      const at = (s) => T0 + (s - 15) / RATE;
+      const c = { s: 15 };
+      tl.to(c, {
+        s: 60, duration: 45 / RATE, ease: "none",
+        onUpdate: () => {
+          const s = Math.floor(c.s);
+          clk.textContent = s >= 60 ? "18:44:00" : "18:43:" + two(s);
+        },
+      }, T0);
+
+      // Each capture appears at its real timestamp (seconds after 18:43:00).
+      const STAMPS = [15.26, 20.6, 24.44, 28.02, 31.88, 36.36, 40.11, 49.38, 54.18, 57.68];
+      STAMPS.forEach((s, i) => {
+        if (i === 0) return;
+        tl.set("#u-i" + i, { opacity: 1 }, at(s));
+        tl.set("#u-i" + (i - 1), { opacity: 0 }, at(s) + 0.01);
+      });
+      // The log fills at the real moments: reason picked, offer declined (click 18:43:39.8),
+      // the 9-second hold at the final button, the supplier's confirmation.
+      const LOG = [31.88, 39.79, 40.11, 57.68];
+      LOG.forEach((s, i) => {
+        tl.fromTo("#u-l" + i, { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power4.out" }, at(s));
+      });
+
+      // Leave bare paper for the next scene's colour flood.
+      tl.to(["#u-eye", "#u-title span", "#u-screen", "#u-clk-l", "#u-clk", "#u-speed", ".u-log", "#u-demo", "#u-sub"],
+        { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, 4.88);
+
+      window.__timelines["run"] = tl;
+    })();
+  </script>
+</template>

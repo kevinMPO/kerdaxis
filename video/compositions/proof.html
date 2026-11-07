@@ -1,0 +1,401 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("assets/fonts/SpaceGrotesk-latin.woff2") format("woff2");
+      font-weight: 300 700;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      font-family: "Inter", sans-serif;
+      color: #17140f;
+    }
+    #p-all {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #f6f7fb;
+      clip-path: circle(0px at 860px 890px);
+    }
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+    }
+    /* ---- Portal world ---- */
+    #p-portal {
+      position: absolute;
+      inset: 0;
+    }
+    #p-pw {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1280px;
+      height: 720px;
+      transform-origin: 0 0;
+    }
+    #p-pz {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1280px;
+      height: 720px;
+    }
+    #p-pz img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1280px;
+      height: 720px;
+    }
+    #p-agent {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 21px;
+      height: 30px;
+    }
+    #p-agent svg {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 21px;
+      height: 30px;
+    }
+    #p-apill {
+      position: absolute;
+      left: 21px;
+      top: 29px;
+      height: 32px;
+      padding: 0 12px 0 10px;
+      border-radius: 16px;
+      background: #080d13;
+      color: #eef8f5;
+      font-weight: 600;
+      font-size: 19px;
+      line-height: 32px;
+      white-space: nowrap;
+    }
+    #p-apill i {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: #b4f768;
+      vertical-align: 2px;
+    }
+    #p-box {
+      position: absolute;
+      left: 546px;
+      top: 368px;
+      width: 430px;
+      height: 104px;
+      border: 4px solid #b4f768;
+      border-radius: 18px;
+      clip-path: inset(0 100% 0 0);
+    }
+    .call {
+      position: absolute;
+      height: 76px;
+      padding: 0 30px;
+      border-radius: 16px;
+      background: #080d13;
+      color: #eef8f5;
+      font-weight: 600;
+      font-size: 36px;
+      line-height: 76px;
+      white-space: nowrap;
+      box-shadow: 0 24px 60px rgba(17, 24, 39, 0.18);
+    }
+    .call em {
+      font-style: normal;
+      color: #b4f768;
+    }
+    #p-call {
+      left: 1004px;
+      top: 382px;
+    }
+    #p-demo {
+      position: absolute;
+      left: 44px;
+      top: 960px;
+      height: 56px;
+      padding: 0 22px;
+      border-radius: 12px;
+      background: #080d13;
+      color: #eedc9d;
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 56px;
+      white-space: nowrap;
+    }
+    /* ---- Kerdaxis world: proof card + five-value ledger ---- */
+    #p-paper {
+      position: absolute;
+      inset: 0;
+      background: #fafaf7;
+      clip-path: circle(0px at 760px 420px);
+    }
+    .p-title {
+      position: absolute;
+      left: 160px;
+      top: 92px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 76px;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .p-title span {
+      display: inline-block;
+    }
+    #p-card {
+      position: absolute;
+      left: 160px;
+      top: 300px;
+      width: 980px;
+      height: 300px;
+      border: 3px solid #2f6f5b;
+      border-radius: 30px;
+      background: #ffffff;
+    }
+    #p-k {
+      position: absolute;
+      left: 200px;
+      top: 340px;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #2f6f5b;
+      white-space: nowrap;
+    }
+    #p-nl {
+      position: absolute;
+      left: 200px;
+      top: 402px;
+      font-size: 36px;
+      line-height: 56px;
+      white-space: nowrap;
+    }
+    #p-num {
+      position: absolute;
+      left: 516px;
+      top: 396px;
+      width: 300px;
+      font-size: 46px;
+      line-height: 56px;
+      letter-spacing: 0.06em;
+      text-align: center;
+      color: #111827;
+      white-space: nowrap;
+    }
+    #p-src {
+      position: absolute;
+      left: 200px;
+      top: 502px;
+      width: 900px;
+      font-size: 28px;
+      line-height: 1.35;
+      color: #5b554c;
+    }
+    #p-stat {
+      position: absolute;
+      left: 160px;
+      top: 650px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 40px;
+      color: #2f6f5b;
+      white-space: nowrap;
+    }
+    #p-ledger {
+      position: absolute;
+      left: 1220px;
+      top: 300px;
+      width: 540px;
+      height: 404px;
+      border: 2px solid #e4e0d6;
+      border-radius: 22px;
+      background: #ffffff;
+    }
+    .lg {
+      position: absolute;
+      left: 1250px;
+      width: 480px;
+      height: 76px;
+      font-size: 30px;
+      line-height: 76px;
+      color: #5b554c;
+      white-space: nowrap;
+      border-bottom: 2px dashed #e4e0d6;
+    }
+    .lg b {
+      position: absolute;
+      right: 0;
+      top: 0;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+      color: #5b554c;
+    }
+    .lg.on b {
+      color: #2f6f5b;
+    }
+    #q0 { top: 312px; }
+    #q1 { top: 388px; }
+    #q2 { top: 464px; }
+    #q3 { top: 540px; }
+    #q4 { top: 616px; border-bottom: 0; }
+    #p-hl {
+      position: absolute;
+      left: 1232px;
+      top: 618px;
+      width: 516px;
+      height: 74px;
+      border: 3px dashed #b9812b;
+      border-radius: 14px;
+    }
+    #p-pdemo {
+      position: absolute;
+      left: 160px;
+      top: 950px;
+      font-size: 28px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    #p-im1,
+    #p-call,
+    #p-num,
+    #p-card,
+    #p-k,
+    #p-nl,
+    #p-src,
+    #p-stat,
+    #p-ledger,
+    .lg,
+    #p-hl,
+    #p-pdemo,
+    #p-t2,
+    #p-t1 span {
+      opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="proof" data-width="1920" data-height="1080"
+    data-composition-variables='[
+      {"id":"agent_shot_confirm","type":"string","label":"Agent screen: confirmation page (agent on the button)","default":"assets/portal/confirm.png"},
+      {"id":"agent_shot_done","type":"string","label":"Supplier portal: cancellation confirmed page","default":"assets/portal/done.png"},
+      {"id":"confirmation_number","type":"string","label":"Confirmation number shown by the supplier portal","default":"NUV-RW3L2Y"}
+    ]'>
+    <div id="p-all">
+      <div id="p-portal">
+        <div id="p-pw">
+          <div id="p-pz">
+            <img id="p-im0" src="assets/portal/confirm.png" data-var-src="agent_shot_confirm" alt="Agent screen: confirmation page" />
+            <img id="p-im1" src="assets/portal/done.png" data-var-src="agent_shot_done" alt="Supplier portal: cancellation confirmed" />
+            <div id="p-agent">
+              <svg viewBox="0 0 26 37">
+                <path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z"
+                  fill="#111827" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" />
+              </svg>
+              <div id="p-apill"><i></i>H Company agent</div>
+            </div>
+          </div>
+        </div>
+        <div id="p-box" data-layout-ignore></div>
+        <div id="p-call" class="call">Confirmed by the <em>supplier's</em> portal</div>
+        <div id="p-demo">Demo supplier portal (fictional)</div>
+      </div>
+
+      <div id="p-paper">
+        <div id="p-t1" class="p-title" data-layout-allow-overlap>
+          <span>Proof</span> <span>comes</span> <span>from</span> <span>the</span> <span>supplier.</span>
+        </div>
+        <div id="p-t2" class="p-title" data-layout-allow-overlap>Verified on your statement at D+30.</div>
+        <div id="p-card"></div>
+        <div id="p-k">✓ Proof</div>
+        <div id="p-nl">Confirmation no.</div>
+        <div id="p-src">Read on the supplier portal (not taken from the agent's word).</div>
+        <div id="p-stat">Cancellation confirmed by the supplier</div>
+        <div id="p-ledger"></div>
+        <div id="q0" class="lg on">Potential saving<b>129 €/mo</b></div>
+        <div id="q1" class="lg on">Approved<b>129 €/mo</b></div>
+        <div id="q2" class="lg">Executed<b>—</b></div>
+        <div id="q3" class="lg">Supplier confirmed<b>—</b></div>
+        <div id="q4" class="lg">Verified on statement<b>at D+30</b></div>
+        <div id="p-hl" data-layout-ignore></div>
+        <div id="p-pdemo">Demo data · fictional supplier · number as shown by the demo portal</div>
+      </div>
+      <div id="p-num" class="mono" data-var-text="confirmation_number" data-layout-allow-overlap>NUV-RW3L2Y</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const IN = { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" };
+      const FROM = { opacity: 0, filter: "blur(8px)" };
+      const OUT = { opacity: 0, filter: "blur(8px)", duration: 0.15, ease: "power3.in" };
+
+      gsap.set("#p-pw", { scale: 1.5 });
+      gsap.set("#p-agent", { x: 467, y: 544 });
+      // The number overlay starts exactly over the portal's own number (frame 760,420 at 2.2x).
+      gsap.set("#p-num", { x: 94, y: -4, scale: 1.148 });
+
+      // Iris from the "Confirm cancellation" click, onto the agent's screen.
+      tl.to("#p-all", { clipPath: "circle(2300px at 860px 890px)", duration: 0.36, ease: "power2.in" }, 0);
+      // The agent clicks the irreversible button, once.
+      tl.to("#p-agent", { scale: 0.86, transformOrigin: "0% 0%", duration: 0.07, ease: "power2.out" }, 0.5);
+      tl.to("#p-agent", { scale: 1, duration: 0.16, ease: "power3.out" }, 0.57);
+      // The supplier's own confirmation page.
+      tl.set("#p-im1", { opacity: 1 }, 0.66);
+      tl.set("#p-agent", { opacity: 0 }, 0.66);
+      tl.fromTo("#p-pz", { scale: 1.03, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.3, ease: "expo.out" }, 0.66);
+      // Punch in on the confirmation number (frame = 2.2 * page + (-533.6, -77.2)).
+      tl.to("#p-pw", { scale: 2.2, x: -533.6, y: -77.2, duration: 0.55, ease: "power2.inOut" }, 1.0);
+      
+      tl.to("#p-box", { clipPath: "inset(0 0% 0 0)", duration: 0.3, ease: "power3.out" }, 1.55);
+      tl.fromTo("#p-call", FROM, { ...IN, duration: 0.22 }, 1.62);
+      tl.fromTo("#p-call", { scale: 0.94, transformOrigin: "0% 50%" }, { scale: 1, duration: 0.35, ease: "back.out(1.4)" }, 1.62);
+
+      // Carry the number into Kerdaxis: the paper world opens around it.
+      tl.set("#p-num", { opacity: 1 }, 3.8);
+      tl.to(["#p-box", "#p-call", "#p-demo"], OUT, 3.6);
+      tl.to("#p-paper", { clipPath: "circle(2300px at 760px 420px)", duration: 0.45, ease: "power2.inOut" }, 3.66);
+      tl.to("#p-num", { x: 0, y: 0, scale: 1, color: "#17140F", duration: 0.45, ease: "power2.inOut" }, 3.85);
+      tl.fromTo("#p-card", { opacity: 0, scale: 0.98, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.35, ease: "expo.out" }, 4.1);
+      tl.fromTo(["#p-k", "#p-nl", "#p-src"], FROM, { ...IN, stagger: 0.06 }, 4.18);
+      tl.fromTo("#p-t1 span", { opacity: 0, filter: "blur(6px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power4.out" }, 4.15);
+      tl.fromTo("#p-stat", FROM, IN, 4.45);
+      tl.fromTo(["#p-ledger", ".lg"], FROM, { ...IN, stagger: 0.04 }, 4.3);
+
+      // The ledger fills, one value at a time: executed, then confirmed by the supplier.
+      const fill = (id, t) => {
+        tl.set(id + " b", { textContent: "129 €/mo" }, t);
+        tl.set(id, { attr: { class: "lg on" } }, t);
+        tl.fromTo(id + " b", { scale: 0.8, transformOrigin: "100% 50%" }, { scale: 1, duration: 0.3, ease: "back.out(1.6)" }, t);
+      };
+      fill("#q2", 4.95);
+      fill("#q3", 5.4);
+
+      // The fifth value stays pending: it only counts once the statement shows it.
+      tl.to("#p-t1 span", { opacity: 0, filter: "blur(8px)", duration: 0.14, stagger: 0.02, ease: "power3.in" }, 6.5);
+      tl.fromTo("#p-t2", FROM, { ...IN, duration: 0.18 }, 6.7);
+      tl.fromTo("#p-hl", { opacity: 0, scale: 1.04, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" }, 6.75);
+      tl.to("#q4 b", { color: "#B9812B", duration: 0.2, ease: "power2.out" }, 6.75);
+      tl.fromTo("#p-pdemo", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 4.8);
+
+      // Exit to bare paper; the next scene floods it to the brand ground.
+      tl.to(["#p-t2", "#p-card", "#p-k", "#p-nl", "#p-src", "#p-num", "#p-stat", "#p-ledger", ".lg", "#p-hl", "#p-pdemo"],
+        { opacity: 0, filter: "blur(10px)", duration: 0.22, ease: "power3.in" }, 8.76);
+
+      window.__timelines["proof"] = tl;
+    })();
+  </script>
+</template>

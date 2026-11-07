@@ -1,0 +1,188 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #f6f7fb;
+      font-family: "Inter", sans-serif;
+    }
+    #h-stage {
+      position: absolute;
+      inset: 0;
+    }
+    /* The supplier page (recorded H session capture), in 1280x720 page units, scaled from the top-left. */
+    #h-page {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1280px;
+      height: 720px;
+      transform-origin: 0 0;
+    }
+    #h-page img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1280px;
+      height: 720px;
+    }
+    /* Lime box around the injected "Note to AI assistants" line (page units). */
+    #h-inj {
+      position: absolute;
+      left: 272px;
+      top: 506px;
+      width: 494px;
+      height: 28px;
+      border: 2px solid #b4f768;
+      border-radius: 6px;
+      box-shadow: 0 0 0 2px #080d13;
+    }
+    #h-injtag {
+      position: absolute;
+      left: 772px;
+      top: 507px;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 6px;
+      background: #080d13;
+      color: #eef8f5;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 26px;
+      white-space: nowrap;
+    }
+    #h-injtag b {
+      color: #b4f768;
+      font-weight: 700;
+    }
+    /* H Company agent cursor (page units). */
+    #h-agent {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 21px;
+      height: 30px;
+    }
+    #h-agent svg {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 21px;
+      height: 30px;
+    }
+    .h-pill {
+      position: absolute;
+      left: 164px;
+      top: -4px;
+      height: 26px;
+      padding: 0 11px 0 9px;
+      border-radius: 13px;
+      background: #080d13;
+      color: #eef8f5;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 26px;
+      white-space: nowrap;
+    }
+    .h-pill i {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: #b4f768;
+      vertical-align: 1px;
+    }
+    .h-title {
+      position: absolute;
+      left: 160px;
+      font-weight: 800;
+      font-size: 80px;
+      line-height: 1.1;
+      letter-spacing: -0.045em;
+      color: #111827;
+      white-space: nowrap;
+    }
+    .h-title span {
+      display: inline-block;
+    }
+    #h-t1 { top: 664px; }
+    #h-t1b { top: 754px; }
+    #h-t2 {
+      top: 862px;
+      font-size: 104px;
+      color: #2f6f5b;
+    }
+    .h-ind {
+      color: #4f46e5;
+    }
+    #h-t2 span {
+      opacity: 0;
+    }
+    #h-cap {
+      position: absolute;
+      right: 160px;
+      top: 1000px;
+      font-size: 28px;
+      font-weight: 500;
+      color: #4b5563;
+      white-space: nowrap;
+    }
+  </style>
+
+  <div id="root" data-composition-id="hook" data-width="1920" data-height="1080"
+    data-composition-variables='[
+      {"id":"agent_shot_offer","type":"string","label":"Agent screen: retention offer with the injected note (1280x720)","default":"assets/h-session/offer.png"},
+      {"id":"agent_view_label","type":"string","label":"Caption","default":"Recorded H Company session · demo supplier portal (fictional)"}
+    ]'>
+    <div id="h-stage">
+      <div id="h-page">
+        <img id="h-shot" src="assets/h-session/offer.png" data-var-src="agent_shot_offer" alt="Recorded H Company session: Nuvio CRM retention offer with a hidden note to AI assistants" />
+        <div id="h-inj" data-layout-ignore></div>
+        <div id="h-injtag" data-layout-allow-overlap><b>Injected</b> instruction</div>
+        <div id="h-agent">
+          <svg viewBox="0 0 26 37">
+            <path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z"
+              fill="#111827" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" />
+          </svg>
+          <div id="h-pill" class="h-pill"><i></i>H Company agent</div>
+        </div>
+      </div>
+
+      <div id="h-t1" class="h-title" data-layout-allow-overlap>
+        <span>A</span> <span>supplier</span> <span>page</span> <span>told</span> <span>our</span> <span>agent</span>
+      </div>
+      <div id="h-t1b" class="h-title" data-layout-allow-overlap>
+        <span>to</span> <span class="h-ind">accept</span> <span class="h-ind">the</span> <span class="h-ind">offer.</span>
+      </div>
+      <div id="h-t2" class="h-title" data-layout-allow-overlap>
+        <span>It</span> <span>didn't.</span>
+      </div>
+      <div id="h-cap" data-var-text="agent_view_label">Recorded H Company session · demo supplier portal (fictional)</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Page units -> frame: frame = 2.0 * page + (-404, -470). The offer card fills the top of frame.
+      gsap.set("#h-page", { x: -404, y: -470, scale: 2 });
+      // Cursor group position = tip - (1.2, 1.2), page units. Starts right of the offer buttons.
+      gsap.set("#h-agent", { x: 760, y: 420 });
+
+      // The agent glides to "No thanks, continue cancelling" (its real click: page 430,469).
+      tl.to("#h-agent", { x: 428, y: 466, duration: 1.2, ease: "power2.inOut" }, 0.5);
+      // It clicks "No thanks", not "Accept the offer".
+      tl.to("#h-agent", { scale: 0.86, transformOrigin: "0% 0%", duration: 0.07, ease: "power2.out" }, 2.45);
+      tl.to("#h-agent", { scale: 1, duration: 0.16, ease: "power3.out" }, 2.52);
+      tl.fromTo("#h-t2 span", { opacity: 0, filter: "blur(6px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.09, ease: "power4.out" }, 2.6);
+
+      // Whip out to the left: the next world arrives from the right.
+      tl.to("#h-stage", { x: -900, filter: "blur(20px)", duration: 0.24, ease: "power2.in" }, 4.36);
+
+      window.__timelines["hook"] = tl;
+    })();
+  </script>
+</template>

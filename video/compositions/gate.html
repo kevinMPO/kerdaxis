@@ -1,0 +1,476 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("assets/fonts/SpaceGrotesk-latin.woff2") format("woff2");
+      font-weight: 300 700;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #fafaf7;
+      font-family: "Inter", sans-serif;
+      color: #17140f;
+    }
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+    }
+    /* ---- Kerdaxis execution panel (under the portal until the pull-back) ---- */
+    #g-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 90px;
+      border-bottom: 2px solid #e4e0d6;
+    }
+    #g-dot {
+      position: absolute;
+      left: 48px;
+      top: 37px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #b9812b;
+    }
+    #g-btitle {
+      position: absolute;
+      left: 80px;
+      top: 22px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 32px;
+      white-space: nowrap;
+    }
+    #g-target {
+      position: absolute;
+      left: 560px;
+      top: 28px;
+      font-weight: 500;
+      font-size: 28px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    #g-stop {
+      position: absolute;
+      left: 1640px;
+      top: 16px;
+      width: 236px;
+      height: 58px;
+      border: 2px solid #a9432b;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #a9432b;
+      font-weight: 600;
+      font-size: 28px;
+      line-height: 54px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    #g-side {
+      position: absolute;
+      left: 0;
+      top: 90px;
+      width: 560px;
+      height: 990px;
+      border-right: 2px solid #e4e0d6;
+    }
+    .st {
+      position: absolute;
+      left: 40px;
+      height: 48px;
+      font-size: 30px;
+      line-height: 48px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    .st .n {
+      position: absolute;
+      left: 0;
+      top: 2px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid #b8b2a5;
+      background: #ffffff;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      line-height: 40px;
+      text-align: center;
+      color: #5b554c;
+    }
+    .st .lb {
+      position: absolute;
+      left: 62px;
+      top: 0;
+    }
+    .st.done {
+      color: #17140f;
+    }
+    .st.done .n {
+      background: #2f6f5b;
+      border-color: #2f6f5b;
+      color: #ffffff;
+    }
+    .st.cur {
+      color: #17140f;
+      font-weight: 600;
+    }
+    .st.cur .n {
+      border-color: #2f6f5b;
+      color: #2f6f5b;
+      box-shadow: 0 0 0 7px #e7f0ec;
+    }
+    #s0 { top: 128px; }
+    #s1 { top: 192px; }
+    #s2 { top: 256px; }
+    #s3 { top: 320px; }
+    .stat {
+      position: absolute;
+      left: 40px;
+      top: 404px;
+      width: 480px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 32px;
+      line-height: 1.25;
+    }
+    #g-ledger {
+      position: absolute;
+      left: 40px;
+      top: 510px;
+      width: 480px;
+      height: 336px;
+      border: 2px solid #e4e0d6;
+      border-radius: 18px;
+      background: #ffffff;
+    }
+    .lg {
+      position: absolute;
+      left: 60px;
+      width: 440px;
+      height: 64px;
+      font-size: 28px;
+      line-height: 64px;
+      color: #5b554c;
+      white-space: nowrap;
+      border-bottom: 2px dashed #e4e0d6;
+    }
+    .lg b {
+      position: absolute;
+      right: 0;
+      top: 0;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+      color: #5b554c;
+    }
+    .lg.on b {
+      color: #2f6f5b;
+    }
+    #g0 { top: 518px; }
+    #g1 { top: 582px; }
+    #g2 { top: 646px; }
+    #g3 { top: 710px; }
+    #g4 { top: 774px; border-bottom: 0; }
+    #g-ring {
+      position: absolute;
+      left: 760px;
+      top: 116px;
+      width: 960px;
+      height: 540px;
+      border-radius: 18px;
+      box-shadow: 0 0 0 2px #e4e0d6;
+    }
+    /* The final-go gate (ExecutionPanel .kx-gate), rebuilt at ~2.2x */
+    #g-gate {
+      position: absolute;
+      left: 593px;
+      top: 684px;
+      width: 1294px;
+      height: 274px;
+      border: 4px solid #2f6f5b;
+      border-radius: 28px;
+      background: #e7f0ec;
+    }
+    #g-gt {
+      position: absolute;
+      left: 34px;
+      top: 26px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 40px;
+      white-space: nowrap;
+    }
+    #g-gw {
+      position: absolute;
+      left: 34px;
+      top: 92px;
+      font-size: 29px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    .g-btn {
+      position: absolute;
+      top: 152px;
+      height: 84px;
+      border-radius: 20px;
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 80px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    #g-ok {
+      left: 34px;
+      width: 440px;
+      border: 2px solid #2f6f5b;
+      background: #2f6f5b;
+      color: #ffffff;
+    }
+    #g-no {
+      left: 498px;
+      width: 240px;
+      border: 2px solid #b8b2a5;
+      background: #ffffff;
+      color: #5b554c;
+    }
+    #g-cur {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 52px;
+      height: 74px;
+      transform-origin: 0% 0%;
+    }
+    /* ---- The supplier portal, full frame, on top ---- */
+    #g-portal {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #f6f7fb;
+      clip-path: inset(0px 0px 0px 0px round 0px);
+    }
+    #g-pw {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1280px;
+      height: 720px;
+      transform-origin: 0 0;
+    }
+    #g-pw img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1280px;
+      height: 720px;
+    }
+    #g-navext {
+      position: absolute;
+      left: 0;
+      top: 720px;
+      width: 220px;
+      height: 200px;
+      background: #ffffff;
+      border-right: 1px solid #e5e7eb;
+    }
+    #g-agent {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 21px;
+      height: 30px;
+    }
+    #g-agent svg {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 21px;
+      height: 30px;
+    }
+    .g-pill {
+      position: absolute;
+      left: 20px;
+      top: 27px;
+      height: 26px;
+      padding: 0 11px 0 9px;
+      border-radius: 13px;
+      background: #080d13;
+      color: #eef8f5;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 26px;
+      white-space: nowrap;
+    }
+    .g-pill i {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: #b4f768;
+      vertical-align: 1px;
+    }
+    .g-pill b {
+      font-weight: 600;
+      color: #eedc9d;
+    }
+    #g-pill-b {
+      clip-path: inset(0 100% 0 0);
+    }
+    #g-pill-b i {
+      background: #eedc9d;
+    }
+    #g-title {
+      position: absolute;
+      left: 420px;
+      top: 714px;
+      font-weight: 800;
+      font-size: 84px;
+      line-height: 1.1;
+      letter-spacing: -0.045em;
+      color: #111827;
+      white-space: nowrap;
+    }
+    #g-title span {
+      display: inline-block;
+    }
+    #g-title .red {
+      color: #b91c1c;
+    }
+    #g-demo {
+      position: absolute;
+      left: 44px;
+      top: 960px;
+      height: 56px;
+      padding: 0 22px;
+      border-radius: 12px;
+      background: #080d13;
+      color: #eedc9d;
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 56px;
+      white-space: nowrap;
+    }
+    #g-im1,
+    #g-st2,
+    #g-gate,
+    #g-ring,
+    #g-title span {
+      opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="gate" data-width="1920" data-height="1080"
+    data-composition-variables='[
+      {"id":"agent_shot_confirm_unchecked","type":"string","label":"Agent screen: confirmation page before the box is ticked","default":"assets/portal/confirm-unchecked.png"},
+      {"id":"agent_shot_confirm","type":"string","label":"Agent screen: confirmation page, box ticked, agent stopped","default":"assets/portal/confirm.png"}
+    ]'>
+    <!-- Kerdaxis panel -->
+    <div id="g-bar">
+      <div id="g-dot"></div>
+      <div id="g-btitle">Execution · H Company agent</div>
+      <div id="g-target">Nuvio CRM · Nuvio Growth · Acme Conseil SAS</div>
+      <div id="g-stop">Stop the agent</div>
+    </div>
+    <div id="g-side"></div>
+    <div id="s0" class="st done"><div class="n">✓</div><div class="lb">Approval given</div></div>
+    <div id="s1" class="st cur"><div class="n">2</div><div class="lb">Agent on the portal</div></div>
+    <div id="s2" class="st"><div class="n">3</div><div class="lb">Your final go</div></div>
+    <div id="s3" class="st"><div class="n">4</div><div class="lb">Confirmed by supplier</div></div>
+    <div id="g-st1" class="stat">The agent is working on the portal</div>
+    <div id="g-st2" class="stat">Waiting for your final go</div>
+    <div id="g-ledger"></div>
+    <div id="g0" class="lg on">Potential saving<b>129 €/mo</b></div>
+    <div id="g1" class="lg on">Approved<b>129 €/mo</b></div>
+    <div id="g2" class="lg">Executed<b>—</b></div>
+    <div id="g3" class="lg">Supplier confirmed<b>—</b></div>
+    <div id="g4" class="lg">Verified on statement<b>at D+30</b></div>
+    <div id="g-ring"></div>
+    <div id="g-gate">
+      <div id="g-gt">The agent is waiting at “Confirm cancellation”</div>
+      <div id="g-gw">Irreversible action at the supplier. Nothing happens without your click.</div>
+      <div id="g-ok" class="g-btn">✓ Confirm cancellation</div>
+      <div id="g-no" class="g-btn">✕ Refuse</div>
+    </div>
+
+    <!-- Supplier portal (the agent's screen), full frame then carried back into the panel -->
+    <div id="g-portal" data-layout-allow-overflow>
+      <div id="g-pw">
+        <img id="g-im0" src="assets/portal/confirm-unchecked.png" data-var-src="agent_shot_confirm_unchecked" alt="Agent screen: confirmation page" />
+        <img id="g-im1" src="assets/portal/confirm.png" data-var-src="agent_shot_confirm" alt="Agent screen: confirmation page, box ticked" />
+        <div id="g-navext"></div>
+        <div id="g-agent">
+          <svg viewBox="0 0 26 37">
+            <path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z"
+              fill="#111827" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" />
+          </svg>
+          <div id="g-pill-a" class="g-pill"><i></i>H Company agent</div>
+          <div id="g-pill-b" class="g-pill"><i></i>H Company agent <b>· Waiting for your final go</b></div>
+        </div>
+      </div>
+      <div id="g-title" data-layout-allow-overlap>
+        <span>It</span> <span>stops</span> <span>before</span> <span>the</span> <span class="red">irreversible</span> <span>click.</span>
+      </div>
+      <div id="g-demo">Demo supplier portal (fictional)</div>
+    </div>
+
+    <svg id="g-cur" viewBox="0 0 26 37" data-layout-allow-occlusion>
+      <path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z"
+        fill="#17140F" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Portal page units -> frame at 1.5x to start.
+      gsap.set("#g-pw", { x: 0, y: 0, scale: 1.5 });
+      gsap.set("#g-agent", { x: 428, y: 474 });
+      gsap.set("#g-cur", { x: 1520, y: 1120 });
+
+      // Match cut on the "No thanks" click: the confirmation page arrives slightly large.
+      tl.fromTo("#g-pw", { scale: 1.56, x: -24, y: -14 }, { scale: 1.5, x: 0, y: 0, duration: 0.32, ease: "expo.out" }, 0);
+
+      // As recorded: Kerdaxis pauses the agent as soon as the final page loads (box still unticked;
+      // the agent ticks it only after the human's go, in the proof scene's capture).
+
+      // Punch in on the red button (frame = 2.4 * page + (-154.4, -726.4)).
+      tl.to("#g-pw", { scale: 2.4, x: -154.4, y: -726.4, duration: 0.6, ease: "power2.inOut" }, 1.2);
+      
+      // The agent moves onto the button and decelerates to a halt. It does not click.
+      tl.to("#g-agent", { x: 467, y: 544, duration: 1.5, ease: "power3.out" }, 0.4);
+      tl.to("#g-pill-b", { clipPath: "inset(0 0% 0 0)", duration: 0.32, ease: "power3.out" }, 2.5);
+      tl.to("#g-pill-a", { opacity: 0, duration: 0.05, ease: "none" }, 2.57);
+      tl.fromTo("#g-title span", { opacity: 0, filter: "blur(6px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power4.out" }, 2.3);
+
+      // Pull back: the agent's screen is carried back into the Kerdaxis panel.
+      tl.to("#g-title span", { opacity: 0, filter: "blur(8px)", duration: 0.14, stagger: 0.02, ease: "power3.in" }, 4.72);
+      tl.to(["#g-demo", "#g-pill-a", "#g-pill-b"], { opacity: 0, filter: "blur(6px)", duration: 0.15, ease: "power3.in" }, 4.75);
+      tl.to("#g-pw", { scale: 0.75, x: 760, y: 116, duration: 0.55, ease: "power2.inOut" }, 4.9);
+      tl.to("#g-portal", { clipPath: "inset(116px 200px 424px 760px round 18px)", duration: 0.55, ease: "power2.inOut" }, 4.9);
+      tl.to("#g-ring", { opacity: 1, duration: 0.15, ease: "none" }, 5.35);
+
+      // Step 3 is now current; the status changes; the gate rises (argRise in the app).
+      tl.set("#s1", { attr: { class: "st done" } }, 5.35);
+      tl.set("#s1 .n", { textContent: "✓" }, 5.35);
+      tl.set("#s2", { attr: { class: "st cur" } }, 5.35);
+      tl.to("#g-st1", { opacity: 0, filter: "blur(6px)", duration: 0.12, ease: "power3.in" }, 5.3);
+      tl.fromTo("#g-st2", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 5.42);
+      tl.fromTo("#g-gate", { opacity: 0, y: 24, scale: 0.98, filter: "blur(6px)", transformOrigin: "50% 100%" },
+        { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "expo.out" }, 5.4);
+
+      // The human gives the final go.
+      tl.to("#g-cur", { x: 857, y: 887, duration: 0.85, ease: "power2.inOut" }, 6.9);
+      tl.to("#g-ok", { backgroundColor: "#255A49", duration: 0.1, ease: "none" }, 7.75);
+      tl.to(["#g-ok", "#g-cur"], { scale: 0.97, duration: 0.07, ease: "power2.out" }, 8.0);
+      tl.to(["#g-ok", "#g-cur"], { scale: 1, duration: 0.16, ease: "power3.out" }, 8.07);
+
+      window.__timelines["gate"] = tl;
+    })();
+  </script>
+</template>

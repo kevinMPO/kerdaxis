@@ -1,0 +1,173 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #080d13;
+      font-family: "Inter", sans-serif;
+      color: #eef8f5;
+    }
+    .e-line {
+      position: absolute;
+      left: 0;
+      width: 1920px;
+      text-align: center;
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.05em;
+      white-space: nowrap;
+    }
+    .e-line span {
+      display: inline-block;
+    }
+    #e-l1 {
+      top: 300px;
+      font-size: 120px;
+    }
+    #e-l2,
+    #e-l3 {
+      font-size: 72px;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      color: #a3b4b9;
+    }
+    #e-l2 { top: 488px; }
+    #e-l3 { top: 576px; }
+    .e-line .lime {
+      color: #b4f768;
+    }
+    .e-line .ink {
+      color: #eef8f5;
+    }
+    /* Lockup: the K mark (rotated -8deg, lime border at 50%) + KERDAXIS wordmark */
+    #e-lock {
+      position: absolute;
+      left: 0;
+      top: 250px;
+      width: 1920px;
+      height: 130px;
+    }
+    #e-mark {
+      position: absolute;
+      left: 680px;
+      top: 4px;
+      width: 120px;
+      height: 120px;
+    }
+    #e-mark-in {
+      position: absolute;
+      inset: 0;
+      border: 3px solid rgba(180, 247, 104, 0.5);
+      border-radius: 34px;
+      color: #b4f768;
+      font-weight: 900;
+      font-size: 72px;
+      line-height: 114px;
+      text-align: center;
+    }
+    #e-word {
+      position: absolute;
+      left: 830px;
+      top: 6px;
+      font-weight: 800;
+      font-size: 100px;
+      line-height: 116px;
+      letter-spacing: -0.055em;
+      white-space: nowrap;
+      clip-path: inset(0 100% 0 0);
+    }
+    #e-wl {
+      position: absolute;
+      left: 0;
+      top: 454px;
+      width: 1920px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 44px;
+      color: #a3b4b9;
+      white-space: nowrap;
+    }
+    #e-cta {
+      position: absolute;
+      left: 0;
+      top: 598px;
+      width: 1920px;
+      text-align: center;
+    }
+    #e-btn {
+      display: inline-block;
+      height: 112px;
+      padding: 0 64px;
+      border-radius: 28px;
+      background: #b4f768;
+      color: #102015;
+      font-weight: 800;
+      font-size: 56px;
+      line-height: 112px;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    #e-mail {
+      position: absolute;
+      left: 0;
+      top: 762px;
+      width: 1920px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 48px;
+      color: #eef8f5;
+      white-space: nowrap;
+    }
+    .e-line span,
+    #e-mark,
+    #e-wl,
+    #e-btn,
+    #e-mail {
+      opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="end" data-width="1920" data-height="1080">
+    <div id="e-l1" class="e-line">
+      <span>Your</span> <span>workflow?</span>
+    </div>
+    <div id="e-l2" class="e-line">
+      <span>Our</span> <span class="lime">Forward</span> <span class="lime">Deployed</span> <span class="lime">Engineers</span> <span>adapt</span>
+    </div>
+    <div id="e-l3" class="e-line">
+      <span class="ink">H Company's</span> <span class="ink">computer-use</span> <span>to</span> <span>it.</span>
+    </div>
+    <div id="e-lock">
+      <div id="e-mark"><div id="e-mark-in">K</div></div>
+      <div id="e-word">KERDAXIS</div>
+    </div>
+    <div id="e-wl">White label for accounting firms.</div>
+    <div id="e-cta"><span id="e-btn">kerdaxis.com</span></div>
+    <div id="e-mail">hello@kerdaxis.com</div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const words = (sel, t, st) =>
+        tl.fromTo(sel + " span", { opacity: 0, filter: "blur(6px)" },
+          { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: st, ease: "power4.out" }, t);
+      words("#e-l1", 0.1, 0.1);
+      words("#e-l2", 1.25, 0.08);
+      words("#e-l3", 4.1, 0.08);
+
+      // The question leaves; the mark is carried in and lands, then the wordmark wipes in.
+      tl.to(".e-line span", { opacity: 0, filter: "blur(8px)", duration: 0.18, stagger: 0.015, ease: "power3.in" }, 6.9);
+      tl.fromTo("#e-mark", { opacity: 0, x: 560, rotation: -70, scale: 0.45 },
+        { opacity: 1, x: 0, rotation: -8, scale: 1, duration: 0.75, ease: "back.out(1.3)" }, 7.1);
+      tl.to("#e-word", { clipPath: "inset(0 0% 0 0)", duration: 0.4, ease: "power3.out" }, 7.75);
+      tl.fromTo("#e-wl", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 7.9);
+      tl.fromTo("#e-btn", { opacity: 0, scale: 0.9, transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 8.0);
+      tl.fromTo("#e-mail", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 8.08);
+
+      window.__timelines["end"] = tl;
+    })();
+  </script>
+</template>

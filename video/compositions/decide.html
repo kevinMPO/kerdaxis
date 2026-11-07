@@ -1,0 +1,348 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("assets/fonts/SpaceGrotesk-latin.woff2") format("woff2");
+      font-weight: 300 700;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #fafaf7;
+      font-family: "Inter", sans-serif;
+      color: #17140f;
+    }
+    #d-stage {
+      position: absolute;
+      inset: 0;
+    }
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+    }
+    .d-title {
+      position: absolute;
+      left: 160px;
+      top: 92px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 76px;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .d-title span {
+      display: inline-block;
+    }
+    /* Lever cards (Argentier.tsx .arg-lever, rebuilt at ~1.8x) */
+    .lev {
+      position: absolute;
+      left: 160px;
+      width: 1100px;
+      height: 128px;
+      border: 2px solid #2f6f5b;
+      border-radius: 18px;
+      background: #e7f0ec;
+      overflow: hidden;
+    }
+    .lev .chk {
+      position: absolute;
+      left: 26px;
+      top: 45px;
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: #2f6f5b;
+      color: #ffffff;
+      font-size: 24px;
+      line-height: 36px;
+      text-align: center;
+    }
+    .lev .nm {
+      position: absolute;
+      left: 86px;
+      top: 20px;
+      font-weight: 600;
+      font-size: 34px;
+      white-space: nowrap;
+    }
+    .lev .to {
+      position: absolute;
+      left: 86px;
+      top: 68px;
+      font-size: 28px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    .lev .risk {
+      position: absolute;
+      left: 600px;
+      top: 45px;
+      font-size: 28px;
+      color: #2f6f5b;
+      white-space: nowrap;
+    }
+    .lev .risk.med {
+      color: #8c5f1c;
+    }
+    .lev .sv {
+      position: absolute;
+      left: 740px;
+      top: 42px;
+      width: 110px;
+      text-align: right;
+      font-size: 32px;
+      white-space: nowrap;
+    }
+    .lev .st {
+      position: absolute;
+      left: 878px;
+      top: 34px;
+      width: 120px;
+      height: 56px;
+      border: 2px solid #e4e0d6;
+      border-radius: 12px;
+      background: #ffffff;
+      font-size: 28px;
+      line-height: 52px;
+      padding-left: 14px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    .lev .pen {
+      position: absolute;
+      left: 1022px;
+      top: 0;
+      width: 76px;
+      height: 124px;
+      border-left: 2px solid rgba(47, 111, 91, 0.3);
+      font-size: 32px;
+      line-height: 124px;
+      text-align: center;
+      color: #5b554c;
+    }
+    #v0 { top: 250px; }
+    #v1 { top: 394px; }
+    #v2 { top: 538px; }
+    #v3 { top: 682px; }
+    /* Active savings metric (.arg-metric) */
+    #d-met {
+      position: absolute;
+      left: 1340px;
+      top: 250px;
+      width: 420px;
+      height: 236px;
+      border: 2px solid #e4e0d6;
+      border-radius: 25px;
+      background: #ffffff;
+    }
+    #d-met-l {
+      position: absolute;
+      left: 1376px;
+      top: 282px;
+      font-size: 30px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    #d-met-v {
+      position: absolute;
+      left: 1374px;
+      top: 330px;
+      font-size: 64px;
+      line-height: 80px;
+      color: #2f6f5b;
+      white-space: nowrap;
+    }
+    #d-met-n {
+      position: absolute;
+      left: 1376px;
+      top: 424px;
+      font-size: 30px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    /* Autopilot decision card (Argentier.tsx .arg-ap-gate), rebuilt at ~2x */
+    #d-kick {
+      position: absolute;
+      left: 160px;
+      top: 200px;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #2f6f5b;
+      white-space: nowrap;
+    }
+    #d-card {
+      position: absolute;
+      left: 160px;
+      top: 250px;
+      width: 1100px;
+      height: 300px;
+      border: 2px solid #e4e0d6;
+      border-radius: 28px;
+      background: #ffffff;
+      box-shadow: 0 24px 60px rgba(23, 20, 15, 0.08);
+      clip-path: inset(0px 0px 172px 0px round 18px);
+      opacity: 0;
+    }
+    .dc {
+      position: absolute;
+      left: 36px;
+      white-space: nowrap;
+    }
+    #dc-nm {
+      top: 28px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 48px;
+    }
+    #dc-tag {
+      position: absolute;
+      left: auto;
+      right: 36px;
+      top: 38px;
+      padding: 4px 20px;
+      border-radius: 99px;
+      background: #f4ebdd;
+      color: #8c5f1c;
+      font-size: 28px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    #dc-l1 {
+      font-size: 32px;
+      color: #5b554c;
+    }
+    #dc-l1 b {
+      color: #17140f;
+    }
+    #dc-l1 { top: 116px; }
+    #dc-l3 {
+      top: 184px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 500;
+      font-size: 46px;
+      line-height: 1.2;
+      color: #5b554c;
+    }
+    #dc-l3 b {
+      font-weight: 600;
+      color: #2f6f5b;
+    }
+    .d-btn {
+      position: absolute;
+      top: 590px;
+      height: 96px;
+      border-radius: 18px;
+      font-size: 34px;
+      font-weight: 600;
+      line-height: 92px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    #d-ok {
+      left: 160px;
+      width: 600px;
+      background: #2f6f5b;
+      border: 2px solid #2f6f5b;
+      color: #ffffff;
+    }
+    #d-no {
+      left: 784px;
+      width: 300px;
+      background: #ffffff;
+      border: 2px solid #b8b2a5;
+      color: #5b554c;
+    }
+    #d-cur {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 52px;
+      height: 74px;
+      transform-origin: 0% 0%;
+    }
+    #d-kick,
+    #d-card .dc,
+    #dc-tag,
+    .d-btn,
+    #d-t2 {
+      opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="decide" data-width="1920" data-height="1080">
+    <div id="d-stage">
+      <div id="d-t1" class="d-title" data-layout-allow-overlap>
+        <span>Nobody</span> <span>has</span> <span>logged</span> <span>in</span> <span>for</span> <span>90</span> <span>days.</span>
+      </div>
+      <div id="d-t2" class="d-title" data-layout-allow-overlap>You approve the action.</div>
+
+      <div id="v0" class="lev"><div class="chk">✓</div><div class="nm">Nuvio CRM</div><div class="to">→ cancel · no login in 90 days</div><div class="risk">risk-free</div><div class="sv mono">129 €</div><div class="st">To do</div><div class="pen">✎</div></div>
+      <div id="v1" class="lev"><div class="chk">✓</div><div class="nm">Instantly</div><div class="to">→ 1 workspace only</div><div class="risk med">to review</div><div class="sv mono">86 €</div><div class="st">To do</div><div class="pen">✎</div></div>
+      <div id="v2" class="lev"><div class="chk">✓</div><div class="nm">ChatGPT</div><div class="to">→ Claude only</div><div class="risk">risk-free</div><div class="sv mono">84 €</div><div class="st">To do</div><div class="pen">✎</div></div>
+      <div id="v3" class="lev"><div class="chk">✓</div><div class="nm">Waalaxy</div><div class="to">→ Apollo + Instantly</div><div class="risk">risk-free</div><div class="sv mono">51 €</div><div class="st">To do</div><div class="pen">✎</div></div>
+
+      <div id="d-met"></div>
+      <div id="d-met-l">Active savings</div>
+      <div id="d-met-v" class="mono">558 €/m</div>
+      <div id="d-met-n">→ 6,696 €/yr</div>
+
+      <div id="d-kick">1 decision · 1 tap</div>
+      <div id="d-card" data-layout-allow-overflow>
+        <div id="dc-nm" class="dc">Nuvio CRM</div>
+        <div id="dc-tag" class="dc">cancel</div>
+        <div id="dc-l1" class="dc">Saving · <b class="mono">129 €/mo</b> → <b class="mono">1,548 €/yr</b></div>
+        <div id="dc-l3" class="dc">⚡ The agent <b>stops before the final click.</b></div>
+      </div>
+      <div id="d-ok" class="d-btn">✓ Approve and launch the agent</div>
+      <div id="d-no" class="d-btn">✕ Refuse</div>
+
+      <svg id="d-cur" viewBox="0 0 26 37" data-layout-allow-occlusion>
+        <path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z"
+          fill="#17140F" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" />
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      gsap.set("#d-cur", { x: 1380, y: 1110 });
+
+      // Arrives slightly large out of the push into the green bar, then settles.
+      tl.fromTo(["#v0", "#v1", "#v2", "#v3", "#d-met", "#d-met-l", "#d-met-v", "#d-met-n"],
+        { opacity: 0, scale: 1.06, filter: "blur(12px)", transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out", stagger: 0.04 }, 0);
+      tl.fromTo("#d-t1 span", { opacity: 0, filter: "blur(6px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power4.out" }, 0.4);
+
+      // The leak: the other levers step back.
+      tl.to(["#v1", "#v2", "#v3"], { opacity: 0.32, duration: 0.35, ease: "power2.out" }, 1.15);
+
+      // Morph: the Nuvio lever opens into the Autopilot decision card.
+      tl.to("#d-t1 span", { opacity: 0, filter: "blur(8px)", duration: 0.14, stagger: 0.02, ease: "power3.in" }, 2.95);
+      tl.to(["#v1", "#v2", "#v3"], { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, 3.0);
+      tl.to("#v0", { opacity: 0, filter: "blur(6px)", duration: 0.16, ease: "power3.in" }, 3.02);
+      tl.set("#d-card", { opacity: 1, backgroundColor: "#E7F0EC", borderColor: "#2F6F5B" }, 3.0);
+      tl.to("#d-card", { clipPath: "inset(0px 0px 0px 0px round 28px)", backgroundColor: "#FFFFFF", borderColor: "#E4E0D6", duration: 0.42, ease: "power3.out" }, 3.0);
+      tl.fromTo("#d-card .dc", { opacity: 0, filter: "blur(8px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.2, stagger: 0.06, ease: "power4.out" }, 3.18);
+      tl.fromTo("#d-kick", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 3.2);
+      tl.fromTo(".d-btn", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, stagger: 0.08, ease: "power4.out" }, 3.5);
+      tl.fromTo("#d-t2", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 3.3);
+
+      // The human clicks "Approve and launch the agent".
+      tl.to("#d-cur", { x: 470, y: 642, duration: 0.85, ease: "power2.inOut" }, 4.55);
+      tl.to("#d-ok", { backgroundColor: "#255A49", duration: 0.1, ease: "none" }, 5.35);
+      tl.to("#d-ok", { scale: 0.97, duration: 0.07, ease: "power2.out" }, 5.6);
+      tl.to("#d-cur", { scale: 0.86, duration: 0.07, ease: "power2.out" }, 5.6);
+      tl.to(["#d-ok", "#d-cur"], { scale: 1, duration: 0.16, ease: "power3.out" }, 5.67);
+
+      window.__timelines["decide"] = tl;
+    })();
+  </script>
+</template>

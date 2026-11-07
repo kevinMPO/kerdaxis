@@ -159,8 +159,22 @@ web/                  the Kerdaxis app (Next.js)
   public/replay/      the 10 captures of the recorded run
 portal/               fictional supplier portal (Cloudflare Worker + Durable Object)
 my-app/               Argentier engine as a remote MCP server (Cloudflare Workers)
+video/                the 69 s film as code (HyperFrames): SPEC.md, compositions/, recorded
+                      H session captures, voiceover script (VOICEOVER.md) and voice lines
 engine.py, tests/     Argentier deterministic engine (Python) and its tests
 docs/, PRD + Claude Code/   product docs, the Kerdaxis PRD
+```
+
+## The film
+
+The 69 s film on kerdaxis.com is built as HTML with [HyperFrames](https://hyperframes.dev) in `video/`.
+Every portal screen in it is a capture of the recorded H Company run above. The voiceover is a human
+reading of `video/VOICEOVER.md`.
+
+```bash
+cd video
+npm run check                      # lint, timing and layout checks
+npm run render -- -o renders/kerdaxis.mp4
 ```
 
 ## Tests and CI
