@@ -222,11 +222,51 @@ npm run render -- -o renders/kerdaxis.mp4
 ## Tests and CI
 
 ```bash
-cd web && npx tsc --noEmit && npx vitest run     # 652 tests
+cd web && npx tsc --noEmit && npx vitest run     # 683 tests
 python3 -m unittest discover -s tests            # 32 engine and ledger tests
 bash scripts/check-secrets.sh                    # no secret or bank data in tracked files
 cd portal && npm run typecheck && npm run smoke  # full portal path + API (resets the demo account)
 ```
+
+### Agent reliability, end to end
+
+The unit tests cannot tell whether the agent works on a real UI. `web/scripts/agent-runs.mjs` runs real
+cancellations one after another, through the same API as the interface (approval → start → final go), and
+judges each run on what the server read back **from the supplier** (Stripe API or Nuvio portal API), never on the
+agent's report:
+
+```bash
+cd web
+npm run agent:runs                          # 5 runs on Lumen (Stripe portal); the app must be running
+npm run agent:runs -- --runs 3 --refuse     # refuse the final go: nothing may be cancelled
+npm run agent:runs -- --supplier nuvio      # Nuvio portal (must be public; reset before each run)
+npm run agent:runs -- --base http://localhost:3002 --json runs.json
+```
+
+A run passes only if the watchdog stopped the agent in front of the final button, then (approve) the supplier
+confirms the cancellation, or (refuse) the subscription is still active. Each run costs one H Company session
+(~$0.03). Outside localhost, set `KERDAXIS_OPERATOR_TOKEN`.
+
+Last batch, 7 Nov 2026, Lumen on Stripe's real portal, run alone:
+
+| Final go | Result | Median duration | Agent stopped at the final button after | Cost |
+|---|---|---|---|---|
+| approve | **5/5** cancelled, each confirmed by the Stripe API | 56 s | 24 s (8 to 9 steps) | $0.131 for 5 |
+| refuse | **2/2** stopped, subscription still active at Stripe | 25 s | 24 s | $0.009 for 2 |
+
+Getting there took two fixes the batch exposed:
+
+- **Resume after the final go.** A session paused by the watchdog does not always read a message sent right
+  after the pause: it stayed paused with the `APPROVED` message unread. `decideFinal` now sends the message,
+  then calls `POST /sessions/{id}/resume`.
+- **One agent at a time.** A second session started while another one is active sits at 0 steps. Starting a run
+  while another is preparing, working or waiting for the final go now fails at once with `agent_deja_actif`,
+  instead of hanging. A run with no news for 20 minutes no longer blocks.
+
+The runner also recovers from a stalled H session: if the agent has not taken a single decision 90 s after the
+session started, Kerdaxis cancels it and opens a fresh one on the same approved action (same Stripe subscription,
+new portal link), up to 3 sessions, then fails cleanly (`STALL_MS` in `runner.ts`). The script reports how many
+relaunches each run needed.
 
 The tests cover the gate in both directions: a replay never confirms without the final go, and a refusal stops everything. Session cookies reject forged roles and expired values. GitHub Actions (`.github/workflows/ci.yml`) runs three blocking jobs: engine, web (types, tests, build) and secrets.
 
@@ -237,6 +277,7 @@ This is a hackathon build. Here is what that means today:
 - **The app runs on the demo laptop**, exposed through a Cloudflare Tunnel. If the laptop sleeps, `app.kerdaxis.com` is down. The site and the portal are on Cloudflare and stay up.
 - **Storage is local.** Executions live in process memory, and accounts and trial emails are JSON files in `web/data/`. The target is Cloudflare D1, with the interface already in `web/lib/db/tenant.ts`.
 - **Two suppliers.** Nuvio (our portal) and Lumen (Stripe's real portal, test mode). The research layer finds the path for any supplier, but sites that need the customer to sign in still need a login hand-off, which is not built yet.
+- **One agent at a time.** Our H Company account only moves one agent at a time, so Kerdaxis refuses a second run while one is active (`agent_deja_actif`). Do not run `agent:runs` while someone uses the interface.
 - **Watchdog on unknown sites.** Layer 2 needs the final page's URL. For a researched supplier without a known URL, layers 1 and 3 and the supplier-side proof still apply.
 - **Only Qonto is connected.** Sage, Pennylane and SaaS/CRM tools are shown as "coming", not live.
 - **Stripe is in test mode.** No real money moves.
