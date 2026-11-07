@@ -11,7 +11,7 @@
 // ---------------------------------------------------------------------------
 
 import type { Approval } from "./policy";
-import { appendEvent, db, type Execution } from "./store";
+import { appendEvent, type Execution } from "./store";
 
 const SHOT = (f: string) => `/replay/${f}`;
 
@@ -66,7 +66,6 @@ export function startReplay(approval: Approval): Execution {
     events: [],
     replay: { startedMs: now.getTime(), goMs: null, shown: 0 },
   };
-  db.executions.set(exec.id, exec);
   appendEvent(exec, {
     kind: "approval",
     message: `Approval given to cancel ${approval.params.plan} (${approval.params.vendor}) · fingerprint ${approval.actionHash.slice(0, 12)}…`,

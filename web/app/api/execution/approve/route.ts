@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createApproval } from "@/lib/execution/policy";
 import { getSupplier } from "@/lib/execution/suppliers";
-import { db } from "@/lib/execution/store";
+import { putApproval } from "@/lib/execution/store";
 import { DEMO_ORG, noStore, execGuard } from "@/lib/execution/http";
 
 export const runtime = "nodejs";
@@ -38,7 +38,7 @@ export async function POST(req: Request): Promise<Response> {
     "demo-owner",
     parsed.data.channel,
   );
-  db.approvals.set(approval.id, approval);
+  await putApproval(approval);
 
   return noStore(
     NextResponse.json({

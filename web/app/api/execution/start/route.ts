@@ -3,7 +3,7 @@ import { z } from "zod";
 import { startExecution } from "@/lib/execution/runner";
 import { startReplay } from "@/lib/execution/replay";
 import { checkApproval } from "@/lib/execution/policy";
-import { db, publicView } from "@/lib/execution/store";
+import { getApproval, publicView, putApproval, putExecution } from "@/lib/execution/store";
 import { DEMO_ORG, noStore, execGuard } from "@/lib/execution/http";
 
 export const runtime = "nodejs";
@@ -18,7 +18,7 @@ export async function POST(req: Request): Promise<Response> {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return noStore(NextResponse.json({ error: "invalid_body" }, { status: 400 }));
 
-  const approval = db.approvals.get(parsed.data.approvalId);
+  const approval = await getApproval(parsed.data.approvalId);
   if (!approval) return noStore(NextResponse.json({ error: "approval_not_found" }, { status: 404 }));
 
   try {
@@ -31,6 +31,9 @@ export async function POST(req: Request): Promise<Response> {
     } else {
       exec = await startExecution(approval, DEMO_ORG);
     }
+    // Usage unique : l'accord consommé (usedAt) est réécrit avant toute réponse.
+    await putApproval(approval);
+    await putExecution(exec);
     return noStore(NextResponse.json(publicView(exec)));
   } catch (err) {
     const message = err instanceof Error ? err.message : "erreur";

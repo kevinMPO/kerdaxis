@@ -37,7 +37,7 @@ import {
   type HaiEvent,
 } from "./hcompany";
 import { getSupplier, reachableByAgent, readSupplierState, supplierLoginUrl, type Supplier } from "./suppliers";
-import { appendEvent, db, TERMINAL_STATUSES, type Execution } from "./store";
+import { appendEvent, TERMINAL_STATUSES, type Execution } from "./store";
 
 export interface Playbook {
   finalStepPath: string;
@@ -128,7 +128,6 @@ export async function startExecution(approval: Approval, orgId: string): Promise
     updatedAt: now,
     events: [],
   };
-  db.executions.set(exec.id, exec);
   appendEvent(exec, {
     kind: "approval",
     message: `Accord ${approval.channel === "voice" ? "vocal confirmé" : "donné"} pour résilier ${approval.params.plan} (${approval.params.vendor}) · empreinte ${approval.actionHash.slice(0, 12)}…`,
@@ -295,11 +294,10 @@ const H_TERMINAL = new Set(["completed", "failed", "timed_out", "interrupted"]);
 /** Fait avancer l'exécution : lit les nouveautés H, applique la politique, conclut. */
 export async function advanceExecution(exec: Execution, waitForSeconds = 5): Promise<Execution> {
   if (TERMINAL_STATUSES.has(exec.status) || !exec.sessionId) return exec;
-  if (db.advancing.has(exec.id)) return exec;
+  // Verrou : pris par l'appelant (`withExecution`), une avance à la fois.
   const supplier = getSupplier(exec.params.supplierId);
   if (!supplier) return exec;
-  db.advancing.add(exec.id);
-  try {
+  {
     let changes = await getChanges(exec.sessionId, exec.fromIndex, waitForSeconds);
     if (!changes) {
       // 204 : rien de nouveau. Une session terminée ne renvoie plus d'événement :
@@ -380,8 +378,6 @@ export async function advanceExecution(exec: Execution, waitForSeconds = 5): Pro
       if (!H_TERMINAL.has(changes.status)) await cancelSession(exec.sessionId).catch(() => undefined);
     }
     return exec;
-  } finally {
-    db.advancing.delete(exec.id);
   }
 }
 
