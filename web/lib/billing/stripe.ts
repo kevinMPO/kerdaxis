@@ -29,7 +29,8 @@ function form(params: Record<string, string | number | undefined>): string {
   return b.toString();
 }
 
-async function call<T>(method: "GET" | "POST", path: string, params?: Record<string, string | number | undefined>, idem?: string): Promise<T> {
+/** Appel REST Stripe avec la garde mode test. Partagé avec le fournisseur de démo « portail Stripe ». */
+export async function call<T>(method: "GET" | "POST", path: string, params?: Record<string, string | number | undefined>, idem?: string): Promise<T> {
   const key = stripeKey();
   if (!key) throw new Error("stripe_not_configured");
   const qs = method === "GET" && params ? `?${form(params)}` : "";

@@ -10,7 +10,7 @@
 
 import type { Approval, ActionParams } from "./policy";
 import type { ToolCall } from "./hcompany";
-import type { SupplierState } from "./suppliers";
+import type { SupplierState, SupplierTarget } from "./suppliers";
 
 /** Statuts du PRD Kerdaxis (§4.5), + `running` et `stopped_by_user` pour l'affichage. */
 export type ExecutionStatus =
@@ -36,6 +36,21 @@ export interface ExecutionEvent {
   message: string;
   url?: string;
   screenshot?: string;
+}
+
+/** Le parcours remis à l'agent, et d'où il vient. Visible dans le panneau d'exécution. */
+export interface PlaybookView {
+  source: "catalog" | "research";
+  /** Nom recherché (l'interface que l'agent verra). */
+  merchant: string | null;
+  officialDocUrl: string | null;
+  steps: string[];
+  finalButtonLabel: string;
+  retentionTraps: string[];
+  screenshots: { read: number; sent: number; steps: string[] } | null;
+  video: { title: string; url: string; steps: string[] } | null;
+  /** Recherche en échec : l'agent suit la consigne générique du catalogue. */
+  fallbackReason: string | null;
 }
 
 export interface Execution {
@@ -69,6 +84,9 @@ export interface Execution {
   events: ExecutionEvent[];
   /** Essai gratuit : rediffusion d'une session réelle enregistrée (aucun appel H Company). */
   replay?: { startedMs: number; goMs: number | null; shown: number };
+  playbook?: PlaybookView | null;
+  /** Ce que l'exécution a créé chez le fournisseur (abonnement de test Stripe), pour la preuve. */
+  target?: SupplierTarget | null;
 }
 
 interface Db {
@@ -116,6 +134,7 @@ export function publicView(exec: Execution) {
     createdAt: exec.createdAt,
     updatedAt: exec.updatedAt,
     replay: Boolean(exec.replay),
+    playbook: exec.playbook ?? null,
     events: exec.events.slice(-40).map(({ screenshot: _s, ...rest }) => rest),
   };
 }

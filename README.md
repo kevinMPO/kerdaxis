@@ -20,6 +20,7 @@ supplier's portal shows the confirmation number.
 - [What happens in a run](#what-happens-in-a-run)
 - [The final-click gate](#the-final-click-gate)
 - [A real recorded run](#a-real-recorded-run)
+- [Real suppliers: researched playbooks and the Stripe portal](#real-suppliers-researched-playbooks-and-the-stripe-portal)
 - [Access: free trial, subscription, jury](#access-free-trial-subscription-jury)
 - [Architecture](#architecture)
 - [Run it locally](#run-it-locally)
@@ -49,7 +50,7 @@ The irreversible click is guarded by three independent layers. Any one of them i
 | Layer | Where | What it does |
 |---|---|---|
 | 1. Two-turn mission | `web/lib/execution/runner.ts` | The agent's first task ends *at* the final page. Its instructions forbid ticking the final box or clicking the final button unless a message says `APPROVED`. |
-| 2. Watchdog pause | `runner.ts` + `suppliers.ts` (`finalStepPath: /cancel/confirm`) | As soon as the agent's browser reaches the confirmation page, Kerdaxis pauses the H session. |
+| 2. Watchdog pause | `runner.ts` + `suppliers.ts` (`finalStepPath`: `/cancel/confirm` on Nuvio, a URL pattern on the Stripe portal) | As soon as the agent's browser reaches the confirmation page, Kerdaxis pauses the H session. |
 | 3. UI-only approval | `app/api/execution/[id]/final` | The `APPROVED` message is sent only after a click in the interface (`channel: "ui"`). Voice cannot send it. |
 
 Before any of this, the human approval is bound to one exact action. A SHA-256 hash covers supplier, plan, account and amount. It is single use and valid for 10 minutes (`web/lib/execution/policy.ts`). The browser only picks a supplier; amounts come from the server catalogue.
@@ -69,6 +70,47 @@ H Company session `192149b8-…`, 7 Nov 2026, 18:43:07–18:44:00 (Paris), Engli
 | Result | `supplier_confirmed` · **NUV-RW3L2Y**, identical on the agent and the portal side |
 
 The 10 captures of this run are in `web/public/replay/`. They also drive the free-trial replay (see below).
+
+## Real suppliers: researched playbooks and the Stripe portal
+
+Nuvio's path is written by hand in `suppliers.ts`. That does not scale to real suppliers, whose
+interfaces Kerdaxis did not build. So each supplier says where its path comes from:
+
+| Supplier | Interface the agent drives | Where the agent's path comes from | Proof |
+|---|---|---|---|
+| Nuvio CRM (fictional) | Our portal, `portal.kerdaxis.com` | Kerdaxis catalog entry | Portal API, same confirmation number as the agent |
+| Lumen Analytics (fictional, billed by Stripe test mode) | **Stripe's real hosted customer portal**, `billing.stripe.com` | **Researched** in Stripe's official docs | **Stripe API**: the subscription's real status |
+
+The research (`web/lib/execution/research/`) runs before the H session and is logged in the run panel:
+
+1. **Linkup** reads the official help article and returns the path click by click, with exact button labels,
+   the final button and the retention traps. Only the name of the interface leaves (checked by `assertNoPii`).
+2. In parallel, an **H Company agent reads the article's screenshots**. Linkup's `/fetch` lists the images, logos and
+   icons are filtered out, and the screenshots go to an H agent with no browser, two per session (H only keeps
+   the last two images of a message in view). It returns the labels shown in the screenshots, which often
+   are not written anywhere in the text.
+3. Optionally, **Gladia listens to a video tutorial** found by Linkup and its audio-to-LLM step lists the steps.
+   Off for the Stripe portal: those videos show the merchant dashboard, not the subscriber's portal.
+
+The agent gets all of it as a map, with the rule "the screen is the truth". If the research fails or takes
+more than 150 s, the agent starts with a generic instruction instead: research never blocks a cancellation.
+Results are cached in `web/data/research/`.
+
+First real run, 7 Nov 2026 (H Company session on `billing.stripe.com`, Stripe test mode):
+
+| | |
+|---|---|
+| Research | Linkup found Stripe's official cancellation page in ~60 s (cached after that) |
+| Approval → supplier proof | 124 s in total, including the research |
+| Agent steps | 9, $0.030 (H Company total) |
+| Final-click gate | Paused on `…/subscriptions/sub_…/cancel`. On Stripe the reason survey, the review page and the final button share that URL, so the pause comes one step early, never late |
+| Result | `supplier_confirmed`: the Stripe API shows the subscription `canceled`. The portal shows no confirmation number, so the subscription id is the reference |
+
+For Lumen, every run creates a fresh Stripe test customer and subscription, then opens their portal session
+for the agent (`web/lib/execution/stripe-portal.ts`). Portal URLs carry a session token, so the run log keeps
+only the origin and path of every page the agent visits. H's cloud browser reaches `billing.stripe.com` without a
+tunnel, so this supplier runs live even when the Nuvio portal is local. Lumen is in the demo data as an
+inactive lever, so the demo totals do not change; open its card and choose *Cancel with H Company*.
 
 ## Access: free trial, subscription, jury
 
@@ -194,7 +236,8 @@ This is a hackathon build. Here is what that means today:
 
 - **The app runs on the demo laptop**, exposed through a Cloudflare Tunnel. If the laptop sleeps, `app.kerdaxis.com` is down. The site and the portal are on Cloudflare and stay up.
 - **Storage is local.** Executions live in process memory, and accounts and trial emails are JSON files in `web/data/`. The target is Cloudflare D1, with the interface already in `web/lib/db/tenant.ts`.
-- **One supplier.** Only the fictional Nuvio CRM portal is wired. Real suppliers need a per-supplier playbook (start page, final step, how to read state).
+- **Two suppliers.** Nuvio (our portal) and Lumen (Stripe's real portal, test mode). The research layer finds the path for any supplier, but sites that need the customer to sign in still need a login hand-off, which is not built yet.
+- **Watchdog on unknown sites.** Layer 2 needs the final page's URL. For a researched supplier without a known URL, layers 1 and 3 and the supplier-side proof still apply.
 - **Only Qonto is connected.** Sage, Pennylane and SaaS/CRM tools are shown as "coming", not live.
 - **Stripe is in test mode.** No real money moves.
 

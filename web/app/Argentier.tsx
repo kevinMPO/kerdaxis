@@ -1195,13 +1195,13 @@ export default function Argentier() {
                     es: "Tú decides: el agente espera tu visto bueno antes de confirmar.",
                     it: "Decidi tu: l'agente attende il tuo via prima di confermare.",
                   })
-                : execSuppliers.length
+                : execSuppliers.length && !(letterFor.id === "nuvio" && execPortalLocal)
                   ? L({
-                      fr: "Pas encore pris en charge pour ce fournisseur (démo : Nuvio CRM).",
-                      en: "Not yet supported for this supplier (demo: Nuvio CRM).",
-                      de: "Für diesen Anbieter noch nicht verfügbar (Demo: Nuvio CRM).",
-                      es: "Aún no disponible para este proveedor (demo: Nuvio CRM).",
-                      it: "Non ancora disponibile per questo fornitore (demo: Nuvio CRM).",
+                      fr: "Pas encore pris en charge pour ce fournisseur (démo : Nuvio CRM, Lumen Analytics).",
+                      en: "Not yet supported for this supplier (demo: Nuvio CRM, Lumen Analytics).",
+                      de: "Für diesen Anbieter noch nicht verfügbar (Demo: Nuvio CRM, Lumen Analytics).",
+                      es: "Aún no disponible para este proveedor (demo: Nuvio CRM, Lumen Analytics).",
+                      it: "Non ancora disponibile per questo fornitore (demo: Nuvio CRM, Lumen Analytics).",
                     })
                   : execPortalLocal
                     ? L({
