@@ -1,0 +1,50 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f6f7fb; font-family: "Inter", sans-serif; }
+    #w-stage { position: absolute; inset: 0; }
+    .w-img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; opacity: 0; }
+    #w-tag { position: absolute; left: 560px; top: 820px; width: 800px; height: 150px; border-radius: 30px;
+      background: #080d13; color: #b4f768; }
+    #w-sym { position: absolute; left: 44px; top: 22px; font-weight: 900; font-size: 92px; line-height: 106px; letter-spacing: -0.12em; }
+    #w-clock { position: absolute; left: 200px; top: 30px; font-family: "JetBrains Mono", monospace; font-weight: 600;
+      font-size: 80px; line-height: 92px; color: #eef8f5; white-space: nowrap; }
+    #w-x { position: absolute; right: 44px; top: 42px; font-weight: 900; font-size: 60px; line-height: 70px; white-space: nowrap; }
+    #w-dip { position: absolute; inset: 0; background: #080d13; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="rewind" data-width="1920" data-height="1080">
+    <div id="w-stage">
+        <img id="w0" class="w-img" src="assets/shots/obs-10-184357-done.png" alt="Recorded agent screen 18:43:57" />
+        <img id="w1" class="w-img" src="assets/shots/obs-09-184354-confirm-checked.png" alt="Recorded agent screen 18:43:54" />
+        <img id="w2" class="w-img" src="assets/shots/obs-08-184349-confirm-resumed.png" alt="Recorded agent screen 18:43:49" />
+        <img id="w3" class="w-img" src="assets/shots/obs-07-184340-confirm-paused.png" alt="Recorded agent screen 18:43:40" />
+        <img id="w4" class="w-img" src="assets/shots/obs-06-184336-offer.png" alt="Recorded agent screen 18:43:36" />
+        <img id="w5" class="w-img" src="assets/shots/obs-05-184331-reason.png" alt="Recorded agent screen 18:43:31" />
+        <img id="w6" class="w-img" src="assets/shots/obs-04-184328-reason-empty.png" alt="Recorded agent screen 18:43:28" />
+        <img id="w7" class="w-img" src="assets/shots/obs-03-184324-subscription.png" alt="Recorded agent screen 18:43:24" />
+        <img id="w8" class="w-img" src="assets/shots/obs-02-184320-billing.png" alt="Recorded agent screen 18:43:20" />
+        <img id="w9" class="w-img" src="assets/shots/obs-01-184315-account.png" alt="Recorded agent screen 18:43:15" />
+    </div>
+    <div id="w-tag"><div id="w-sym">◀◀</div><div id="w-clock">18:43:57</div><div id="w-x">×12</div></div>
+    <div id="w-dip"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#w-stage", { x: -220, filter: "blur(14px)" }, { x: 0, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 0);
+      tl.set("#w0", { opacity: 1 }, 0.040); tl.set("#w-clock", { textContent: "18:43:57" }, 0.040);
+      tl.set("#w1", { opacity: 1 }, 0.155); tl.set("#w-clock", { textContent: "18:43:54" }, 0.155); tl.set("#w0", { opacity: 0 }, 0.155);
+      tl.set("#w2", { opacity: 1 }, 0.270); tl.set("#w-clock", { textContent: "18:43:49" }, 0.270); tl.set("#w1", { opacity: 0 }, 0.270);
+      tl.set("#w3", { opacity: 1 }, 0.385); tl.set("#w-clock", { textContent: "18:43:40" }, 0.385); tl.set("#w2", { opacity: 0 }, 0.385);
+      tl.set("#w4", { opacity: 1 }, 0.500); tl.set("#w-clock", { textContent: "18:43:36" }, 0.500); tl.set("#w3", { opacity: 0 }, 0.500);
+      tl.set("#w5", { opacity: 1 }, 0.615); tl.set("#w-clock", { textContent: "18:43:31" }, 0.615); tl.set("#w4", { opacity: 0 }, 0.615);
+      tl.set("#w6", { opacity: 1 }, 0.730); tl.set("#w-clock", { textContent: "18:43:28" }, 0.730); tl.set("#w5", { opacity: 0 }, 0.730);
+      tl.set("#w7", { opacity: 1 }, 0.845); tl.set("#w-clock", { textContent: "18:43:24" }, 0.845); tl.set("#w6", { opacity: 0 }, 0.845);
+      tl.set("#w8", { opacity: 1 }, 0.960); tl.set("#w-clock", { textContent: "18:43:20" }, 0.960); tl.set("#w7", { opacity: 0 }, 0.960);
+      tl.set("#w9", { opacity: 1 }, 1.075); tl.set("#w-clock", { textContent: "18:43:15" }, 1.075); tl.set("#w8", { opacity: 0 }, 1.075);
+      tl.fromTo("#w-tag", { opacity: 0, scale: 1.2, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.18, ease: "expo.out" }, 0.05);
+      // Dip cut into the pain scene.
+      tl.to("#w-dip", { opacity: 0.45, duration: 0.1, ease: "none" }, 1.33);
+      window.__timelines["rewind"] = tl;
+    })();
+  </script>
+</template>

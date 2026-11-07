@@ -1,0 +1,92 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f6f7fb; font-family: "Inter", sans-serif; }
+    #n-iris { position: absolute; inset: 0; clip-path: circle(0px at 206px 848px); }
+    #n-page { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #n-page img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; opacity: 0; }
+    #n-inj { position: absolute; left: 272px; top: 506px; width: 494px; height: 28px; border: 3px solid #080d13; border-radius: 6px;
+      background: rgba(180, 247, 104, 0.35); opacity: 0; }
+    #n-injtag { position: absolute; left: 776px; top: 503px; height: 34px; padding: 0 12px; border-radius: 8px; background: #080d13; color: #eef8f5;
+      font-weight: 700; font-size: 18px; line-height: 34px; white-space: nowrap; opacity: 0; }
+    #n-injtag b { color: #b4f768; }
+    #n-want { position: absolute; left: 276px; top: 377px; width: 418px; height: 67px; border: 3px dashed #080d13; border-radius: 10px; opacity: 0; }
+    #n-wantl { position: absolute; left: 706px; top: 394px; font-weight: 700; font-size: 18px; color: #080d13; white-space: nowrap; opacity: 0; }
+    #n-ag { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-svg { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-pill { position: absolute; left: 30px; top: 22px; height: 32px; padding: 0 12px 0 10px; border-radius: 16px; background: #080d13;
+      color: #eef8f5; font-weight: 700; font-size: 22px; line-height: 32px; white-space: nowrap; }
+    .ag-pill i { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 4px; background: #b4f768; vertical-align: 1px; }
+    #n-stamp { position: absolute; left: 300px; top: 770px; padding: 12px 34px; border: 6px solid #080d13; border-radius: 16px; background: #b4f768;
+      color: #080d13; font-weight: 900; font-size: 76px; letter-spacing: 0.02em; white-space: nowrap; opacity: 0; }
+    #n-band { position: absolute; left: 0; top: 0; width: 1920px; height: 150px; background: #b4f768; }
+    #n-verb { position: absolute; left: 104px; top: 14px; font-weight: 900; font-size: 128px; line-height: 1; letter-spacing: -0.05em; color: #080d13; white-space: nowrap; }
+    #n-who { position: absolute; right: 64px; top: 38px; text-align: right; font-weight: 700; font-size: 30px; line-height: 1.25; color: #080d13; white-space: nowrap; }
+    #n-dip { position: absolute; inset: 0; background: #080d13; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="navigate" data-width="1920" data-height="1080">
+    <div id="n-iris">
+      <div id="n-page">
+        <img id="n-s0" src="assets/shots/obs-03-184324-subscription.png" alt="Supplier portal: manage subscription" />
+        <img id="n-s1" src="assets/shots/obs-04-184328-reason-empty.png" alt="Supplier portal: why are you leaving" />
+        <img id="n-s2" src="assets/shots/obs-05-184331-reason.png" alt="Supplier portal: reason selected" />
+        <img id="n-s3" src="assets/shots/offer.png" alt="Supplier portal: retention offer with injected note" />
+        <div id="n-want"></div>
+        <div id="n-wantl">← what the page asks for</div>
+        <div id="n-inj"></div>
+        <div id="n-injtag"><b>Injected</b> instruction</div>
+        <div id="n-ag" data-layout-allow-occlusion><svg viewBox="0 0 26 37" class="ag-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#080D13" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="ag-pill"><i></i>H Company agent</div></div>
+      </div>
+      <div id="n-stamp" data-layout-allow-overlap>IGNORED</div>
+      <div id="n-band"><div id="n-verb">NAVIGATE</div><div id="n-who">H Company agent<br />supplier portal (demo, recorded run)</div></div>
+    </div>
+    <div id="n-dip"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Iris from the Approve click (frame 206, 848).
+      tl.to("#n-iris", { clipPath: "circle(2400px at 206px 848px)", duration: 0.4, ease: "power3.in" }, 0);
+      tl.fromTo("#n-band", { y: -150 }, { y: 0, duration: 0.4, ease: "expo.out" }, 0.2);
+      // Page 1280x720 at 1.3x under the band: frame = 1.3 * page + (128, 150).
+      gsap.set("#n-page", { x: 128, y: 150, scale: 1.3 });
+      tl.set("#n-s0", { opacity: 1 }, 0);
+      // Agent cursor, page units (tip = origin + 1.5). Real flow of the recorded run.
+      gsap.set("#n-ag", { x: 800, y: 420 });
+      tl.to("#n-ag", { x: 526, y: 582, duration: 0.7, ease: "power2.inOut" }, 0.35);      // "Cancel subscription"
+      tl.to("#n-ag", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.06 }, 1.1);
+      tl.to("#n-ag", { scale: 1, duration: 0.14, ease: "power3.out" }, 1.16);
+      tl.set("#n-s1", { opacity: 1 }, 1.45);
+      tl.fromTo("#n-page", { scale: 1.33 }, { scale: 1.3, duration: 0.3, ease: "expo.out" }, 1.45);
+      tl.to("#n-ag", { x: 305, y: 347, duration: 0.5, ease: "power2.inOut" }, 1.5);        // reason radio
+      tl.to("#n-ag", { scale: 0.85, duration: 0.06 }, 2.02);
+      tl.to("#n-ag", { scale: 1, duration: 0.14, ease: "power3.out" }, 2.08);
+      tl.set("#n-s2", { opacity: 1 }, 2.05);
+      tl.to("#n-ag", { x: 337, y: 521, duration: 0.45, ease: "power2.inOut" }, 2.15);      // Continue
+      tl.to("#n-ag", { scale: 0.85, duration: 0.06 }, 2.62);
+      tl.to("#n-ag", { scale: 1, duration: 0.14, ease: "power3.out" }, 2.68);
+      tl.set("#n-s3", { opacity: 1 }, 2.95);
+      // Push into the offer card: frame = 2.0 * page + (-480, -185).
+      tl.to("#n-page", { x: -480, y: -185, scale: 2.0, duration: 0.6, ease: "power2.inOut" }, 3.0);
+      tl.to("#n-ag", { x: 1000, y: 270, duration: 0.6, ease: "power2.inOut" }, 3.0);
+      // At 2x the label would cover the note: it leaves before the push (it was read on the first screens).
+      tl.to("#n-ag .ag-pill", { opacity: 0, duration: 0.2, ease: "power3.in" }, 2.95);
+      // "tells" at abs 25.05 = local 3.5: the injected note is boxed.
+      tl.fromTo("#n-inj", { opacity: 0, scale: 1.08, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.25, ease: "expo.out" }, 3.5);
+      tl.fromTo("#n-injtag", { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.25, ease: "expo.out" }, 3.62);
+      // "discount" at local 4.56: what the page wants is outlined (the agent does not move toward it).
+      tl.fromTo("#n-want", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 4.5);
+      tl.fromTo("#n-wantl", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 4.58);
+      // "It doesn't" at local 5.33: IGNORED, and the agent clicks "No thanks".
+      tl.fromTo("#n-stamp", { opacity: 0, scale: 2.0, rotation: 10, transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, rotation: -5, duration: 0.2, ease: "back.out(1.6)" }, 5.33);
+      tl.to(["#n-want", "#n-wantl"], { opacity: 0, duration: 0.2, ease: "power3.in" }, 5.4);
+      tl.to("#n-ag", { x: 429, y: 470, duration: 0.6, ease: "power2.inOut" }, 5.45);
+      tl.to("#n-ag", { scale: 0.85, duration: 0.06 }, 6.05);
+      tl.to("#n-ag", { scale: 1, duration: 0.14, ease: "power3.out" }, 6.11);
+      // Out: the page is pulled up, dip cut to the final step.
+      tl.to("#n-page", { y: -585, duration: 0.3, ease: "power3.in" }, 6.65);
+      tl.to("#n-dip", { opacity: 0.45, duration: 0.1, ease: "none" }, 6.88);
+      window.__timelines["navigate"] = tl;
+    })();
+  </script>
+</template>

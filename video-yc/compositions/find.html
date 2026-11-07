@@ -1,0 +1,56 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    #f-stage { position: absolute; inset: 0; }
+    .verb { position: absolute; left: 104px; top: 96px; font-weight: 900; font-size: 300px; line-height: 0.9; letter-spacing: -0.06em; white-space: nowrap; color: #b4f768; }
+    .sub { position: absolute; left: 116px; font-weight: 700; font-size: 64px; line-height: 1.12; letter-spacing: -0.03em; white-space: nowrap; }
+    .sub span { display: inline-block; }
+    #f-sub1 { top: 420px; } #f-sub2 { top: 494px; }
+    #f-card { position: absolute; left: 960px; top: 130px; width: 860px; height: 820px; border-radius: 32px; background: #ffffff; color: #17140f; }
+    #f-head { position: absolute; left: 48px; top: 40px; font-weight: 700; font-size: 32px; color: #5b554c; white-space: nowrap; }
+    .lv { position: absolute; left: 32px; width: 796px; height: 150px; border-radius: 22px; border: 2px solid #e4e0d6; background: #ffffff; }
+    #lv0 { top: 110px; } #lv1 { top: 280px; } #lv2 { top: 450px; } #lv3 { top: 620px; }
+    .lv .nm { position: absolute; left: 32px; top: 26px; font-weight: 900; font-size: 46px; letter-spacing: -0.02em; white-space: nowrap; }
+    .lv .sb { position: absolute; left: 32px; top: 90px; font-weight: 700; font-size: 30px; color: #5b554c; white-space: nowrap; }
+    .lv .am { position: absolute; right: 30px; top: 46px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 44px; white-space: nowrap; }
+    #f-tag { position: absolute; left: 1290px; top: 292px; padding: 8px 20px; border-radius: 14px; background: #080d13; color: #b4f768;
+      font-weight: 900; font-size: 32px; letter-spacing: 0.06em; white-space: nowrap; opacity: 0; }
+    #f-demo { position: absolute; left: 964px; top: 980px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="find" data-width="1920" data-height="1080">
+    <div id="f-stage">
+      <div id="f-verb" class="verb">FIND</div>
+      <div id="f-sub1" class="sub"><span>the</span> <span>one</span> <span>nobody</span></div>
+      <div id="f-sub2" class="sub"><span>opens</span> <span>anymore.</span></div>
+      <div id="f-card">
+        <div id="f-head">Recurring spend · last 90 days</div>
+          <div id="lv0" class="lv"><div class="nm">Nuvio CRM</div><div class="sb">no login in 90 days</div><div class="am">129 €/mo</div></div>
+          <div id="lv1" class="lv"><div class="nm">Instantly</div><div class="sb">1 workspace only</div><div class="am">86 €/mo</div></div>
+          <div id="lv2" class="lv"><div class="nm">ChatGPT</div><div class="sb">Claude only</div><div class="am">84 €/mo</div></div>
+          <div id="lv3" class="lv"><div class="nm">Waalaxy</div><div class="sb">Apollo + Instantly</div><div class="am">51 €/mo</div></div>
+      </div>
+      <div id="f-tag" data-layout-allow-overlap>UNUSED</div>
+      <div id="f-demo">Demo data · Acme Conseil SAS (fictional)</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Whip in from the right (READ left to the left).
+      tl.fromTo("#f-stage", { x: 1920, filter: "blur(20px)" }, { x: 0, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, 0);
+      tl.fromTo("#f-sub1 span, #f-sub2 span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: 0.07, ease: "power4.out" }, 0.3);
+      tl.fromTo(".lv", { opacity: 0, y: 30, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.3, stagger: 0.07, ease: "expo.out" }, 0.25);
+      // "nobody" spoken at abs 17.09 = local 1.54: the unused one lifts out, the others step back.
+      tl.to(["#lv1", "#lv2", "#lv3"], { opacity: 0.28, duration: 0.3, ease: "power2.out" }, 1.5);
+      tl.to("#lv0", { scale: 1.06, borderColor: "#080d13", borderWidth: 4, backgroundColor: "#eaffd2", duration: 0.3, ease: "back.out(1.6)", transformOrigin: "50% 50%" }, 1.5);
+      tl.fromTo("#f-tag", { opacity: 0, scale: 0.5, rotation: -8, transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, rotation: 3, duration: 0.28, ease: "back.out(1.6)" }, 1.6);
+      // Zoom through the Nuvio row: its fill turns lime and becomes the APPROVE world.
+      tl.to(["#f-verb", "#f-sub1", "#f-sub2", "#f-head", "#lv1", "#lv2", "#lv3", "#f-tag", "#f-demo", "#lv0 .nm", "#lv0 .sb", "#lv0 .am"],
+        { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, 2.5);
+      tl.to("#f-card", { backgroundColor: "#080d13", duration: 0.2, ease: "none" }, 2.5);
+      tl.to("#lv0", { scale: 14, backgroundColor: "#b4f768", borderColor: "#b4f768", duration: 0.45, ease: "power3.in" }, 2.55);
+      window.__timelines["find"] = tl;
+    })();
+  </script>
+</template>
