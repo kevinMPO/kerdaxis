@@ -1,0 +1,51 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #b4f768; font-family: "Inter", sans-serif; color: #080d13; }
+    #rd-stage { position: absolute; inset: 0; }
+    .verb { position: absolute; left: 104px; top: 96px; font-weight: 900; font-size: 300px; line-height: 0.9; letter-spacing: -0.06em; white-space: nowrap; }
+    .sub { position: absolute; left: 116px; font-weight: 700; font-size: 64px; line-height: 1.1; letter-spacing: -0.03em; white-space: nowrap; }
+    .sub span { display: inline-block; }
+    #rd-sub { top: 420px; }
+    #rd-card { position: absolute; left: 960px; top: 150px; width: 860px; height: 720px; border-radius: 32px; background: #080d13; }
+    .row { position: absolute; left: 48px; width: 764px; height: 200px; border-bottom: 2px solid #26343d; }
+    #row0 { top: 40px; } #row1 { top: 260px; } #row2 { top: 480px; border-bottom: 0; }
+    .row .nm { position: absolute; left: 0; top: 34px; font-weight: 900; font-size: 58px; letter-spacing: -0.03em; color: #eef8f5; white-space: nowrap; }
+    .row .sb { position: absolute; left: 0; top: 112px; font-weight: 700; font-size: 36px; color: #a3b4b9; white-space: nowrap; }
+    .row .chip { position: absolute; right: 0; top: 44px; height: 56px; padding: 0 22px; border-radius: 28px; font-weight: 900; font-size: 30px;
+      line-height: 52px; letter-spacing: 0.06em; white-space: nowrap; border: 2px solid #3a4a54; color: #a3b4b9; }
+    .row .chip.live { border-color: #66e6be; color: #66e6be; }
+    #rd-badge { position: absolute; left: 1490px; top: 330px; padding: 14px 26px; border-radius: 18px; background: #b4f768; color: #080d13;
+      font-weight: 900; font-size: 42px; letter-spacing: 0.02em; white-space: nowrap; border: 5px solid #080d13; opacity: 0; }
+    #rd-note { position: absolute; left: 964px; top: 900px; font-weight: 700; font-size: 30px; color: #2a3a14; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="read" data-width="1920" data-height="1080">
+    <div id="rd-stage">
+      <div id="rd-verb" class="verb">READ</div>
+      <div id="rd-sub" class="sub"><span>your</span> <span>bank</span> <span>account.</span></div>
+      <div id="rd-card">
+        <div id="row0" class="row"><div class="nm">Bank</div><div class="sb">Qonto</div><div class="chip live">LIVE</div></div>
+        <div id="row1" class="row"><div class="nm">Accounting &amp; ERP</div><div class="sb">Sage · Pennylane</div><div class="chip">NEXT</div></div>
+        <div id="row2" class="row"><div class="nm">SaaS &amp; CRM tools</div><div class="sb">subscriptions · seats</div><div class="chip">NEXT</div></div>
+      </div>
+      <div id="rd-badge" data-layout-allow-overlap>🔒 READ-ONLY</div>
+      <div id="rd-note">Today only the bank (Qonto) is connected.</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#rd-verb", { opacity: 0, scale: 1.25, filter: "blur(10px)", transformOrigin: "0% 0%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 0);
+      tl.fromTo("#rd-sub span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: 0.07, ease: "power4.out" }, 0.3);
+      tl.fromTo("#rd-card", { opacity: 0, x: 120, filter: "blur(12px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 0.15);
+      tl.fromTo(".row", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, stagger: 0.08, ease: "power4.out" }, 0.4);
+      tl.fromTo("#rd-note", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 0.8);
+      // "Read-only" spoken at abs 14.43 = local 2.38.
+      tl.fromTo("#rd-badge", { opacity: 0, scale: 0.5, rotation: 8, transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, rotation: -4, duration: 0.3, ease: "back.out(1.6)" }, 2.36);
+      // Whip left into FIND.
+      tl.to("#rd-stage", { x: -1920, filter: "blur(20px)", duration: 0.25, ease: "power3.in" }, 3.25);
+      window.__timelines["read"] = tl;
+    })();
+  </script>
+</template>

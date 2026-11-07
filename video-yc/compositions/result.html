@@ -1,0 +1,48 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f6f7fb; font-family: "Inter", sans-serif; }
+    #r-stage { position: absolute; inset: 0; }
+    #r-page { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #r-page img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; }
+    #r-stamp { position: absolute; left: 130px; top: 880px; padding: 18px 34px; border: 6px solid #080d13;
+      border-radius: 18px; background: #b4f768; color: #080d13; font-weight: 900; font-size: 58px;
+      letter-spacing: -0.02em; white-space: nowrap; opacity: 0; }
+    #r-panel { position: absolute; left: 1180px; top: 0; width: 740px; height: 1080px; background: #b4f768; }
+    #r-count { position: absolute; left: 70px; top: 300px; font-family: "JetBrains Mono", monospace; font-weight: 600;
+      font-size: 230px; line-height: 1; letter-spacing: -0.06em; color: #080d13; white-space: nowrap; }
+    #r-cap { position: absolute; left: 76px; top: 570px; width: 600px; font-weight: 700; font-size: 44px; line-height: 1.2;
+      color: #080d13; }
+    #r-src { position: absolute; left: 76px; top: 900px; font-weight: 700; font-size: 28px; color: #2a3a14; white-space: nowrap; }
+    #r-cap { opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="result" data-width="1920" data-height="1080">
+    <div id="r-stage">
+      <div id="r-page"><img id="r-img" src="assets/shots/done.png" alt="Supplier portal: cancellation confirmed" /></div>
+      <div id="r-stamp" data-layout-allow-overlap>✓ SUPPLIER-CONFIRMED</div>
+      <div id="r-panel" data-layout-allow-overflow>
+        <div id="r-count" data-var-text="count">0:00</div>
+        <div id="r-cap">start to confirmed</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Page 1280x720 -> frame: frame = 2.0 * page + (-480, -120). The confirmation card fills the frame.
+      tl.fromTo("#r-page", { x: -560, y: -230, scale: 2.3 }, { x: -480, y: -120, scale: 2.0, duration: 0.7, ease: "expo.out" }, 0);
+      tl.fromTo("#r-stamp", { opacity: 0, scale: 2.0, rotation: -14, transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, rotation: -6, duration: 0.2, ease: "back.out(1.6)" }, 0.545);
+      gsap.set("#r-panel", { x: 760 });
+      tl.to("#r-panel", { x: 0, duration: 0.45, ease: "expo.out" }, 2.85);
+      const c = { v: 0 };
+      tl.to(c, { v: 45, duration: 0.5, ease: "power2.out", onUpdate: () => {
+        const n = Math.round(c.v);
+        document.querySelector("#r-count").textContent = "0:" + String(n).padStart(2, "0");
+      } }, 3.045);
+      tl.fromTo("#r-cap", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 3.0);
+      // Rewind: the whole frame is dragged right, smearing.
+      tl.to("#r-stage", { x: 260, filter: "blur(16px)", duration: 0.26, ease: "power3.in" }, 4.34);
+      window.__timelines["result"] = tl;
+    })();
+  </script>
+</template>

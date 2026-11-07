@@ -1,0 +1,58 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    .p-line { position: absolute; left: 120px; font-weight: 900; letter-spacing: -0.05em; white-space: nowrap; line-height: 1; }
+    .p-line span { display: inline-block; opacity: 0; }
+    .lime { color: #b4f768; }
+    #p-l1 { top: 150px; font-size: 150px; }
+    #p-grid { position: absolute; left: 124px; top: 400px; width: 1080px; display: flex; flex-wrap: wrap; gap: 12px; }
+    .p-sq { display: block; width: 48px; height: 48px; border-radius: 10px; background: #111a22; border: 2px solid #26343d; opacity: 0; }
+    #p-log { position: absolute; left: 124px; top: 760px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 56px;
+      color: #a3b4b9; white-space: nowrap; opacity: 0; }
+    #p-log b { color: #eef8f5; }
+    #p-l2 { top: 210px; font-size: 96px; color: #a3b4b9; letter-spacing: -0.04em; }
+    #p-num { position: absolute; left: 110px; top: 370px; font-weight: 900; font-size: 420px; line-height: 1; letter-spacing: -0.06em;
+      color: #b4f768; white-space: nowrap; opacity: 0; }
+    #p-per { position: absolute; left: 1210px; top: 600px; font-weight: 900; font-size: 120px; letter-spacing: -0.05em; white-space: nowrap; opacity: 0; }
+    #p-demo { position: absolute; left: 124px; top: 930px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; opacity: 0; }
+    #p-flood { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: #b4f768; }
+  </style>
+  <div id="root" data-composition-id="pain" data-width="1920" data-height="1080">
+    <div id="p-l1" class="p-line"><span>No</span> <span>login</span> <span>in</span> <span class="lime">90</span> <span class="lime">days.</span></div>
+    <div id="p-grid"><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i><i class="p-sq"></i></div>
+    <div id="p-log">logins: <b>0</b></div>
+    <div id="p-l2" class="p-line"><span>Still</span> <span>paying</span></div>
+    <div id="p-num">€0</div>
+    <div id="p-per">/month</div>
+    <div id="p-demo">Nuvio CRM · Acme Conseil SAS (demo company)</div>
+    <div id="p-flood"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const words = (sel, t, st) => tl.fromTo(sel, { opacity: 0, filter: "blur(6px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.13, stagger: st, ease: "power4.out" }, t);
+      // abs = local + 6.05. "ninety" is spoken at abs 7.60.
+      words("#p-l1 span:nth-child(-n+3)", 0.2, 0.08);
+      words("#p-l1 .lime", 1.5, 0.07);
+      tl.to(".p-sq", { opacity: 1, duration: 0.12, stagger: 0.011, ease: "power2.out" }, 0.55);
+      tl.fromTo("#p-log", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 1.75);
+      // "still" at abs 9.18: the first fact leaves, the bill arrives.
+      tl.to(["#p-l1 span", "#p-log"], { opacity: 0, filter: "blur(8px)", duration: 0.18, stagger: 0.02, ease: "power3.in" }, 2.85);
+      tl.to(".p-sq", { opacity: 0, duration: 0.15, stagger: { each: 0.003, from: "end" }, ease: "power3.in" }, 2.85);
+      words("#p-l2 span", 3.1, 0.09);
+      tl.fromTo("#p-num", { opacity: 0, scale: 1.12, filter: "blur(10px)", transformOrigin: "0% 50%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, 3.3);
+      const c = { v: 0 };
+      tl.to(c, { v: 129, duration: 0.65, ease: "power2.out", onUpdate: () => {
+        document.querySelector("#p-num").textContent = "€" + Math.round(c.v);
+      } }, 3.35);
+      tl.fromTo("#p-per", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 4.0);
+      tl.fromTo("#p-demo", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 3.5);
+      gsap.set("#p-flood", { scaleY: 0, transformOrigin: "50% 100%" });
+      // Colour flood from the bottom into READ (lime world).
+      tl.to("#p-flood", { scaleY: 1, duration: 0.4, ease: "power2.inOut" }, 5.6);
+      window.__timelines["pain"] = tl;
+    })();
+  </script>
+</template>

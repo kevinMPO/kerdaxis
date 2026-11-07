@@ -1,0 +1,64 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f6f7fb; font-family: "Inter", sans-serif; }
+    #s-page { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #s-page img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; }
+    #s-ag { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-svg { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-pill { position: absolute; left: 30px; top: 22px; height: 32px; padding: 0 12px 0 10px; border-radius: 16px; background: #080d13;
+      color: #eef8f5; font-weight: 700; font-size: 22px; line-height: 32px; white-space: nowrap; }
+    .ag-pill i { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 4px; background: #b4f768; vertical-align: 1px; }
+    #s-panel { position: absolute; left: 1180px; top: 0; width: 740px; height: 1080px; background: #080d13; color: #eef8f5; }
+    #s-verb { position: absolute; left: 56px; top: 80px; font-weight: 900; font-size: 250px; line-height: 0.9; letter-spacing: -0.06em; color: #b4f768; white-space: nowrap; }
+    #s-l1 { position: absolute; left: 62px; top: 360px; width: 620px; font-weight: 700; font-size: 50px; line-height: 1.15; letter-spacing: -0.02em; }
+    #s-l2 { position: absolute; left: 62px; top: 540px; font-weight: 700; font-size: 30px; color: #a3b4b9; white-space: nowrap; }
+    #s-go { position: absolute; left: 62px; top: 650px; width: 600px; height: 124px; border-radius: 26px; background: #b4f768; color: #080d13;
+      font-weight: 900; font-size: 46px; line-height: 124px; text-align: center; white-space: nowrap; }
+    #s-l1, #s-l2, #s-go { opacity: 0; }
+    #s-you { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .cur-svg { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .pill { position: absolute; left: 56px; top: 56px; height: 46px; padding: 0 18px; border-radius: 23px; background: #eef8f5; color: #080d13;
+      font-weight: 700; font-size: 28px; line-height: 46px; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="stop" data-width="1920" data-height="1080">
+    <div id="s-page">
+      <img src="assets/shots/confirm-unchecked.png" alt="Supplier portal: final confirmation, box not ticked" />
+      <div id="s-ag" data-layout-allow-occlusion><svg viewBox="0 0 26 37" class="ag-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#080D13" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="ag-pill"><i></i>H Company agent</div></div>
+    </div>
+    <div id="s-panel" data-layout-allow-overflow>
+      <div id="s-verb">STOP</div>
+      <div id="s-l1">Paused before the irreversible click.</div>
+      <div id="s-l2">Final step · “Confirm cancellation”</div>
+      <div id="s-go">✓ Give the final go</div>
+    </div>
+    <div id="s-you" data-layout-allow-occlusion><svg viewBox="0 0 26 37" class="cur-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#080D13" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="pill">You</div></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Page at 2x: frame = 2.0 * page + (-480, -360). "Confirm cancellation" = page (387, 536).
+      tl.fromTo("#s-page", { x: -500, y: -380, scale: 2.03 }, { x: -480, y: -360, scale: 2.0, duration: 0.4, ease: "expo.out" }, 0);
+      gsap.set("#s-ag", { x: 900, y: 650 });
+      // The agent decelerates to a halt on the irreversible button ("it stops", abs 31.06 = local 2.51).
+      tl.to("#s-ag", { x: 385, y: 534, duration: 2.1, ease: "expo.out" }, 0.35);
+      // Split: the page steps left (button stays in view), the STOP panel slides in.
+      gsap.set("#s-panel", { x: 760 });
+      tl.to("#s-page", { x: -41, y: -177, scale: 1.45, duration: 0.5, ease: "power2.inOut" }, 2.5);
+      tl.to("#s-panel", { x: 0, duration: 0.5, ease: "power2.inOut" }, 2.5);
+      tl.fromTo("#s-verb", { opacity: 0, scale: 1.25, filter: "blur(10px)", transformOrigin: "0% 0%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 2.85);
+      tl.fromTo("#s-l1", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 2.95);
+      tl.fromTo("#s-l2", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 3.25);
+      tl.fromTo("#s-go", { opacity: 0, scale: 0.92, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.4)" }, 3.35);
+      // You give the final go: "Give the final go" centre = frame (1542, 712).
+      gsap.set("#s-you", { x: 1880, y: 1120 });
+      tl.to("#s-you", { x: 1536, y: 706, duration: 0.9, ease: "power2.inOut" }, 3.75);
+      tl.to("#s-you", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.07, ease: "power2.out" }, 4.72);
+      tl.to("#s-you", { scale: 1, duration: 0.16, ease: "power3.out" }, 4.79);
+      tl.to("#s-go", { scale: 0.96, duration: 0.07, ease: "power2.out" }, 4.72);
+      tl.to("#s-go", { scale: 1, duration: 0.16, ease: "power3.out" }, 4.79);
+      tl.set("#s-go", { textContent: "✓ Go given" }, 4.8);
+      window.__timelines["stop"] = tl;
+    })();
+  </script>
+</template>

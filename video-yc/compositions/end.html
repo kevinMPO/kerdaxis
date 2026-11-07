@@ -1,0 +1,41 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    #e-lock { position: absolute; left: 0; top: 260px; width: 1920px; height: 150px; }
+    #e-mark { position: absolute; left: 640px; top: 4px; width: 140px; height: 140px; }
+    #e-mark-in { position: absolute; inset: 0; border: 4px solid rgba(180, 247, 104, 0.55); border-radius: 40px; color: #b4f768;
+      font-weight: 900; font-size: 84px; line-height: 132px; text-align: center; }
+    #e-word { position: absolute; left: 810px; top: 10px; font-weight: 900; font-size: 116px; line-height: 130px; letter-spacing: -0.055em;
+      white-space: nowrap; clip-path: inset(0 100% 0 0); }
+    #e-wl { position: absolute; left: 0; top: 470px; width: 1920px; text-align: center; font-weight: 700; font-size: 56px; color: #a3b4b9; white-space: nowrap; }
+    #e-cta { position: absolute; left: 0; top: 620px; width: 1920px; text-align: center; }
+    #e-btn { display: inline-block; height: 124px; padding: 0 70px; border-radius: 30px; background: #b4f768; color: #080d13; font-weight: 900;
+      font-size: 64px; line-height: 124px; letter-spacing: -0.02em; white-space: nowrap; }
+    #e-mail { position: absolute; left: 0; top: 800px; width: 1920px; text-align: center; font-weight: 700; font-size: 44px; color: #eef8f5; white-space: nowrap; }
+    #e-mark, #e-wl, #e-btn, #e-mail { opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="end" data-width="1920" data-height="1080">
+    <div id="e-lock">
+      <div id="e-mark"><div id="e-mark-in">K</div></div>
+      <div id="e-word">KERDAXIS</div>
+    </div>
+    <div id="e-wl">White label for accounting firms.</div>
+    <div id="e-cta"><span id="e-btn">kerdaxis.com</span></div>
+    <div id="e-mail">hello@kerdaxis.com</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // The mark is carried in and lands on the impact (abs 39.75 = local 0.7).
+      tl.fromTo("#e-mark", { opacity: 0, x: 620, rotation: -70, scale: 0.45 },
+        { opacity: 1, x: 0, rotation: -8, scale: 1, duration: 0.6, ease: "back.out(1.3)" }, 0.1);
+      tl.to("#e-word", { clipPath: "inset(0 0% 0 0)", duration: 0.4, ease: "power3.out" }, 0.65);
+      // "White" at abs 40.46 = local 1.41.
+      tl.fromTo("#e-wl", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 1.38);
+      // "Kerdaxis dot com" at abs 42.8 = local 3.75.
+      tl.fromTo("#e-btn", { opacity: 0, scale: 0.9, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.4)" }, 3.7);
+      tl.fromTo("#e-mail", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 3.85);
+      window.__timelines["end"] = tl;
+    })();
+  </script>
+</template>
