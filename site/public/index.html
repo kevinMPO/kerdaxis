@@ -71,6 +71,8 @@ h1,h2,h3,h4,p,dl,dd,ol,ul,figure{margin:0}
 .btn-small{min-height:38px;padding:0 14px;font-size:14px;border-radius:9px}
 .btn:disabled{opacity:.55;cursor:default}
 @media (max-width:560px){.nav-access{display:none}}
+.nav-signin{color:var(--muted);font-size:14.5px;text-decoration:none;padding:6px 4px}.nav-signin:hover{color:#eef8f5}
+@media (max-width:430px){.head-actions .lang{display:none}}
 
 /* ---------- header ---------- */
 .site-head{position:sticky;top:0;z-index:30;background:rgba(10,16,20,.82);-webkit-backdrop-filter:saturate(140%) blur(14px);backdrop-filter:saturate(140%) blur(14px);border-bottom:1px solid var(--line)}
@@ -349,7 +351,8 @@ h3{font-size:1.2rem;font-weight:560;letter-spacing:-.012em;line-height:1.3}
         <button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button>
         <button type="button" data-lang="fr" aria-pressed="false" lang="fr">FR</button>
       </div>
-      <a class="btn btn-ghost btn-small nav-access" href="https://app.kerdaxis.com/signin" data-i="navSignin">Sign in</a>
+      <a class="nav-signin nav-access" href="https://app.kerdaxis.com/signin" data-i="navSignin">Sign in</a>
+      <a class="btn btn-ghost btn-small" href="https://app.kerdaxis.com/signup" data-i="navSignup">Sign up</a>
       <a class="btn btn-primary btn-small" href="https://app.kerdaxis.com/try" data-i="navTry">Try for free</a>
     </div>
   </div>
@@ -636,7 +639,7 @@ var DICT={
 en:{
   metaTitle:"Kerdaxis — AI doesn't just find savings. It makes them happen.",
   metaDesc:"Kerdaxis finds the subscriptions you no longer need and cancels them with an H Company computer-use agent that stops before the irreversible click and waits for your green light.",
-  skip:'Skip to content',navLabel:'Main',navAgent:'How it works',navProof:'Proof',navFde:'FDE',navFirms:'Accounting firms',navAccess:'Request access',navTest:'Test login',navSignin:'Sign in',navTry:'Try for free',
+  skip:'Skip to content',navLabel:'Main',navAgent:'How it works',navProof:'Proof',navFde:'FDE',navFirms:'Accounting firms',navAccess:'Request access',navTest:'Test login',navSignin:'Sign in',navSignup:'Sign up',navTry:'Try for free',
   byline:'Powered by H Company <span class="nw">computer-use</span> agents (Holo)',
   h1:"AI doesn't just find savings.<br>It makes them happen.",
   heroLede:"Kerdaxis reads your bank account, spots the subscriptions you no longer need, and sends an agent to cancel them on the supplier's portal. It stops before the final click and waits for your green light.",
@@ -706,7 +709,7 @@ en:{
 fr:{
   metaTitle:"Kerdaxis — L'IA ne se contente pas de trouver des économies. Elle les concrétise.",
   metaDesc:"Kerdaxis repère les abonnements dont vous n’avez plus besoin et les résilie avec un agent computer-use de H Company qui s’arrête avant le clic irréversible et attend votre feu vert.",
-  skip:'Aller au contenu',navLabel:'Principal',navAgent:'Fonctionnement',navProof:'Preuves',navFde:'FDE',navFirms:'Cabinets comptables',navAccess:'Demander un accès',navTest:'Accès test',navSignin:'Se connecter',navTry:'Essai gratuit',
+  skip:'Aller au contenu',navLabel:'Principal',navAgent:'Fonctionnement',navProof:'Preuves',navFde:'FDE',navFirms:'Cabinets comptables',navAccess:'Demander un accès',navTest:'Accès test',navSignin:'Se connecter',navSignup:'S’inscrire',navTry:'Essai gratuit',
   byline:'Propulsé par les agents <span class="nw">computer-use</span> de H&nbsp;Company (Holo)',
   h1:'L’IA ne se contente pas de trouver des économies.<br>Elle les concrétise.',
   heroLede:'Kerdaxis lit votre compte bancaire, repère les abonnements dont vous n’avez plus besoin et envoie un agent les résilier sur le portail du fournisseur. Il s’arrête avant le clic final et attend votre feu vert.',
