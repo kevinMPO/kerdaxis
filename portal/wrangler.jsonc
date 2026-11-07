@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Portail fournisseur de démonstration (Nuvio CRM, fictif) — Kerdaxis
+  "name": "kerdaxis-portal",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "observability": { "enabled": true },
+  // Une instance par compte (id dérivé du nom de compte, ex. "acme").
+  // Cohérence forte : c'est la source de vérité lue par Kerdaxis via /api/state.
+  "durable_objects": {
+    "bindings": [{ "name": "PORTAL", "class_name": "PortalState" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PortalState"] }],
+  // Domaine personnalisé (zone kerdaxis.com, Cloudflare). L'adresse workers.dev
+  // reste active en secours.
+  "routes": [{ "pattern": "portal.kerdaxis.com", "custom_domain": true }],
+  "workers_dev": true
+  // Secrets (jamais ici) : DEMO_LOGIN_TOKEN, PORTAL_API_KEY
+  //   - en local : fichier .dev.vars (voir .dev.vars.example)
+  //   - en production : npx wrangler secret put DEMO_LOGIN_TOKEN / PORTAL_API_KEY
+}
