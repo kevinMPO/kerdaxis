@@ -1,0 +1,245 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("assets/fonts/SpaceGrotesk-latin.woff2") format("woff2");
+      font-weight: 300 700;
+      font-style: normal;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #fafaf7;
+      font-family: "Inter", sans-serif;
+      color: #17140f;
+    }
+    #e-stage {
+      position: absolute;
+      inset: 0;
+    }
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+    }
+    /* App header (Argentier.tsx .arg-top, rebuilt at ~1.8x) */
+    #e-head {
+      position: absolute;
+      left: 160px;
+      top: 40px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      white-space: nowrap;
+    }
+    .e-mark {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: #17140f;
+      color: #b4f768;
+      font-weight: 900;
+      font-size: 36px;
+      line-height: 56px;
+      text-align: center;
+    }
+    .e-word {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 36px;
+      letter-spacing: -0.01em;
+    }
+    .e-chip {
+      font-size: 28px;
+      color: #5b554c;
+      border: 2px solid #e4e0d6;
+      border-radius: 99px;
+      padding: 2px 18px;
+    }
+    .e-demo {
+      font-size: 28px;
+      font-weight: 700;
+      color: #b9812b;
+      background: rgba(185, 129, 43, 0.13);
+      border: 2px solid rgba(185, 129, 43, 0.3);
+      border-radius: 99px;
+      padding: 2px 18px;
+    }
+    .e-demo i {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #b9812b;
+      margin-right: 10px;
+      vertical-align: 2px;
+    }
+    .e-title {
+      position: absolute;
+      left: 160px;
+      top: 138px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 76px;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .e-title span {
+      display: inline-block;
+    }
+    #e-card {
+      position: absolute;
+      left: 160px;
+      top: 262px;
+      width: 1600px;
+      height: 740px;
+      border: 2px solid #e4e0d6;
+      border-radius: 25px;
+      background: #ffffff;
+    }
+    #e-card-title {
+      position: absolute;
+      left: 200px;
+      top: 292px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      font-size: 32px;
+      white-space: nowrap;
+    }
+    .bar {
+      position: absolute;
+      width: 210px;
+      border-radius: 4px;
+    }
+    .lab {
+      position: absolute;
+      width: 260px;
+      text-align: center;
+      font-size: 34px;
+      line-height: 38px;
+      white-space: nowrap;
+    }
+    .xl {
+      position: absolute;
+      top: 926px;
+      width: 300px;
+      text-align: center;
+      font-size: 30px;
+      color: #5b554c;
+      white-space: nowrap;
+    }
+    .con {
+      position: absolute;
+      height: 0;
+      border-top: 2px dashed #b8b2a5;
+    }
+    #b0 { left: 247px; top: 420px; height: 480px; background: #17140f; }
+    #b1 { left: 551px; top: 420px; height: 54px; background: #b8b2a5; }
+    #b2 { left: 855px; top: 474px; height: 103px; background: #b9812b; }
+    #b3 { left: 1159px; top: 577px; height: 275px; background: #5b554c; }
+    #b4 { left: 1463px; top: 852px; height: 48px; background: #2f6f5b; }
+    #l0 { left: 222px; top: 372px; }
+    #l1 { left: 526px; top: 372px; }
+    #l2 { left: 830px; top: 426px; }
+    #l3 { left: 1134px; top: 529px; }
+    #l4 { left: 1438px; top: 804px; }
+    #x0 { left: 202px; }
+    #x1 { left: 506px; }
+    #x2 { left: 810px; }
+    #x3 { left: 1114px; }
+    #x4 { left: 1418px; }
+    #c0 { left: 457px; top: 420px; width: 94px; }
+    #c1 { left: 761px; top: 474px; width: 94px; }
+    #c2 { left: 1065px; top: 577px; width: 94px; }
+    #c3 { left: 1369px; top: 852px; width: 94px; }
+    #e-t2 {
+      opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="engine" data-width="1920" data-height="1080">
+    <div id="e-stage">
+      <div id="e-head">
+        <div class="e-mark">K</div>
+        <div class="e-word">Kerdaxis</div>
+        <div class="e-chip">ACME Conseil (demo) · Qonto</div>
+        <div class="e-demo"><i></i>Demo</div>
+      </div>
+
+      <div id="e-t1" class="e-title" data-layout-allow-overlap>
+        <span>A</span> <span>deterministic</span> <span>engine</span> <span>counts</span> <span>every</span> <span>euro.</span>
+      </div>
+      <div id="e-t2" class="e-title" data-layout-allow-overlap>The LLM only labels.</div>
+
+      <div id="e-card"></div>
+      <div id="e-card-title">From statement to true run-rate</div>
+
+      <div id="c0" class="con"></div>
+      <div id="c1" class="con"></div>
+      <div id="c2" class="con"></div>
+      <div id="c3" class="con"></div>
+
+      <div id="b0" class="bar"></div>
+      <div id="b1" class="bar"></div>
+      <div id="b2" class="bar"></div>
+      <div id="b3" class="bar"></div>
+      <div id="b4" class="bar"></div>
+
+      <div id="l0" class="lab mono">16,137 €</div>
+      <div id="l1" class="lab mono">1,802 €</div>
+      <div id="l2" class="lab mono">3,468 €</div>
+      <div id="l3" class="lab mono">9,240 €</div>
+      <div id="l4" class="lab mono">1,627 €</div>
+
+      <div id="x0" class="xl">Total</div>
+      <div id="x1" class="xl">− Personal</div>
+      <div id="x2" class="xl">− One-off</div>
+      <div id="x3" class="xl">− Structural</div>
+      <div id="x4" class="xl">Controllable</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const IN = { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power4.out" };
+      const FROM = { opacity: 0, filter: "blur(8px)" };
+
+      // The app's frame arrives around the carried "16,137 €" label.
+      tl.fromTo(["#e-head", "#e-card", "#e-card-title", "#x0"], FROM, { ...IN, stagger: 0.04 }, 0.08);
+      tl.fromTo("#b0", { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 0.45, ease: "expo.out" }, 0.15);
+      tl.fromTo("#e-t1 span", { opacity: 0, filter: "blur(6px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power4.out" }, 0.3);
+
+      // The cascade: each nature falls out of the total, one step per 0.4 s.
+      const drop = (i, t) => {
+        tl.fromTo("#b" + i, { y: -46, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "expo.out" }, t);
+        tl.fromTo("#l" + i, { y: -46, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "expo.out" }, t + 0.03);
+        tl.fromTo("#x" + i, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, t + 0.05);
+        tl.fromTo("#c" + (i - 1), { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, t + 0.1);
+      };
+      drop(1, 0.9);
+      drop(2, 1.3);
+      drop(3, 1.7);
+      drop(4, 2.15);
+      tl.to(["#l4", "#x4"], { color: "#2F6F5B", duration: 0.2, ease: "power2.out" }, 2.3);
+      tl.set("#x4", { fontWeight: 700 }, 2.3);
+
+      // Title swap: the engine computes, the model only labels.
+      tl.to("#e-t1 span", { opacity: 0, filter: "blur(8px)", duration: 0.14, stagger: 0.02, ease: "power3.in" }, 2.95);
+      tl.fromTo("#e-t2", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 3.15);
+
+      // Focus: everything that is not controllable steps back.
+      tl.to(["#b0", "#b1", "#b2", "#b3", "#l0", "#l1", "#l2", "#l3", "#x0", "#x1", "#x2", "#x3", ".con"],
+        { opacity: 0.28, duration: 0.4, ease: "power2.out" }, 4.0);
+
+      // Push into the green bar: the next shot opens inside it.
+      tl.to("#e-t2", { opacity: 0, filter: "blur(8px)", duration: 0.15, ease: "power3.in" }, 5.1);
+      tl.to("#e-stage", { scale: 3.4, transformOrigin: "1568px 876px", filter: "blur(10px)", duration: 0.65, ease: "power3.in" }, 5.42);
+
+      window.__timelines["engine"] = tl;
+    })();
+  </script>
+</template>

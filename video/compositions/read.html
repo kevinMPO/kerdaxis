@@ -1,0 +1,270 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #080d13;
+      font-family: "Inter", sans-serif;
+      color: #eef8f5;
+    }
+    #r-ground {
+      position: absolute;
+      inset: 0;
+      background: #080d13;
+    }
+    #r-stage {
+      position: absolute;
+      inset: 0;
+    }
+    #r-title {
+      position: absolute;
+      left: 160px;
+      top: 132px;
+      font-weight: 800;
+      font-size: 88px;
+      line-height: 1.1;
+      letter-spacing: -0.045em;
+      white-space: nowrap;
+    }
+    #r-title span {
+      display: inline-block;
+    }
+    #r-title .lime {
+      color: #b4f768;
+    }
+    /* Sources of the money stack (left column) */
+    .src {
+      position: absolute;
+      left: 160px;
+      width: 760px;
+      height: 124px;
+      border: 2px solid #26343d;
+      border-radius: 22px;
+      background: #111a22;
+    }
+    #src0 { top: 300px; border-color: rgba(102, 230, 190, 0.45); }
+    #src1 { top: 452px; }
+    #src2 { top: 604px; }
+    .src .nm {
+      position: absolute;
+      left: 34px;
+      top: 18px;
+      font-weight: 700;
+      font-size: 40px;
+      line-height: 48px;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .src .sub {
+      position: absolute;
+      left: 34px;
+      top: 70px;
+      font-weight: 500;
+      font-size: 30px;
+      line-height: 36px;
+      color: #a3b4b9;
+      white-space: nowrap;
+    }
+    #src0 .sub {
+      color: #66e6be;
+    }
+    .src .chip {
+      position: absolute;
+      right: 28px;
+      top: 38px;
+      height: 46px;
+      padding: 0 20px;
+      border-radius: 23px;
+      font-weight: 700;
+      font-size: 28px;
+      line-height: 42px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .chip.live {
+      border: 2px solid rgba(102, 230, 190, 0.6);
+      background: #0f1d1c;
+      color: #66e6be;
+    }
+    .chip.live i {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 10px;
+      border-radius: 50%;
+      background: #66e6be;
+      vertical-align: 1px;
+    }
+    .chip.soon {
+      border: 2px solid #3a4a54;
+      color: #a3b4b9;
+    }
+    #r-wires {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    /* The engine (right) */
+    #r-eng {
+      position: absolute;
+      left: 1120px;
+      top: 300px;
+      width: 640px;
+      height: 428px;
+      border: 2px solid #26343d;
+      border-radius: 24px;
+      background: #111a22;
+    }
+    #r-eng-k {
+      position: absolute;
+      left: 1160px;
+      top: 330px;
+      font-weight: 700;
+      font-size: 28px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #a3b4b9;
+      white-space: nowrap;
+    }
+    #r-num {
+      position: absolute;
+      left: 1160px;
+      top: 392px;
+      width: 580px;
+      height: 116px;
+      font-weight: 800;
+      font-size: 116px;
+      line-height: 116px;
+      letter-spacing: -0.05em;
+      text-align: left;
+      white-space: nowrap;
+      color: #eef8f5;
+    }
+    #r-cap {
+      position: absolute;
+      left: 1162px;
+      top: 540px;
+      width: 560px;
+      font-weight: 600;
+      font-size: 32px;
+      line-height: 1.3;
+      color: #a3b4b9;
+    }
+    #r-demo {
+      position: absolute;
+      left: 160px;
+      top: 800px;
+      font-size: 28px;
+      color: #a3b4b9;
+      white-space: nowrap;
+    }
+    /* The number's landing label: JetBrains Mono, like the app's waterfall label. */
+    #r-land {
+      position: absolute;
+      left: 252px;
+      top: 372px;
+      width: 200px;
+      text-align: center;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+      font-size: 34px;
+      line-height: 38px;
+      color: #17140f;
+      white-space: nowrap;
+      opacity: 0;
+    }
+    .src,
+    #r-eng,
+    #r-eng-k,
+    #r-cap,
+    #r-demo,
+    .wire {
+      opacity: 0;
+    }
+  </style>
+
+  <div id="root" data-composition-id="read" data-width="1920" data-height="1080">
+    <div id="r-ground"></div>
+    <div id="r-stage">
+      <div id="r-title">
+        <span class="lime">Kerdaxis</span> <span>reads</span> <span>your</span> <span>money</span> <span>stack.</span>
+      </div>
+
+      <svg id="r-wires" viewBox="0 0 1920 1080" fill="none" data-layout-ignore>
+        <path id="w0" class="wire" d="M920 362 C1010 362 1030 514 1120 514" stroke="#66e6be" stroke-width="4" stroke-linecap="round" />
+        <path id="w1" class="wire" d="M920 514 L1120 514" stroke="#3a4a54" stroke-width="3" stroke-dasharray="10 12" />
+        <path id="w2" class="wire" d="M920 666 C1010 666 1030 514 1120 514" stroke="#3a4a54" stroke-width="3" stroke-dasharray="10 12" />
+      </svg>
+
+      <div id="src0" class="src">
+        <div class="nm">Bank</div>
+        <div class="sub">Qonto · read-only</div>
+        <div class="chip live"><i></i>LIVE</div>
+      </div>
+      <div id="src1" class="src">
+        <div class="nm">Accounting &amp; ERP</div>
+        <div class="sub">Sage · Pennylane</div>
+        <div class="chip soon">COMING</div>
+      </div>
+      <div id="src2" class="src">
+        <div class="nm">SaaS &amp; CRM tools</div>
+        <div class="sub">subscriptions · seats · usage</div>
+        <div class="chip soon">COMING</div>
+      </div>
+
+      <div id="r-eng"></div>
+      <div id="r-eng-k">Kerdaxis engine</div>
+      <div id="r-num">16,137 €</div>
+      <div id="r-cap">out this month at Acme Conseil, read from Qonto</div>
+      <div id="r-demo">Demo data · Acme Conseil SAS is fictional · today only Qonto is connected</div>
+    </div>
+    <div id="r-land">16,137 €</div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const numEl = document.querySelector("#r-num");
+      const fmt = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " €";
+      numEl.textContent = fmt(0);
+      const IN = { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" };
+
+      // Whip in from the right (continues the hook's whip to the left).
+      tl.fromTo("#r-stage", { x: 680, filter: "blur(18px)" },
+        { x: 0, filter: "blur(0px)", duration: 0.34, ease: "expo.out" }, 0);
+      tl.fromTo("#r-title span", { opacity: 0, filter: "blur(6px)" },
+        { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power4.out" }, 0.12);
+
+      // The stack: the live bank first, then the two sources still to come.
+      tl.fromTo(".src", { opacity: 0, filter: "blur(10px)" }, { ...IN, stagger: 0.12 }, 0.5);
+      tl.fromTo(".src .chip", { scale: 0.8, transformOrigin: "100% 50%" }, { scale: 1, duration: 0.4, ease: "back.out(1.4)", stagger: 0.12 }, 0.62);
+
+      // Everything converges on the engine; only Qonto's line is drawn solid.
+      tl.set("#w0", { opacity: 1, strokeDasharray: 300, strokeDashoffset: 300 }, 1.05);
+      tl.to("#w0", { strokeDashoffset: 0, duration: 0.5, ease: "power2.inOut" }, 1.05);
+      tl.fromTo(["#w1", "#w2"], { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 1.15);
+      tl.fromTo(["#r-eng", "#r-eng-k"], { opacity: 0, filter: "blur(10px)" }, { ...IN, stagger: 0.05 }, 1.35);
+
+      // The month's outflows count up, then hold.
+      tl.fromTo("#r-num", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 1.5);
+      const c = { v: 0 };
+      tl.to(c, { v: 16137, duration: 1.2, ease: "power2.out", onUpdate: () => (numEl.textContent = fmt(c.v)) }, 1.55);
+      tl.fromTo("#r-cap", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 1.9);
+      tl.fromTo("#r-demo", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 1.9);
+
+      // Exit: everything but the number leaves; the ground floods to the app's paper and the
+      // number shrinks into the waterfall's Total label (left edge 270, centre y 391, 33.9 px).
+      tl.to(["#r-title", ".src", ".wire", "#r-eng", "#r-eng-k", "#r-cap", "#r-demo"],
+        { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power3.in" }, 4.9);
+      tl.to("#r-ground", { backgroundColor: "#FAFAF7", duration: 0.5, ease: "power2.inOut" }, 5.05);
+      tl.to("#r-num", { x: -890, y: -59, scale: 0.2922, transformOrigin: "0% 50%", color: "#17140F", duration: 0.55, ease: "power2.inOut" }, 5.05);
+      tl.to("#r-num", { opacity: 0, duration: 0.1, ease: "none" }, 5.55);
+      tl.to("#r-land", { opacity: 1, duration: 0.1, ease: "none" }, 5.55);
+
+      window.__timelines["read"] = tl;
+    })();
+  </script>
+</template>
