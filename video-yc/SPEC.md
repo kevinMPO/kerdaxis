@@ -62,3 +62,31 @@ QA:      0 (thumbnail: confirmed page + stamp), 3.6 (0:45 landed), 5.2 (rewind),
          (€129), 14.6 (READ-ONLY), 17.3 (Nuvio lifted), 20.0 (click), 25.3 (injection boxed), 27.0
          (IGNORED), 31.1 (cursor halted), 32.5 (split STOP), 34.8 (number boxed), 38.0 (D+30), 40.6
          (lockup), 45.5 (end hold).
+
+---
+
+# v2 — "AI CFO" cut (H Company × 42 AI hackathon brief, 7 Nov 2026)
+
+Rollback: git tag `video-yc-v1` (commit d58ac88) + `renders/kerdaxis-yc-v1-rollback.mp4`.
+Timings live in `tools/build_v2.py` (it writes index.html and compositions/captions.html).
+
+GOAL:    the viewer leaves with "an AI CFO for SMEs: it analyses, detects, compares, recommends —
+         and an H Company agent executes, stops before the irreversible click, and the supplier
+         confirms." The 45 s cancellation stays the hook and the concrete example.
+TIME:    51.0 s. Voice = AI "Liam" (ElevenLabs eleven_v3) at tempo ×1.12; music bed 120 BPM ducked.
+SHOTS:   result 0–4.6 (kept) · market 4.6–10.45 (33M businesses in the EU, 99.8% SMEs — Eurostat
+         SBS 2023, on screen; "Most can't afford a full-time CFO." as a statement, no number) ·
+         analyze 10.45–15.75 (demo waterfall 16,137 → 1,627 € controllable; "A deterministic engine
+         computes every euro. The AI only labels.") · detect 15.75–19.6 (demo levers: unused,
+         2 duplicates, Figma +14.3%, FX fees) · compare 19.6–22.3 (Linkup; only merchant + category
+         leave; demo alternatives labelled "Illustrative · demo data") · recommend 22.3–26.6
+         (cancel / downgrade / switch / renegotiate with the engine's RATIO_ECONOMIE table) ·
+         approve 26.6–29.6 · navigate 29.6–36.8 · stop 36.8–42.0 (12.4 s for the H agent,
+         injection and gate) · prove 42.0–45.6 (supplier-confirmed ✓; bank statement check
+         "Scheduled · D+30", never ticked) · end 45.6–51.0 (KERDAXIS · Services as Software ·
+         "AI doesn't just find savings. It makes them happen." · kerdaxis.com · white label line
+         small).
+CAPTIONS: burned-in, ≤4 words a group, Inter 700 44 px white on ink 86% pill, y 896 (title-safe);
+         line 11 not captioned (the end card shows it).
+BANNED (added): "34M SMEs" (not supported by Eurostat: ~33.1M enterprises, 99.8% SMEs); any live
+         Linkup result or price; D+30 shown as done; a CFO-affordability number.

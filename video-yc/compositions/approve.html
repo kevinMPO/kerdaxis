@@ -2,7 +2,7 @@
   <style>
     #root { position: absolute; inset: 0; overflow: hidden; background: #b4f768; font-family: "Inter", sans-serif; color: #080d13; }
     .verb { position: absolute; left: 104px; top: 80px; font-weight: 900; font-size: 280px; line-height: 0.9; letter-spacing: -0.06em; white-space: nowrap; }
-    #a-card { position: absolute; left: 110px; top: 440px; width: 1700px; height: 520px; border-radius: 32px; background: #ffffff;
+    #a-card { position: absolute; left: 110px; top: 400px; width: 1700px; height: 470px; border-radius: 32px; background: #ffffff;
       box-shadow: 0 24px 60px rgba(8, 13, 19, 0.18); color: #17140f; }
     #a-nm { position: absolute; left: 56px; top: 44px; font-weight: 900; font-size: 72px; letter-spacing: -0.03em; white-space: nowrap; }
     #a-tag { position: absolute; right: 56px; top: 58px; padding: 6px 26px; border-radius: 99px; background: #f4ebdd; color: #8c5f1c;
@@ -10,7 +10,7 @@
     #a-l1 { position: absolute; left: 56px; top: 160px; font-weight: 700; font-size: 42px; color: #5b554c; white-space: nowrap; }
     #a-l1 b { font-family: "JetBrains Mono", monospace; font-weight: 600; color: #17140f; }
     #a-l2 { position: absolute; left: 56px; top: 234px; font-weight: 700; font-size: 46px; color: #2f6f5b; white-space: nowrap; }
-    .a-btn { position: absolute; top: 352px; height: 112px; border-radius: 22px; font-weight: 700; font-size: 42px; line-height: 108px;
+    .a-btn { position: absolute; top: 330px; height: 112px; border-radius: 22px; font-weight: 700; font-size: 42px; line-height: 108px;
       text-align: center; white-space: nowrap; }
     #a-ok { left: 56px; width: 760px; background: #2f6f5b; border: 2px solid #2f6f5b; color: #ffffff; }
     #a-no { left: 846px; width: 320px; background: #ffffff; border: 2px solid #b8b2a5; color: #5b554c; }
@@ -39,16 +39,16 @@
         { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 0.0);
       tl.fromTo("#a-card", { opacity: 0, scale: 1.06, filter: "blur(12px)", transformOrigin: "50% 50%" },
         { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 0.12);
-      // "You" cursor: tip = element origin + (3, 3). Clicks the left end of the Approve button, frame (206, 848).
+      // "You" cursor: tip = element origin + (3, 3). Clicks the left end of the Approve button, frame (206, 786).
       gsap.set("#a-cur", { x: 1500, y: 1120 });
-      tl.to("#a-cur", { x: 200, y: 842, duration: 0.85, ease: "power2.inOut" }, 0.45);
-      // "One click" spoken at abs 19.99 = local 1.44.
-      tl.to("#a-cur", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.07, ease: "power2.out" }, 1.37);
-      tl.to("#a-cur", { scale: 1, duration: 0.16, ease: "power3.out" }, 1.44);
-      tl.to("#a-ok", { backgroundColor: "#1f4d3e", scale: 0.97, transformOrigin: "50% 50%", duration: 0.07, ease: "power2.out" }, 1.37);
-      tl.to("#a-ok", { scale: 1, duration: 0.16, ease: "power3.out" }, 1.44);
-      tl.set("#a-ok", { textContent: "✓ Approved · agent launching" }, 1.46);
-      tl.to("#a-no", { opacity: 0.35, duration: 0.25, ease: "power2.out" }, 1.46);
+      tl.to("#a-cur", { x: 200, y: 780, duration: 0.9, ease: "power2.inOut" }, 1.3);
+      // "approve" spoken at local 2.36.
+      tl.to("#a-cur", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.07, ease: "power2.out" }, 2.29);
+      tl.to("#a-cur", { scale: 1, duration: 0.16, ease: "power3.out" }, 2.36);
+      tl.to("#a-ok", { backgroundColor: "#1f4d3e", scale: 0.97, transformOrigin: "50% 50%", duration: 0.07, ease: "power2.out" }, 2.29);
+      tl.to("#a-ok", { scale: 1, duration: 0.16, ease: "power3.out" }, 2.36);
+      tl.set("#a-ok", { textContent: "✓ Approved · agent launching" }, 2.38);
+      tl.to("#a-no", { opacity: 0.35, duration: 0.25, ease: "power2.out" }, 2.38);
       window.__timelines["approve"] = tl;
     })();
   </script>

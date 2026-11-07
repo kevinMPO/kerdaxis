@@ -1,0 +1,51 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #b4f768; font-family: "Inter", sans-serif; color: #080d13; }
+    .verb { position: absolute; left: 104px; top: 90px; font-weight: 900; font-size: 230px; line-height: 0.9; letter-spacing: -0.06em; white-space: nowrap; }
+    #c-q { position: absolute; left: 116px; top: 340px; width: 760px; padding: 22px 28px; border-radius: 22px; background: #080d13; color: #eef8f5; }
+    #c-q .k { font-weight: 900; font-size: 28px; letter-spacing: 0.06em; color: #b4f768; }
+    #c-q .v { margin-top: 8px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 38px; }
+    #c-pii { position: absolute; left: 116px; top: 560px; width: 760px; font-weight: 700; font-size: 34px; line-height: 1.25; }
+    #c-card { position: absolute; left: 1010px; top: 130px; width: 810px; height: 640px; border-radius: 32px; background: #ffffff; color: #17140f;
+      box-shadow: 0 24px 60px rgba(8, 13, 19, 0.18); }
+    #c-head { position: absolute; left: 40px; top: 32px; font-weight: 700; font-size: 30px; color: #5b554c; white-space: nowrap; }
+    .cp { position: absolute; left: 24px; width: 762px; height: 150px; border-radius: 20px; border: 2px solid #e4e0d6; }
+    #cp0 { top: 96px; } #cp1 { top: 264px; } #cp2 { top: 432px; }
+    .cp .fr { position: absolute; left: 26px; top: 28px; font-weight: 900; font-size: 38px; white-space: nowrap; }
+    .cp .ar { position: absolute; left: 26px; top: 84px; font-weight: 900; font-size: 34px; color: #2f6f5b; }
+    .cp .to { position: absolute; left: 76px; top: 84px; font-weight: 700; font-size: 34px; color: #2f6f5b; white-space: nowrap; }
+    .cp .sd { position: absolute; right: 24px; top: 30px; padding: 2px 14px; border-radius: 10px; border: 2px solid #b8b2a5; font-weight: 700; font-size: 28px; color: #5b554c; white-space: nowrap; }
+    #c-ill { position: absolute; left: 1014px; top: 800px; width: 860px; font-weight: 700; font-size: 28px; line-height: 1.3; color: #2a3a14; }
+    #c-verb, #c-q, #c-pii, #c-card, #c-ill, .cp { opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="compare" data-width="1920" data-height="1080">
+    <div id="c-verb" class="verb" style="font-size: 190px;">COMPARE</div>
+    <div id="c-q"><div class="k">LINKUP WEB SEARCH</div><div class="v">"HubSpot" · CRM</div></div>
+    <div id="c-pii">Only merchant + category leave Kerdaxis.</div>
+    <div id="c-card">
+      <div id="c-head">Alternatives to review</div>
+        <div id="cp0" class="cp"><div class="fr">HubSpot</div><div class="ar">→</div><div class="to">Pipedrive · Folk</div><div class="sd">source + date</div></div>
+        <div id="cp1" class="cp"><div class="fr">Waalaxy</div><div class="ar">→</div><div class="to">Apollo + Instantly</div><div class="sd">source + date</div></div>
+        <div id="cp2" class="cp"><div class="fr">FX / ATM fees</div><div class="ar">→</div><div class="to">Wise · Revolut card</div><div class="sd">source + date</div></div>
+    </div>
+    <div id="c-ill">Illustrative · demo data</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 19.6. VO "alternatives" ~0.5, "Linkup" ~2.4.
+      tl.fromTo("#c-verb", { opacity: 0, scale: 1.25, filter: "blur(10px)", transformOrigin: "0% 0%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 0.0);
+      tl.fromTo("#c-card", { opacity: 0, scale: 0.92, x: 300, filter: "blur(12px)", transformOrigin: "100% 50%" },
+        { opacity: 1, scale: 1, x: 0, filter: "blur(0px)", duration: 0.4, ease: "expo.out" }, 0.1);
+      tl.fromTo("#c-q", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 0.25);
+      tl.fromTo(".cp", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.3, stagger: 0.18, ease: "expo.out" }, 0.5);
+      tl.fromTo("#c-pii", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.45);
+      tl.fromTo("#c-ill", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" }, 0.4);
+      // Colour flood to ink into RECOMMEND.
+      tl.to("#root", { backgroundColor: "#080d13", duration: 0.3, ease: "power2.inOut" }, 2.4);
+      tl.to(["#c-verb", "#c-q", "#c-pii", "#c-card", "#c-ill"], { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, 2.45);
+      window.__timelines["compare"] = tl;
+    })();
+  </script>
+</template>

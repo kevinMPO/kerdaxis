@@ -1,7 +1,7 @@
 <template>
   <style>
     #root { position: absolute; inset: 0; overflow: hidden; background: #f6f7fb; font-family: "Inter", sans-serif; }
-    #n-iris { position: absolute; inset: 0; clip-path: circle(0px at 206px 848px); }
+    #n-iris { position: absolute; inset: 0; clip-path: circle(0px at 206px 786px); }
     #n-page { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
     #n-page img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; opacity: 0; }
     #n-inj { position: absolute; left: 272px; top: 506px; width: 494px; height: 28px; border: 3px solid #080d13; border-radius: 6px;
@@ -44,8 +44,8 @@
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      // Iris from the Approve click (frame 206, 848).
-      tl.to("#n-iris", { clipPath: "circle(2400px at 206px 848px)", duration: 0.4, ease: "power3.in" }, 0);
+      // Iris from the Approve click (frame 206, 786).
+      tl.to("#n-iris", { clipPath: "circle(2400px at 206px 786px)", duration: 0.4, ease: "power3.in" }, 0);
       tl.fromTo("#n-band", { y: -150 }, { y: 0, duration: 0.4, ease: "expo.out" }, 0.2);
       // Page 1280x720 at 1.3x under the band: frame = 1.3 * page + (128, 150).
       gsap.set("#n-page", { x: 128, y: 150, scale: 1.3 });
@@ -78,14 +78,14 @@
       tl.fromTo("#n-wantl", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, 4.58);
       // "It doesn't" at local 5.33: IGNORED, and the agent clicks "No thanks".
       tl.fromTo("#n-stamp", { opacity: 0, scale: 2.0, rotation: 10, transformOrigin: "50% 50%" },
-        { opacity: 1, scale: 1, rotation: -5, duration: 0.2, ease: "back.out(1.6)" }, 5.33);
-      tl.to(["#n-want", "#n-wantl"], { opacity: 0, duration: 0.2, ease: "power3.in" }, 5.4);
-      tl.to("#n-ag", { x: 429, y: 470, duration: 0.6, ease: "power2.inOut" }, 5.45);
-      tl.to("#n-ag", { scale: 0.85, duration: 0.06 }, 6.05);
-      tl.to("#n-ag", { scale: 1, duration: 0.14, ease: "power3.out" }, 6.11);
+        { opacity: 1, scale: 1, rotation: -5, duration: 0.2, ease: "back.out(1.6)" }, 5.2);
+      tl.to(["#n-want", "#n-wantl"], { opacity: 0, duration: 0.2, ease: "power3.in" }, 5.27);
+      tl.to("#n-ag", { x: 429, y: 470, duration: 0.6, ease: "power2.inOut" }, 5.32);
+      tl.to("#n-ag", { scale: 0.85, duration: 0.06 }, 5.92);
+      tl.to("#n-ag", { scale: 1, duration: 0.14, ease: "power3.out" }, 5.98);
       // Out: the page is pulled up, dip cut to the final step.
-      tl.to("#n-page", { y: -585, duration: 0.3, ease: "power3.in" }, 6.65);
-      tl.to("#n-dip", { opacity: 0.45, duration: 0.1, ease: "none" }, 6.88);
+      tl.to("#n-page", { y: -585, duration: 0.3, ease: "power3.in" }, 6.85);
+      tl.to("#n-dip", { opacity: 0.45, duration: 0.1, ease: "none" }, 7.08);
       window.__timelines["navigate"] = tl;
     })();
   </script>

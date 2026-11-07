@@ -20,3 +20,19 @@ Sound: measured, not heard. Voice ≈ 10 dB over the bed; hold pad raised so STO
 
 Weakest shot: the rewind (1.45 s) is busy; on a phone only the ◀◀ clock reads.
 Not shown on purpose: the agent never moves toward "Accept the offer" (it did not in the run).
+
+---
+
+# REVIEW — v2 "AI CFO" cut
+
+Film: 51.0 s · `renders/kerdaxis-yc-v2-linkedin.mp4` (−14.2 LUFS, peak −1.3 dB). Not deployed.
+Checked: `check` 0 errors, one warning kept (first frame = confirmed page, chosen thumbnail).
+Snapshots at every new scene + 6 frames of the rendered MP4. Fixed after review: ANALYZE /
+COMPARE / DETECT verbs under their cards, "Scheduled · D+30" chip over the card edge, demo labels
+touching the captions, approve card moved up for the caption zone, short holds (CFO line,
+FX row, compare notes, recommend chips, D+30, end card +0.5 s).
+Voice: every line verified by Whisper; line 10 had lost "day thirty" in the take cut and was
+regenerated; lines 02/03/07/11 regenerated singly. Brand name: in the final mix Whisper writes
+"Cardaxis" for lines 03 and 11 (the same takes were written "Kerdaxis" before speed-up and music) —
+must be judged by ear.
+Sound: measured, not heard.
