@@ -39,12 +39,13 @@ import {
   getSession,
   pauseSession,
   postToolResult,
+  resumeSession,
   sendMessage,
   type HaiChanges,
   type HaiEvent,
 } from "./hcompany";
 import { finalLabelOf, guideFromResearch, researchCancelPath, type CancelResearch } from "./research";
-import { createPortalTarget } from "./stripe-portal";
+import { createPortalTarget, openPortalSession } from "./stripe-portal";
 import { getSupplier, reachableByAgent, readSupplierState, supplierLoginUrl, type PathRule, type Supplier } from "./suppliers";
 import { appendEvent, db, TERMINAL_STATUSES, type Execution, type PlaybookView } from "./store";
 
@@ -56,6 +57,34 @@ export interface Playbook {
 
 /** Au-delà, l'agent part avec la consigne générique ; la recherche finit et se met en cache pour la suite. */
 const RESEARCH_BUDGET_MS = 150_000;
+
+/**
+ * H Company démarre parfois une session qui reste à 0 étape (première capture
+ * prise, puis plus rien ; constaté le 2026-11-07, la session refuse même
+ * l'annulation). Sans aucune décision de l'agent passé ce délai, Kerdaxis coupe
+ * et relance une session neuve sur la MÊME action approuvée.
+ */
+export const STALL_MS = 90_000;
+export const MAX_SESSION_ATTEMPTS = 3;
+
+/**
+ * Le compte H Company ne fait avancer qu'un agent à la fois : une seconde
+ * session ouverte pendant qu'une autre est active (même en pause devant le
+ * bouton final) reste à 0 étape. Kerdaxis refuse donc d'en lancer une seconde.
+ * Une exécution sans nouvelle depuis ACTIVE_WINDOW_MS ne bloque plus (crash,
+ * onglet fermé) : au-delà, les sessions H ont de toute façon expiré.
+ */
+const ACTIVE_STATUSES = new Set(["prepared", "running", "awaiting_final_approval", "submitted"]);
+export const ACTIVE_WINDOW_MS = 20 * 60 * 1000;
+
+/** Exécution réelle en cours (les rediffusions d'essai n'occupent pas l'agent H). */
+export function findActiveExecution(executions: Iterable<Execution>, now: number = Date.now()): Execution | null {
+  for (const exec of executions) {
+    if (exec.replay || !ACTIVE_STATUSES.has(exec.status)) continue;
+    if (now - Date.parse(exec.updatedAt) <= ACTIVE_WINDOW_MS) return exec;
+  }
+  return null;
+}
 
 export function matchesPath(path: string, rule: PathRule | null): boolean {
   if (!rule || !path) return false;
@@ -199,7 +228,7 @@ async function prepareTarget(exec: Execution, supplier: Supplier): Promise<strin
   if (supplier.kind !== "stripe_portal") return supplierLoginUrl(supplier);
   const { supplierId, vendor, plan, account, monthlyCents } = exec.params;
   const target = await createPortalTarget({ supplierId, vendor, plan, account, monthlyCents }, exec.id);
-  exec.target = { subscriptionId: target.subscriptionId };
+  exec.target = { subscriptionId: target.subscriptionId, customerId: target.customerId };
   appendEvent(exec, {
     kind: "system",
     message: `Stripe (mode test) : abonnement ${plan} actif pour ${account} (${target.subscriptionId}), portail client ouvert.`,
@@ -215,6 +244,10 @@ export async function startExecution(approval: Approval, orgId: string): Promise
   const supplier = getSupplier(approval.params.supplierId);
   if (!supplier) throw new Error("fournisseur_non_configure");
   if (!reachableByAgent(supplier)) throw new Error("portail_non_public");
+  const active = findActiveExecution(db.executions.values());
+  if (active) {
+    throw new Error(`agent_deja_actif : un agent travaille déjà sur ${active.params.vendor}, termine ou arrête cette exécution d'abord`);
+  }
 
   approval.usedAt = new Date().toISOString();
   const now = new Date().toISOString();
@@ -260,49 +293,91 @@ export async function startExecution(approval: Approval, orgId: string): Promise
 
 async function launchSession(exec: Execution, supplier: Supplier): Promise<void> {
   try {
-    const { vendor, plan, account, allowedHost } = exec.params;
     const guide = await prepareGuide(exec, supplier);
+    exec.launchGuide = { text: guide.text, finalLabel: guide.finalLabel };
     const startUrl = await prepareTarget(exec, supplier);
     if (TERMINAL_STATUSES.has(exec.status)) return; // arrêté pendant la préparation
-    const session = await createSession(
-      {
-        agent: {
-          name: "kerdaxis-supplier-cancel",
-          description: "Prepares one approved supplier cancellation, stops at the final confirmation page, and confirms only after an explicit APPROVED message.",
-          environments: [
-            {
-              id: "browser",
-              kind: "web",
-              start_url: startUrl,
-              mode: { type: "visual", width: 1280, height: 720 },
-            },
-          ],
-          instructions: AGENT_INSTRUCTIONS(vendor, account, allowedHost),
-          answer_format: ANSWER_FORMAT,
-        },
-        messages: [{ type: "user_message", message: TASK_PREPARE(vendor, plan, account, guide.text, guide.finalLabel) }],
-        timezone: "Europe/Paris",
-        max_time_s: 600,
-        // Session interactive : après le tour 1, elle attend (`idle`) le feu vert.
-        idle_timeout_s: 900,
-        group_id: `kerdaxis-${exec.id}`,
-      },
-      exec.approvalId,
-    );
-    if (!session) throw new Error("réponse vide");
-    exec.sessionId = session.id;
-    exec.agentViewUrl = session.agent_view_url ?? null;
-    if (TERMINAL_STATUSES.has(exec.status)) {
-      await cancelSession(session.id).catch(() => undefined);
-      return;
-    }
-    exec.status = "running";
-    appendEvent(exec, { kind: "system", message: `Session H Company lancée sur ${allowedHost}.` });
+    await openAgentSession(exec, startUrl, 1);
   } catch (err) {
     exec.status = "failed";
     exec.error = err instanceof Error ? err.message : String(err);
     appendEvent(exec, { kind: "error", message: `Lancement impossible : ${exec.error}` });
   }
+}
+
+/** Ouvre la session H de la mission (essai `attempt`). Une clé d'idempotence par essai. */
+async function openAgentSession(exec: Execution, startUrl: string, attempt: number): Promise<void> {
+  const { vendor, plan, account, allowedHost } = exec.params;
+  const guide = exec.launchGuide;
+  if (!guide) throw new Error("consignes de mission absentes");
+  const session = await createSession(
+    {
+      agent: {
+        name: "kerdaxis-supplier-cancel",
+        description: "Prepares one approved supplier cancellation, stops at the final confirmation page, and confirms only after an explicit APPROVED message.",
+        environments: [
+          {
+            id: "browser",
+            kind: "web",
+            start_url: startUrl,
+            mode: { type: "visual", width: 1280, height: 720 },
+          },
+        ],
+        instructions: AGENT_INSTRUCTIONS(vendor, account, allowedHost),
+        answer_format: ANSWER_FORMAT,
+      },
+      messages: [{ type: "user_message", message: TASK_PREPARE(vendor, plan, account, guide.text, guide.finalLabel) }],
+      timezone: "Europe/Paris",
+      max_time_s: 600,
+      // Session interactive : après le tour 1, elle attend (`idle`) le feu vert.
+      idle_timeout_s: 900,
+      group_id: `kerdaxis-${exec.id}`,
+    },
+    attempt === 1 ? exec.approvalId : `${exec.approvalId}:${attempt}`,
+  );
+  if (!session) throw new Error("réponse vide");
+  Object.assign(exec, {
+    sessionId: session.id,
+    agentViewUrl: session.agent_view_url ?? null,
+    liveViewUrl: null,
+    fromIndex: 0,
+    steps: 0,
+    sessionStartedAt: new Date().toISOString(),
+    sessionAttempts: attempt,
+    sessionActed: false,
+  });
+  if (TERMINAL_STATUSES.has(exec.status)) {
+    await cancelSession(session.id).catch(() => undefined);
+    return;
+  }
+  exec.status = "running";
+  appendEvent(exec, { kind: "system", message: `Session H Company lancée sur ${allowedHost}${attempt > 1 ? ` (essai ${attempt}/${MAX_SESSION_ATTEMPTS})` : ""}.` });
+}
+
+/** La session H tourne mais l'agent n'a encore rien décidé depuis plus de STALL_MS. */
+export function isStalled(exec: Execution, now: number = Date.now()): boolean {
+  if (exec.status !== "running" || exec.finalDecision || exec.sessionActed || !exec.sessionStartedAt) return false;
+  return now - Date.parse(exec.sessionStartedAt) > STALL_MS;
+}
+
+/** Coupe la session bloquée et en ouvre une neuve sur la même action ; échec franc après MAX_SESSION_ATTEMPTS. */
+async function relaunchStalledSession(exec: Execution, supplier: Supplier): Promise<void> {
+  if (exec.sessionId) await cancelSession(exec.sessionId).catch(() => undefined);
+  const attempt = (exec.sessionAttempts ?? 1) + 1;
+  const waited = Math.round(STALL_MS / 1000);
+  if (attempt > MAX_SESSION_ATTEMPTS) {
+    exec.status = "failed";
+    exec.error = `H Company ne démarre pas l'agent (${MAX_SESSION_ATTEMPTS} sessions sans aucune action en ${waited} s)`;
+    appendEvent(exec, { kind: "error", message: `${exec.error}. Rien n'a été fait chez le fournisseur.` });
+    return;
+  }
+  appendEvent(exec, { kind: "warning", message: `L'agent H n'a fait aucune action en ${waited} s : session coupée et relancée.` });
+  // Même cible : lien de connexion du portail, ou nouveau lien de portail Stripe pour le MÊME abonnement.
+  const startUrl =
+    supplier.kind === "stripe_portal" && exec.target?.customerId
+      ? await openPortalSession(exec.target.customerId)
+      : supplierLoginUrl(supplier);
+  await openAgentSession(exec, startUrl, attempt);
 }
 
 export interface ApplyResult {
@@ -380,6 +455,7 @@ function applyEvent(exec: Execution, ev: HaiEvent, playbook: Playbook, res: Appl
       return;
     }
     case "policy_event": {
+      exec.sessionActed = true;
       const content = typeof d.content === "string" ? d.content.trim() : "";
       const tools = Array.isArray(d.tool_reqs) ? d.tool_reqs.map((t: { tool_name?: string }) => t.tool_name).filter(Boolean) : [];
       const msg = content || (tools.length ? `Action : ${tools.join(", ")}` : "");
@@ -445,6 +521,10 @@ export async function advanceExecution(exec: Execution, waitForSeconds = 5): Pro
   if (!supplier) return exec;
   db.advancing.add(exec.id);
   try {
+    if (isStalled(exec)) {
+      await relaunchStalledSession(exec, supplier);
+      return exec;
+    }
     let changes = await getChanges(exec.sessionId, exec.fromIndex, waitForSeconds);
     if (!changes) {
       // 204 : rien de nouveau. Une session terminée ne renvoie plus d'événement :
@@ -549,9 +629,12 @@ export async function decideFinal(exec: Execution, decision: "approve" | "refuse
     await postToolResult(exec.sessionId, exec.pendingToolCall, MESSAGE_APPROVED(button));
     exec.pendingToolCall = null;
   } else {
-    // Le message relance une session en pause ou en attente (`idle`).
+    // Le message relance une session en attente (`idle`) ; une session en pause
+    // ne le lit qu'une fois reprise. Message d'abord, reprise ensuite : l'agent
+    // se réveille avec le feu vert déjà dans sa file.
     await sendMessage(exec.sessionId, MESSAGE_APPROVED(button));
   }
+  if (exec.paused) await resumeSession(exec.sessionId).catch(() => undefined);
   exec.paused = false;
   exec.status = "running";
   appendEvent(exec, { kind: "approval", message: "Feu vert final donné : l'agent confirme la résiliation." });
