@@ -3,3 +3,4 @@ renders/
 .thumbnails/
 .waveform-cache/
 .hyperframes/
+.env.local
