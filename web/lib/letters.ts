@@ -88,7 +88,7 @@ const SYSTEM: Record<Lang, string> = {
 dirigeant de TPE / entreprise individuelle. Ton professionnel, courtois, direct.
 
 Règles impératives :
-- L'utilisateur enverra lui-même : n'écris jamais « envoyé par Argentier ».
+- L'utilisateur enverra lui-même : n'écris jamais « envoyé par Kerdaxis ».
 - Ne fabrique aucune donnée personnelle : mets des [crochets] pour tout ce que
   l'utilisateur doit compléter ([Nom], [n° de client], [email], [date]).
 - Reste factuel et réaliste : pas de menace, pas de chiffre inventé. Tu peux
@@ -99,7 +99,7 @@ Règles impératives :
 owner / sole trader. Professional, courteous, direct tone.
 
 Hard rules:
-- The user sends it themselves: never write "sent by Argentier".
+- The user sends it themselves: never write "sent by Kerdaxis".
 - Fabricate no personal data: use [brackets] for everything the user must fill in
   ([Name], [account number], [email], [date]).
 - Stay factual and realistic: no threats, no invented figures. You may mention that
@@ -110,7 +110,7 @@ Hard rules:
 Kleinunternehmerin / einen Einzelunternehmer. Professioneller, höflicher, direkter Ton.
 
 Zwingende Regeln:
-- Der Nutzer sendet selbst: schreibe nie „von Argentier gesendet".
+- Der Nutzer sendet selbst: schreibe nie „von Kerdaxis gesendet".
 - Erfinde keine personenbezogenen Daten: setze [Klammern] für alles, was der Nutzer
   ausfüllen muss ([Name], [Kundennummer], [E-Mail], [Datum]).
 - Bleibe sachlich und realistisch: keine Drohungen, keine erfundenen Zahlen. Du darfst
@@ -121,7 +121,7 @@ Zwingende Regeln:
 propietario de pequeña empresa / autónomo. Tono profesional, cortés y directo.
 
 Reglas imperativas:
-- El usuario lo enviará él mismo: nunca escribas «enviado por Argentier».
+- El usuario lo enviará él mismo: nunca escribas «enviado por Kerdaxis».
 - No inventes ningún dato personal: usa [corchetes] para todo lo que el usuario deba
   completar ([Nombre], [número de cliente], [email], [fecha]).
 - Mantente factual y realista: sin amenazas, sin cifras inventadas. Puedes mencionar que
@@ -132,7 +132,7 @@ Reglas imperativas:
 titolare di piccola impresa / lavoratore autonomo. Tono professionale, cortese e diretto.
 
 Regole imperative:
-- L'utente la invierà da sé: non scrivere mai «inviato da Argentier».
+- L'utente la invierà da sé: non scrivere mai «inviato da Kerdaxis».
 - Non inventare alcun dato personale: usa le [parentesi] per tutto ciò che l'utente deve
   completare ([Nome], [numero cliente], [email], [data]).
 - Resta fattuale e realistico: nessuna minaccia, nessuna cifra inventata. Puoi menzionare
@@ -260,7 +260,7 @@ Looking forward to your reply, best regards.
 [Company] — [Company ID]
 [Email] · [Phone]
 
-— Draft prepared by Argentier. Review it, fill in the [brackets], then send it yourself.`;
+— Draft prepared by Kerdaxis. Review it, fill in the [brackets], then send it yourself.`;
   }
 
   const objet = isCancel
@@ -288,5 +288,5 @@ Dans l'attente de votre retour, je vous prie d'agréer mes salutations distingu�
 [Raison sociale] — [SIRET]
 [Email] · [Téléphone]
 
-— Brouillon préparé par Argentier. Relis, complète les [crochets], puis envoie-le toi-même.`;
+— Brouillon préparé par Kerdaxis. Relis, complète les [crochets], puis envoie-le toi-même.`;
 }

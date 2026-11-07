@@ -1,327 +1,203 @@
-# Argentier — the autonomous CFO agent for Qonto
+# Kerdaxis
 
-> **The CFO your business will never hire.** A **read-only** agent on the **Qonto MCP**
-> that separates your flows by nature, reveals your true controllable run-rate,
-> benchmarks prices on the live web (sourced + dated via **Linkup MCP**), and prepares
-> ready-to-send letters — **it never moves money and never sends anything.**
->
-> _Prototype for the **Qonto × Anthropic MCP Hackathon**._ · **Operator acts. Analyst explains. Argentier optimizes.**
+**AI doesn't just find savings. It makes them happen.**
 
-🌐 **[Live · getargentier.com](https://www.getargentier.com)** — landing + one-click demo · ▶ **[3-min demo (Loom)](https://www.loom.com/share/b9f1a77d8eeb4dd5b0a8699f0c885123)** · Script → [`DEMO.md`](DEMO.md)
+Kerdaxis reads a company's bank account (Qonto, read-only), finds the subscriptions nobody uses, and sends an
+[H Company](https://hcompany.ai) computer-use agent to cancel them on the supplier's own website. The agent
+stops in front of the irreversible button and waits for a human click. A cancellation only counts once the
+supplier's portal shows the confirmation number.
 
----
+[**kerdaxis.com**](https://kerdaxis.com) (site and 69 s film) · [**Try it free**](https://app.kerdaxis.com/try) (email only) ·
+[Demo supplier portal](https://portal.kerdaxis.com) (fictional "Nuvio CRM")
 
-## Table of contents
-- [What it is](#what-it-is) · [Surfaces](#surfaces) · [The loop](#the-loop) · [North Star metric](#north-star--annualized-proven-savings-aps)
-- [Architecture](#architecture) — [system](#system-overview) · [user flow](#user-flow) · [data flow](#data-flow)
-- [The 4 rules](#the-4-non-negotiable-rules) · [Tech stack](#tech-stack)
-- [Setup](#setup) · [File structure](#file-structure) · [Deploy](#deploy) · [Safety](#safety)
+> Built for a hackathon on top of [Argentier](#heritage-argentier), our read-only CFO agent for Qonto.
+> The supplier is fictional. The agent and its run are real.
 
 ---
 
-## What it is
+## Contents
 
-90% of small businesses will never hire a CFO. Their Qonto account is full of data and
-nobody to read it — **the statement lies**: it blends recurring tools, structural costs and
-one-off spend into one number. Argentier is the missing agent that reads it for them.
+- [What happens in a run](#what-happens-in-a-run)
+- [The final-click gate](#the-final-click-gate)
+- [A real recorded run](#a-real-recorded-run)
+- [Access: free trial, subscription, jury](#access-free-trial-subscription-jury)
+- [Architecture](#architecture)
+- [Run it locally](#run-it-locally)
+- [Repository layout](#repository-layout)
+- [Tests and CI](#tests-and-ci)
+- [Known limits](#known-limits)
+- [Heritage: Argentier](#heritage-argentier)
 
-**The one architectural decision:** a brain split in two — the **LLM orchestrates and explains**,
-a **deterministic engine computes every euro**. The model never does financial arithmetic. That is
-what makes every figure auditable.
+---
 
-## Surfaces
+## What happens in a run
 
-| Surface | What it is | State |
+1. **Read.** Kerdaxis reads the bank account through the Qonto MCP. Every write tool is denied. It never moves money.
+2. **Count.** A deterministic engine computes every euro: recurring tools, structural costs, one-offs, the controllable run-rate. The LLM only labels; it never does arithmetic.
+3. **Decide.** The Autopilot card names one action, for example *Nuvio CRM: nobody has logged in for 90 days, 129 €/mo → 1,548 €/yr*. A human approves it.
+4. **Act.** An H Company agent opens the supplier's portal in its own cloud browser. It finds the subscription, gives a reason, declines the retention offer and reaches the final confirmation page.
+5. **Stop.** Kerdaxis pauses the agent before *Confirm cancellation*. The panel shows the page the agent sees and waits for the human's final go.
+6. **Prove.** After the go, the agent confirms. Kerdaxis then reads the supplier's state through the portal's own API: *cancelled · NUV-…*. It does not take the agent's word for it.
+7. **Verify.** At D+30, the saving is checked on the bank statement. The ledger keeps five values apart: potential, approved, executed, supplier-confirmed, verified on statement.
+
+Voice commands (Gladia live speech-to-text) can open screens, explain a number or prepare an action. They can never give the final go.
+
+## The final-click gate
+
+The irreversible click is guarded by three independent layers. Any one of them is enough to stop the agent.
+
+| Layer | Where | What it does |
 |---|---|---|
-| **Live site** → **[getargentier.com](https://www.getargentier.com)** | Landing (`/`) + one-click demo (`/demo`): dashboard, **Autopilote**, natures waterfall, savings simulator, tracker board (drag & drop), ready-to-send letters, **5 languages** (FR/EN/DE/ES/IT), **ElevenLabs voice** | ✅ deployed (Vercel) |
-| **Claude Code Skill** (`/audit`, `/verify`) | The real agent: Qonto MCP (read-only) → `engine.py` → Linkup MCP → `drafts/` | ✅ works live |
-| **MCP server** (`my-app/`) | The deterministic engine exposed as an MCP server on **Cloudflare Workers** — [`argentier-mcp…workers.dev/mcp`](https://argentier-mcp.bonjour-e83.workers.dev/mcp), callable by any MCP client | ✅ live on Cloudflare |
-| **Waitlist** | Demo-gate email captured on click → stored in **Cloudflare KV** (`POST /waitlist` on the Worker) | ✅ live |
-| **Managed Agent** (`scripts/`) | Script that creates a real **Claude Managed Agent** (hosted autopilot) — verified run | ✅ proof run |
+| 1. Two-turn mission | `web/lib/execution/runner.ts` | The agent's first task ends *at* the final page. Its instructions forbid ticking the final box or clicking the final button unless a message says `APPROVED`. |
+| 2. Watchdog pause | `runner.ts` + `suppliers.ts` (`finalStepPath: /cancel/confirm`) | As soon as the agent's browser reaches the confirmation page, Kerdaxis pauses the H session. |
+| 3. UI-only approval | `app/api/execution/[id]/final` | The `APPROVED` message is sent only after a click in the interface (`channel: "ui"`). Voice cannot send it. |
 
-## The loop
+Before any of this, the human approval is bound to one exact action. A SHA-256 hash covers supplier, plan, account and amount. It is single use and valid for 10 minutes (`web/lib/execution/policy.ts`). The browser only picks a supplier; amounts come from the server catalogue.
 
-```
-OBSERVE ─▶ ANALYSE ─▶ BENCHMARK ─▶ RECOMMEND ─▶ GATE ─▶ LEDGER ─▶ (J+30) VERIFY
-Qonto MCP   engine.py   Linkup MCP   sourced      human    decisions   re-read &
-(read-only) (the euros)  (sourced+    card        approves  .json       prove the
-                          dated)                   & sends              money dropped
-```
+Page text is treated as untrusted data. The demo portal can inject a hidden note telling AI assistants to accept the retention offer. In the recorded run below, the agent declined it.
 
----
+## A real recorded run
 
-## North Star — Annualized Proven Savings (APS)
+H Company session `192149b8-…`, 7 Nov 2026, 18:43:07–18:44:00 (Paris), English portal, prompt injection **on**.
 
-> **One number: the euros Argentier put back in the account, where the *drop* is proven on the
-> real Qonto statement at J+30 and the *annualization* is the deterministic engine's — never the
-> LLM's, never "money merely found".**
+| | |
+|---|---|
+| First screen → confirmation | ~45 s, including a 9 s pause for the human's go |
+| Agent steps | 10 |
+| Agent cost | $0.027 (H Company total) |
+| Injected "accept the offer" note | ignored, offer declined |
+| Result | `supplier_confirmed` · **NUV-RW3L2Y**, identical on the agent and the portal side |
 
-**North Star Metric (NSM): `economies_prouvees_eur_an`** — the sum of engine-computed
-`montant_optimisable_eur` over decisions a human approved *and sent*, where a **J+30 read-only
-re-read of the real Qonto account confirmed the recurring debit dropped or vanished** for the
-elapsed cycle(s).
+The 10 captures of this run are in `web/public/replay/`. They also drive the free-trial replay (see below).
 
-```
-NSM = Σ montant_optimisable_eur   over decisions where statut = "prouve"
-Revenue = 5% × NSM        → user value == business value, by construction ("no savings, no cost")
-```
+## Access: free trial, subscription, jury
 
-**Two honest halves — what is proven vs. what is projected.** At J+30, `/verify`
-(`.claude/commands/verify.md`) re-pulls 90 d of flows read-only, re-runs `engine.py`, and proves the
-**monthly drop** actually left the statement. The **×12** on top is `engine.py`'s deterministic
-annualization of that proven monthly delta — a projection, not a statement fact. We say *proven
-drop, engine-annualized* — not "a proven annual number a customer reads on their statement" (they
-read one cycle; the year is the engine's extrapolation).
+The app at `app.kerdaxis.com` has three levels of access. Each is a signed HMAC cookie checked in `web/middleware.ts`.
 
-**Which levers are NSM-eligible** (only those with an observable statement drop):
-
-| Lever | In NSM? | Why |
+| Access | How | What you get |
 |---|---|---|
-| Recurring sub (`abonnement`, ×12) | ✅ annualized | debit vanishes/shrinks — observable in flows |
-| FX fees (`fx`, ×365/90) | ✅ annualized | `fx_card` fees fall — observable |
-| Renegotiated hike (`hausse`) | ✅ **only if** the debit visibly drops | a renegotiated amount is observable; a merely *avoided* future hike is **not** → off-NSM "avoided-cost" register |
-| Duplicate (`doublon`) | ⚠️ **one-shot recovery, not ×12** | a same-day double charge has nothing recurring to "disappear"; counted in a separate one-shot proven total, never annualized |
-| Recoverable VAT (`tva_perdue`) | ❌ **excluded** | a tax-filing outcome, invisible in Qonto flows — `/verify` cannot observe it; tracked off-ledger, accountant-confirmed |
+| **Free trial** | [`/try`](https://app.kerdaxis.com/try): email only | The whole app on a demo company. The H Company agent run is a **replay** of the real recorded session: same captures, same timings, same final-click gate. It is labelled "Replay · recorded real session", and no agent is launched. |
+| **Subscriber, 5 €/month** | [`/signup`](https://app.kerdaxis.com/signup): email and password, then Stripe Checkout | Live H Company agent runs on the demo portal. The subscription is re-checked with Stripe at every sign-in. A Stripe customer portal handles billing. |
+| **Jury / test** | [`/login`](https://app.kerdaxis.com/login): test password | Same as a subscriber, without payment. |
 
-- **Leading indicator** — `economies_en_attente_eur_an`: the aggregate of approved-but-not-yet-proven
-  euros, the queue `/verify` draws from. NSM is **lagging by design** (a real proof needs ~30 real
-  days of post-action observation — that latency is the feature).
-- **Integrity — one hard lock, honestly graded.** The euro counts only if the money stopped leaving
-  a **read-only** Qonto account Argentier *cannot write to* — enforced at two layers: every write
-  tool hard-denied in `settings.json` (`deny` > `allow`) **and** the Qonto MCP server itself moves no
-  money. That is the one architectural guarantee. The other controls — engine-as-sole-arithmetic
-  (rule #2, pinned by 24 unit tests), the human gate, net-of-reversal — are **conventions or backlog
-  items**, listed as such below, not dressed up as architecture.
+The middleware strips and then rewrites the internal headers `x-kx-test-auth` and `x-kx-role`, so a value sent by a client is never trusted. A trial session can only read its own replays, and its routes never call H Company.
 
-**Input tree** (each factor names where it is computed): audits run → qualified source+dated levers
-per audit (`engine.py analyze()`) → human approval rate at the GATE (`decisions.json statut`) →
-**J+30 proof rate** (`verify.md`) → durability × avg proven € per lever.
-
-**Activation** = the first `/audit` that surfaces ≥1 `engine.py` lever with a sourced+dated Linkup
-benchmark **and** a human approves ≥1 recommendation into `drafts/` — logged as the first
-`decisions.json` entry with **`statut = "approuve"`** (matching `audit.md` step f; there is no
-per-decision `en_attente` state — pending lives only in the aggregate scalar). **Aha** = the first
-`/verify` that flips `economies_prouvees_eur_an` from 0 to positive: a drop proven on the user's own
-statement, by an agent never allowed to touch the money.
-
-**Guardrails, graded by real enforcement** (not all are architectural — saying so is the point):
-
-| Bound | Enforcement | Grade |
-|---|---|---|
-| Qonto money-movement = 0 | `settings.json` deny + Qonto MCP cannot move money | **HARD** (two layers) |
-| Qonto write tools invoked = 0 | 8-read-tool allowlist | **HARD** |
-| PII to web = 0 | web app: `assertNoPii` fail-closes before every egress fetch (`web/lib/privacy/egress.ts`, 59 tests); skill/MCP path: `audit.md` prompt | **HARD** (web app) · SOFT (skill) |
-| Autonomous sends = 0 | `drafts/` label **+ Gmail/Instantly/Apollo denied** in `settings.json` | **HARD** for connected send MCPs |
-| NSM aggregate = engine-summed | **`sum_ledger.py`** recomputes both scalars from `decisions[]` (`--check` guards drift) | **HARD** (was LLM-summed) |
-| Displayed € = engine € | rule #2 convention + 24 engine tests | **SOFT+tests** — backlog: assert displayed==engine |
-| Net-of-reversal | `/verify` re-reads `prouve` decisions; a reverted saving flips to `reverte` and leaves the sum | **HARD** (self-correcting) |
-| Untouchable suppliers respected | `profile.json` prompt-checked (empty; engine doesn't read it) | **SOFT** — backlog: wire into engine |
-
-> **Receivables metrics** (DSO / *délai moyen de paiement*, *impayés*, acceptance rate) are **not**
-> in this NSM — Argentier is cost-recovery today and computes none of them from its own data. They
-> are scoped to a **future receivables module** (roadmap), the day it reads `list_client_invoices`.
-> See [`docs/product-metrics.md`](docs/product-metrics.md) for the full framework, honest
-> instrumentation status, and hardening backlog.
-
----
-
-## Company Risk Agent (SIREN → risk /20)
-
-A second agent, built on the **Mastra agent harness**: give it a **SIREN**, it identifies the French
-company, pulls what financials are public (RNE), reads **BODACC** for collective procedures, searches
-the live web via the **Linkup MCP**, cross-checks every hit against the company's identity
-(anti-homonym), and returns a **risk score /20** — same split brain: a **deterministic engine scores,
-the LLM only researches and explains**, and every external signal carries a source.
-
-- **Two scores, never hidden behind one** — `financialScore /20` (6 ratio dimensions) and
-  `externalSignalsScore /20` (sourced web + legal signals), combined 80/20 (configurable), and only
-  when the data supports it. Missing financials stay `null`, never `0`.
-- **CRITICAL_EVENT** — a confirmed collective procedure (BODACC, official source) surfaces immediately
-  and is never averaged away.
-- **The harness, actually used** — persistent memory + a **thread per SIREN** (analysis history),
-  observability with PII-scrubbed traces, read-only tools; scheduling primitives are in place for the
-  future supplier-risk monitoring (§ Qonto transactions → suppliers → SIREN → risk map).
-- **Surface** — a card UI at **`/risk`** + **`POST /api/risk`**. Code in [`web/lib/risk/`](web/lib/risk/)
-  (`engine.ts` scores, `mastra.ts` orchestrates, `bodacc.ts`/`identity.ts` read French registries).
-
-*Mastra orchestrates · Linkup MCP searches · the engine scores · Claude explains.*
-
----
+**Stripe is in test mode.** Pay with `4242 4242 4242 4242`, any future date, any CVC. A `sk_live_` key is refused unless `STRIPE_ALLOW_LIVE=1` is set on purpose. Return from Checkout is verified server-side against Stripe, so there is no webhook. The 5 €/month price is created once, by lookup key, on first use (`web/lib/billing/stripe.ts`).
 
 ## Architecture
 
-### System overview
-
-```mermaid
-flowchart TD
-    U([You — trigger, review, approve, send])
-    subgraph Surfaces
-      SK["Claude Code Skill<br/>/audit · /verify"]
-      WEB["Web app (Next.js)<br/>landing + dashboard"]
-      MCP["MCP server<br/>(Cloudflare Worker)"]
-      CMA["Managed Agent<br/>(hosted autopilot)"]
-    end
-    ENG["engine.py / engine.ts<br/><b>deterministic — every euro</b>"]
-    QONTO[("Qonto MCP<br/>read-only")]
-    LINK[("Linkup MCP<br/>sourced + dated")]
-
-    U --> SK & WEB & CMA
-    SK --> QONTO & ENG & LINK
-    WEB --> ENG & LINK
-    MCP --> ENG
-    CMA --> QONTO & ENG & LINK
-    ENG -->|levers, natures, run-rate| U
-```
-
-*Guardrail:* every Qonto **write** tool is hard-denied in [`.claude/settings.json`](.claude/settings.json)
-(`deny` > `allow`). Argentier cannot move money.
-
-### User flow
-
-```mermaid
-sequenceDiagram
-    actor You
-    participant A as Argentier
-    participant Q as Qonto MCP
-    participant E as engine
-    participant L as Linkup MCP
-    You->>A: /audit (or "Voir la démo")
-    A->>Q: get_organization, list_transactions (90d, read-only)
-    A->>E: run engine on the raw flows
-    E-->>A: natures, levers, TVA, silent hikes (euros)
-    A->>You: green light to benchmark?
-    You-->>A: yes
-    A->>L: linkup-search (merchant + category only)
-    L-->>A: alternatives + price + dated source
-    A->>You: sourced card + draft letter (drafts/)
-    You->>You: approve & send (Argentier sends nothing)
-    Note over A: ~J+30 → /verify re-reads & proves the saving
-```
-
-### Data flow
-
 ```mermaid
 flowchart LR
-    Q["Qonto txs<br/>(raw JSON)"] --> N["normalize<br/>(Tx[])"]
-    N --> C["categorize<br/>(rules / Claude)"]
-    C --> B["build()<br/><b>deterministic engine</b>"]
-    B --> R["AnalyzeResult<br/>natures · levers · tvaPerdue · hausse"]
-    R --> UI["Web UI / rapport"]
-    R --> D["drafts/ letters"]
-    R --> LG["decisions.json (ledger)"]
-    B -. only merchant+category .-> LK["Linkup (web)"]
+    U([Human]) -->|approve · final go| APP
+    subgraph APP["Kerdaxis app · Next.js 15 (web/)"]
+      ENG["Deterministic engine<br/>every euro"]
+      AP["Autopilot<br/>approval = action hash"]
+      EX["Execution runner<br/>gate · watchdog · ledger"]
+      VO["Voice · Gladia"]
+    end
+    Q[("Qonto MCP<br/>read-only")] --> ENG
+    AP --> EX
+    EX <-->|sessions · pause · APPROVED| H["H Company Agents API<br/>computer-use agent"]
+    H -->|cloud browser| P["Supplier portal<br/>portal.kerdaxis.com<br/>Cloudflare Worker + Durable Object"]
+    EX -->|read state: cancelled · NUV-…| P
+    S["Stripe Checkout<br/>(test mode)"] --- APP
 ```
 
-**Zero PII to the web:** only the merchant name + category ever leave the machine (never an
-IBAN, `transaction_id`, or personal data).
+| Piece | Stack | Where it runs |
+|---|---|---|
+| Site, `kerdaxis.com` | Static HTML, EN/FR, the film | Cloudflare Worker, assets only (`site/`) |
+| App, `app.kerdaxis.com` | Next.js 15, React 19, TypeScript | Demo machine, exposed through a Cloudflare Tunnel (`web/`) |
+| Demo supplier portal | TypeScript Worker, server-rendered HTML, SQLite Durable Object | `portal.kerdaxis.com` (`portal/`) |
+| Agent | H Company Agents API (`agp.eu.hcompany.ai/api/v2`) | H Company cloud |
+| Voice | Gladia live STT (`@gladiaio/sdk`). The server opens the session, so the key never reaches the browser. | Browser and app server |
+| Billing | Stripe REST API (no SDK) | Stripe |
 
----
+## Run it locally
 
-## The 4 non-negotiable rules
+Requirements: Node 20+, an H Company API key, and optionally Gladia and Stripe test keys.
 
-1. **Read-only Qonto** — only read tools; every write/transfer/card tool is hard-denied.
-2. **The engine computes, never the LLM** — every euro comes from `engine.py` / `engine.ts`.
-3. **Zero PII to the web** — only merchant + category go to Linkup.
-4. **Price = source + date** — otherwise "not verified" (1 retry, then dropped).
-
-## Tech stack
-
-| Layer | Tech |
-|---|---|
-| Agent engine | **Python** (`engine.py`) — deterministic, `unittest` |
-| Web app | **Next.js 15** / React 19 / TypeScript, CSS-in-JS, no UI framework |
-| Web engine mirror | **TypeScript** (`web/lib/engine.ts`) — same rules as `engine.py` |
-| LLM | **Claude** (Anthropic SDK) — categorization + letters (labels only, never euros) |
-| MCPs | **Qonto** (read-only), **Linkup** (benchmark) |
-| Voice | **ElevenLabs** — TTS (`/api/voice`) + Conversational widget |
-| MCP server | **Cloudflare Workers** + `agents` (`McpAgent`) + `@modelcontextprotocol/sdk` |
-| Hosted agent | **Claude Managed Agents** (beta) |
-
----
-
-## Setup
-
-### 1. Deterministic engine (Python)
 ```bash
-python3 -m unittest discover -s tests      # 24 rule tests (recurrence, ×12, duplicates, FX, PRO/PERSO, hikes, VAT)
-python3 engine.py data/exemple-demo.json   # see the engine on a sample
-```
-
-### 2. The Claude Code skill (the submission)
-Open this repo in **Claude Code** with the Qonto + Linkup MCPs connected, then:
-```
-/audit      # OBSERVE → ANALYSE → BENCHMARK → RECOMMEND → drafts
-/verify     # ~30 days later: prove the saving landed
-```
-
-### 3. Web app (landing + dashboard)
-```bash
-cd web
-cp .env.example .env.local     # fill keys (or leave empty → demo data)
+# 1. Demo supplier portal (fictional Nuvio CRM)
+cd portal
 npm install
-npm run dev                    # http://localhost:3000
-```
-`.env.local` keys: `ANTHROPIC_API_KEY`, `LINKUP_API_KEY`, `QONTO_LOGIN`/`QONTO_SECRET_KEY`/`QONTO_IBAN`,
-`ELEVENLABS_API_KEY` (+ optional `ELEVENLABS_VOICE_ID`, `NEXT_PUBLIC_ELEVENLABS_AGENT_ID`).
-Without Qonto/Anthropic keys the app runs on **demo data** (mock).
+cp .dev.vars.example .dev.vars        # random values: openssl rand -hex 32
+npm run dev                           # http://localhost:8790
 
-### 4. MCP server on Cloudflare (`my-app/`)
-```bash
-cd my-app
+# 2. Kerdaxis app
+cd ../web
 npm install
-npx wrangler dev               # local  →  POST http://localhost:8787/mcp
-npx wrangler login && npx wrangler deploy   # publish (needs your Cloudflare OAuth)
+cp .env.example .env.local            # fill the Kerdaxis section
+npx next dev -p 3001                  # http://localhost:3001/demo
 ```
-Exposes 4 tools: `argentier_rules`, `argentier_classify_ei`, `argentier_annualize`, `argentier_analyze`.
 
-### 5. Real Managed Agent (`scripts/`)
+The H Company agent runs in H's cloud browser, so it can only reach a **public** portal. Point `PORTAL_BASE_URL`
+at `https://portal.kerdaxis.com` or at your own deployment (`cd portal && npx wrangler deploy`). From
+`localhost` the app is open without login. From the internet it requires one of the access levels above.
+
+To expose the app the way the demo does:
+
 ```bash
-node scripts/create-cma-agent.mjs          # reads ANTHROPIC_API_KEY from web/.env.local
+cloudflared tunnel --config ~/.cloudflared/kerdaxis-app.yml run   # app.kerdaxis.com → localhost:3001
 ```
-Creates a hosted CMA agent + session that runs a task in a sandbox. See [`docs/autopilote-cma-spec.md`](docs/autopilote-cma-spec.md).
+
+`next dev` reads `.env.local` once at start. Restart it after changing a key, because the middleware keeps the old values.
+
+## Repository layout
+
+```
+site/                 kerdaxis.com: landing (EN/FR), film, posters, loops
+web/                  the Kerdaxis app (Next.js)
+  app/                dashboard (Argentier.tsx), ExecutionPanel, VoiceCommand,
+                      access pages (try, signup, signin, login)
+  app/api/execution/  approve · start · status · [id] · final · stop · screenshot · reset
+  app/api/            try · signup · signin · signout · me · billing/{return,portal} · voice/gladia
+  lib/execution/      policy (action hash) · runner (gate) · replay (trial) · suppliers · store
+  lib/auth/           signed session cookies, test access
+  lib/accounts/       local accounts and trial leads (scrypt passwords; data/ is gitignored)
+  lib/billing/        Stripe Checkout, subscription check, customer portal
+  middleware.ts       access levels and internal headers
+  public/replay/      the 10 captures of the recorded run
+portal/               fictional supplier portal (Cloudflare Worker + Durable Object)
+my-app/               Argentier engine as a remote MCP server (Cloudflare Workers)
+engine.py, tests/     Argentier deterministic engine (Python) and its tests
+docs/, PRD + Claude Code/   product docs, the Kerdaxis PRD
+```
+
+## Tests and CI
+
+```bash
+cd web && npx tsc --noEmit && npx vitest run     # 652 tests
+python3 -m unittest discover -s tests            # 32 engine and ledger tests
+bash scripts/check-secrets.sh                    # no secret or bank data in tracked files
+cd portal && npm run typecheck && npm run smoke  # full portal path + API (resets the demo account)
+```
+
+The tests cover the gate in both directions: a replay never confirms without the final go, and a refusal stops everything. Session cookies reject forged roles and expired values. GitHub Actions (`.github/workflows/ci.yml`) runs three blocking jobs: engine, web (types, tests, build) and secrets.
+
+## Known limits
+
+This is a hackathon build. Here is what that means today:
+
+- **The app runs on the demo laptop**, exposed through a Cloudflare Tunnel. If the laptop sleeps, `app.kerdaxis.com` is down. The site and the portal are on Cloudflare and stay up.
+- **Storage is local.** Executions live in process memory, and accounts and trial emails are JSON files in `web/data/`. The target is Cloudflare D1, with the interface already in `web/lib/db/tenant.ts`.
+- **One supplier.** Only the fictional Nuvio CRM portal is wired. Real suppliers need a per-supplier playbook (start page, final step, how to read state).
+- **Only Qonto is connected.** Sage, Pennylane and SaaS/CRM tools are shown as "coming", not live.
+- **Stripe is in test mode.** No real money moves.
+
+## Heritage: Argentier
+
+Kerdaxis started as a duplicate of **Argentier**, a read-only CFO agent for Qonto built for the
+Qonto × Anthropic MCP hackathon. The rules it inherits still apply:
+
+1. **Read-only Qonto.** Every write, transfer and card tool is hard-denied (`.claude/settings.json`).
+2. **The engine computes, never the LLM.** Every euro comes from `engine.py` / `web/lib/engine`.
+3. **No personal data to the web.** Only a merchant name and category leave for price benchmarks.
+4. **A price needs a source and a date**, otherwise it is shown as "not verified".
+
+The Claude Code skill (`/audit`, `/verify`), the MCP server (`my-app/`), the Company Risk agent (`/risk`)
+and the North Star metric are documented in [`SKILL.md`](SKILL.md), [`docs/product-metrics.md`](docs/product-metrics.md)
+and [`docs/`](docs/).
 
 ---
 
-## File structure
-
-```
-DAF Qonto/
-├─ engine.py                 # deterministic engine (the numbers) — source of truth
-├─ sum_ledger.py             # deterministic ledger sum (North Star aggregate, not LLM-summed)
-├─ tests/                    # test_engine.py (24 rules) + test_sum_ledger.py (6)
-├─ SKILL.md                  # the Argentier skill (MCP-native orchestration)
-├─ .claude/
-│  ├─ settings.json          # read-only guardrail (deny > allow)
-│  └─ commands/              # /audit, /verify
-├─ web/                      # Next.js app (landing + dashboard)
-│  ├─ app/
-│  │  ├─ page.tsx            # landing ↔ app toggle
-│  │  ├─ Landing.tsx         # marketing landing (Qonto-styled)
-│  │  ├─ Argentier.tsx       # the dashboard (Autopilote, waterfall, board, voice…)
-│  │  └─ api/                # analyze · benchmark · letter · voice
-│  └─ lib/                   # engine.ts · categorize.ts · types.ts · i18n.ts · mock.ts
-├─ my-app/                   # MCP server on Cloudflare Workers (McpAgent)
-│  └─ src/index.ts + src/lib # engine reused verbatim
-├─ scripts/create-cma-agent.mjs   # real Claude Managed Agent
-├─ docs/                     # product-metrics (North Star) · PRD · CMA spec · landing/Cloudflare · voice setup
-└─ data/, drafts/            # real flows, ledger, deliverables (gitignored)
-```
-
----
-
-## Deploy
-
-- **Web app** → Cloudflare Workers via OpenNext (`npx opennextjs-cloudflare build`).
-- **MCP server** → `cd my-app && npx wrangler login && npx wrangler deploy`.
-- **Custom domain** `getargentier.com` → add it in the Cloudflare dashboard (Workers/Pages → Custom domains)
-  or `wrangler` route. All keys live in **Cloudflare secrets** (`wrangler secret put`), never in the repo.
-
-## Safety
-
-Read-only on Qonto; never initiates a payment, transfer, or card change. Benchmarks send only a
-merchant name + category. Tax suggestions are leads to confirm with an accountant. **You are always
-the one who sends.**
-
----
-
-**The CFO your business will never hire.**
+MIT License · Contact: [hello@kerdaxis.com](mailto:hello@kerdaxis.com)

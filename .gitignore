@@ -43,3 +43,10 @@ __pycache__/
 # Base locale CompanyRisk (Mastra memory + historique)
 web/.data/
 .data/
+
+# Kerdaxis — secrets locaux (jamais commités)
+.dev.vars
+**/.dev.vars
+.DS_Store
+**/.wrangler/
+**/.open-next/

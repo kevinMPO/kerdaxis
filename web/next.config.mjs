@@ -60,6 +60,10 @@ const CSP = [
     "wss://*.livekit.cloud",
     // Le script du widget est récupéré depuis unpkg.
     "https://unpkg.com",
+    // Kerdaxis — commande vocale : le navigateur envoie le micro sur la
+    // WebSocket Gladia (URL à jeton temporaire, ouverte par notre serveur).
+    "wss://api.gladia.io",
+    "wss://*.gladia.io",
   ].join(" "),
   // Le widget peut créer un worker à partir d'un blob (traitement audio).
   "worker-src 'self' blob:",
@@ -137,6 +141,22 @@ const nextConfig = {
 
   async headers() {
     return [{ source: "/:chemin*", headers: EN_TETES_SECURITE }];
+  },
+
+  // Kerdaxis : le SDK Gladia importe des modules Node (fs, path, ws, undici)
+  // derrière des tests d'environnement ; côté navigateur il utilise le
+  // WebSocket natif. On les neutralise pour le bundle navigateur uniquement.
+  webpack(config, { isServer }) {
+    if (!isServer) {
+      config.resolve.fallback = { ...(config.resolve.fallback ?? {}), fs: false, path: false, ws: false, undici: false };
+    }
+    return config;
+  },
+
+  // Kerdaxis : la page d'accueil est le front Kerdaxis (public/kerdaxis.html,
+  // repris du prototype fourni) ; son bouton principal ouvre l'app (/demo).
+  async rewrites() {
+    return { beforeFiles: [{ source: "/", destination: "/kerdaxis.html" }] };
   },
 };
 

@@ -30,7 +30,14 @@ const RULES = [
 ];
 
 export class ArgentierMCP extends McpAgent<Env, Record<string, never>, Record<string, never>> {
-  server = new McpServer({ name: "argentier-engine", version: "1.0.0" });
+  // maxToolInputElements (SDK >= 1.32, désactivé par défaut) : plafonne le nombre
+  // d'éléments de tableau + clés d'objet validés par tools/call (GHSA-46jr-4wx8-v453).
+  // 50 000 couvre 5 000 transactions complètes (≈ 8 éléments chacune), la même
+  // limite que l'API moteur web (web/lib/engine/api.ts).
+  server = new McpServer(
+    { name: "argentier-engine", version: "1.0.0" },
+    { maxToolInputElements: 50_000 },
+  );
   initialState = {};
 
   async init() {
@@ -178,6 +185,74 @@ async function rateLimit(
   return true;
 }
 
+// --- Garde DoS de POST /mcp ------------------------------------------------
+// La couche HTTP de McpAgent (agents) ne passe PAS par le transport du SDK MCP :
+// les limites du SDK >= 1.32 (taille de corps, longueur de lot) ne s'y
+// appliquent donc pas. Constaté en local : un lot de 5 000 messages était
+// accepté, et un corps « chunked » de 6 Mo sans Content-Length contournait la
+// limite de 4 Mo d'agents et faisait tomber le Durable Object (SQLITE_TOOBIG).
+// Même patron que web/lib/engine/handler.ts : on borne AVANT tout parse.
+
+/** 5 000 transactions ≈ 700 Ko ; reste sous la limite de 2 Mo par valeur SQLite des Durable Objects. */
+const MCP_MAX_BODY_BYTES = 1_048_576;
+/** Longueur max d'un lot JSON-RPC (même seuil que le transport du SDK MCP >= 1.32). */
+const MCP_MAX_BATCH = 100;
+
+function mcpReject(status: number, message: string): Response {
+  return Response.json(
+    { jsonrpc: "2.0", id: null, error: { code: -32600, message } },
+    { status, headers: CORS },
+  );
+}
+
+/**
+ * Lit le corps d'un POST /mcp avec un plafond (y compris sans Content-Length),
+ * refuse les lots JSON-RPC trop longs, puis rend une requête équivalente portant
+ * le corps déjà lu. Une `Response` = refus à renvoyer tel quel.
+ */
+async function guardMcpPost(request: Request): Promise<Request | Response> {
+  const declared = Number(request.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > MCP_MAX_BODY_BYTES) {
+    return mcpReject(413, "Request body too large");
+  }
+
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  const reader = request.body?.getReader();
+  if (reader) {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MCP_MAX_BODY_BYTES) {
+        await reader.cancel();
+        return mcpReject(413, "Request body too large");
+      }
+      chunks.push(value);
+    }
+  }
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const c of chunks) {
+    body.set(c, offset);
+    offset += c.byteLength;
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(new TextDecoder().decode(body));
+    if (Array.isArray(parsed) && parsed.length > MCP_MAX_BATCH) {
+      return mcpReject(400, `Batch too large (max ${MCP_MAX_BATCH} messages)`);
+    }
+  } catch {
+    // JSON invalide : McpAgent renverra son erreur de parse habituelle.
+  }
+
+  const headers = new Headers(request.headers);
+  headers.delete("transfer-encoding");
+  headers.delete("content-length");
+  return new Request(request, { headers, body });
+}
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
@@ -262,6 +337,11 @@ export default {
       const mcpIp = request.headers.get("CF-Connecting-IP") || "";
       if (!(await rateLimit(env, "mcp", mcpIp, 120, 60))) {
         return new Response("Too Many Requests", { status: 429, headers: CORS });
+      }
+      if (request.method === "POST") {
+        const guarded = await guardMcpPost(request);
+        if (guarded instanceof Response) return guarded;
+        request = guarded;
       }
       return ArgentierMCP.serve("/mcp", { binding: "ArgentierMCP" }).fetch(request, env, ctx);
     }

@@ -51,7 +51,7 @@ export interface MerchantInput {
   isRecurring: boolean;
 }
 
-const SYSTEM = `Tu es le moteur de catégorisation d'Argentier, un agent d'optimisation
+const SYSTEM = `Tu es le moteur de catégorisation de Kerdaxis, un agent d'optimisation
 financière pour TPE et entreprises individuelles françaises clientes de Qonto.
 
 Pour chaque marchand fourni, tu renvoies une classification. Tu ne calcules AUCUN

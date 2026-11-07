@@ -333,7 +333,7 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
           </p>
           {slackJoined ? (
             <p className="lp-slack-done">
-              ✓{" "}
+              <span className="lp-tick" aria-hidden="true">✓</span>{" "}
               {L(lang, {
                 fr: "Demande envoyée — on te recontacte pour l'accès Slack.",
                 en: "Request sent — we'll reach out about Slack access.",
@@ -389,7 +389,7 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
         </h2>
         {joined ? (
           <p className="lp-wait-done">
-            ✓ {L(lang, { fr: "Tu es sur la liste", en: "You're on the list", de: "Du bist auf der Liste", es: "Estás en la lista", it: "Sei nella lista" })}
+            <span className="lp-tick" aria-hidden="true">✓</span> {L(lang, { fr: "Tu es sur la liste", en: "You're on the list", de: "Du bist auf der Liste", es: "Estás en la lista", it: "Sei nella lista" })}
           </p>
         ) : (
           <>
@@ -775,5 +775,30 @@ const CSS = `
 .lp-gate-btn:hover:not(:disabled){transform:translateY(-1px);}
 .lp-gate-btn:disabled{opacity:.7;cursor:progress;}
 .lp-gate-cancel{margin-top:12px;border:0;background:none;color:var(--ink2);font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline;}
-@media(prefers-reduced-motion:reduce){.lp-demo,.lp-wait-btn,.lp-slack-btn{transition:none;}}
+
+/* --- Mouvement ----------------------------------------------------------
+   Courbes partagées : --ease-out (sorties franches), --ease-pop (léger rebond,
+   réservé aux moments rares). Seuls transform et opacity sont animés. */
+.lp{--ease-out:cubic-bezier(0.23,1,0.32,1);--ease-pop:cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes lpFade{from{opacity:0}}
+@keyframes lpPop{from{opacity:0;transform:scale(.96)}}
+@keyframes lpRise{from{opacity:0;transform:translateY(4px)}}
+@keyframes lpTick{from{opacity:0;transform:scale(.5)}}
+/* Modales (accès démo, connexion) : le fond se fond, la boîte s'ouvre au centre. */
+.lp-gate{animation:lpFade .2s ease-out both;}
+.lp-gate-box,.lp-auth-box{animation:lpPop .2s var(--ease-out) both;}
+/* Succès « ✓ Tu es sur la liste » : le message monte, la coche rebondit juste après. */
+.lp-wait-done,.lp-slack-done{animation:lpRise .3s var(--ease-out) both;}
+.lp-tick{display:inline-block;animation:lpTick .4s var(--ease-pop) .08s both;}
+/* Retour au clic : le bouton s'enfonce légèrement. */
+.lp-demo,.lp-slack-btn,.lp-wait-btn,.lp-gate-btn{transition:transform .16s var(--ease-out),opacity .1s;}
+.lp-cta-login,.lp-cta-ghost{transition:background .12s,transform .16s var(--ease-out);}
+.lp-demo:active,.lp-slack-btn:active,.lp-cta-login:active,.lp-cta-ghost:active,
+.lp-wait-btn:active:not(:disabled),.lp-gate-btn:active:not(:disabled){transform:scale(.97);}
+
+@media(prefers-reduced-motion:reduce){
+  .lp-demo,.lp-wait-btn,.lp-slack-btn{transition:none;}
+  /* Fondu conservé, déplacements et changements d'échelle retirés. */
+  .lp-gate-box,.lp-auth-box,.lp-wait-done,.lp-slack-done,.lp-tick{animation-name:lpFade;}
+}
 `;

@@ -18,3 +18,7 @@ next-env.d.ts
 .open-next/
 .vercel/
 .vercel
+
+# comptes et inscriptions (local, données personnelles) — jamais commités
+/data/accounts.json
+/data/leads.json

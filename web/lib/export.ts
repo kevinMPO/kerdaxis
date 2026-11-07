@@ -23,7 +23,7 @@ export function buildPlanCsv(data: AnalyzeResult, levers: Lever[]): string {
   const annual = monthly * 12;
 
   const lines: string[] = [];
-  lines.push(cell(`Plan d'action Argentier — ${data.account.name} — ${data.window.label}`));
+  lines.push(cell(`Plan d'action Kerdaxis — ${data.account.name} — ${data.window.label}`));
   lines.push([cell("Run-rate pilotable"), cell(`${data.totals.runRate} €/mois`)].join(";"));
   lines.push(
     [cell("Économie active"), cell(`${monthly} €/mois`), cell(`${annual} €/an`)].join(";"),

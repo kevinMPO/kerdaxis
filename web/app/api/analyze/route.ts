@@ -302,10 +302,10 @@ async function analyze(requete: Request): Promise<NextResponse> {
       console.error("[argentier][config] Binding indispensable absent :", erreur.message);
       return refus(503, "configuration_incomplete", {
         fr:
-          "Argentier est mal configuré côté serveur : une ressource indispensable " +
+          "Kerdaxis est mal configuré côté serveur : une ressource indispensable " +
           "manque. L'analyse est refusée plutôt que servie sans garantie.",
         en:
-          "Argentier is misconfigured server-side: a required resource is missing. " +
+          "Kerdaxis is misconfigured server-side: a required resource is missing. " +
           "The analysis is refused rather than served without guarantees.",
       });
     }
@@ -334,8 +334,8 @@ export async function GET(requete: Request): Promise<NextResponse> {
     // surtout pas de la démo en « live ».
     console.error("[argentier][analyze] Échec inattendu :", err);
     return refus(500, "erreur_interne", {
-      fr: "Erreur interne d'Argentier. Rien n'a été lu, rien n'a été écrit.",
-      en: "Internal Argentier error. Nothing was read, nothing was written.",
+      fr: "Erreur interne de Kerdaxis. Rien n'a été lu, rien n'a été écrit.",
+      en: "Internal Kerdaxis error. Nothing was read, nothing was written.",
     });
   }
 }

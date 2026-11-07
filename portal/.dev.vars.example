@@ -1,0 +1,5 @@
+# Copier en .dev.vars (jamais commité) et remplacer par des valeurs aléatoires :
+#   openssl rand -hex 24   (jeton du lien magique)
+#   openssl rand -hex 32   (clé API serveur-à-serveur)
+DEMO_LOGIN_TOKEN=remplacer-par-une-valeur-aleatoire
+PORTAL_API_KEY=remplacer-par-une-autre-valeur-aleatoire
