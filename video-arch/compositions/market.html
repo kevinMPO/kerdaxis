@@ -1,0 +1,53 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    #k-title { position: absolute; left: 110px; top: 80px; font-weight: 900; font-size: 120px; letter-spacing: -0.05em; color: #b4f768; white-space: nowrap; }
+    #k-q { position: absolute; left: 110px; top: 250px; width: 700px; padding: 22px 28px; border-radius: 22px; background: #111a22; border: 2px solid #26343d; }
+    #k-q .k { font-weight: 900; font-size: 28px; letter-spacing: 0.06em; color: #b4f768; }
+    #k-q .v { margin-top: 6px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 36px; }
+    #k-cur { position: absolute; left: 110px; top: 430px; width: 700px; height: 150px; border-radius: 24px; background: #ffffff; color: #17140f; }
+    #k-cur .l { position: absolute; left: 28px; top: 20px; font-weight: 700; font-size: 28px; color: #5b554c; }
+    #k-cur .n { position: absolute; left: 28px; top: 62px; font-weight: 900; font-size: 46px; }
+    #k-cur .p { position: absolute; right: 28px; top: 66px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 40px; }
+    #k-alts { position: absolute; left: 900px; top: 250px; width: 910px; height: 470px; border-radius: 28px; background: #111a22; border: 2px solid #26343d; }
+    #k-alts .h { position: absolute; left: 30px; top: 22px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; }
+    .al { position: absolute; left: 24px; width: 862px; height: 116px; border-radius: 18px; border: 2px solid #26343d; background: #0c141b; }
+    #al0 { top: 80px; } #al1 { top: 210px; } #al2 { top: 340px; }
+    .al .n { position: absolute; left: 24px; top: 18px; font-weight: 900; font-size: 38px; white-space: nowrap; }
+    .al .d { position: absolute; left: 24px; top: 66px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; }
+    .al .sd { position: absolute; right: 22px; top: 36px; padding: 4px 14px; border-radius: 10px; border: 2px dashed #4a5b66; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; }
+    #k-dec { position: absolute; left: 110px; top: 630px; white-space: nowrap; }
+    .dc { display: inline-block; margin-right: 10px; padding: 8px 18px; border-radius: 16px; border: 2px solid #3a4a54; font-weight: 900; font-size: 30px; color: #a3b4b9; }
+    .dc.on { border-color: #b4f768; background: #b4f768; color: #080d13; }
+    #k-ill { position: absolute; left: 904px; top: 744px; font-weight: 700; font-size: 28px; color: #6f8389; white-space: nowrap; }
+    #k-title, #k-q, #k-cur, #k-alts, .al, .dc, #k-ill { opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="market" data-width="1920" data-height="1080">
+    <div id="k-title">LINKUP</div>
+    <div id="k-q"><div class="k">MARKET SEARCH · ONLY MERCHANT + CATEGORY</div><div class="v">CRM · 10 seats</div></div>
+    <div id="k-cur"><div class="l">Current supplier (demo)</div><div class="n">Nuvio CRM</div><div class="p">€129/mo</div></div>
+    <div id="k-alts"><div class="h">Alternatives to compare</div>
+      <div id="al0" class="al"><div class="n">Pipedrive</div><div class="d">CRM · per-seat plans</div><div class="sd">price · source · date</div></div>
+      <div id="al1" class="al"><div class="n">Folk</div><div class="d">CRM · per-seat plans</div><div class="sd">price · source · date</div></div>
+      <div id="al2" class="al"><div class="n">HubSpot Starter</div><div class="d">CRM · per-seat plans</div><div class="sd">price · source · date</div></div>
+    </div>
+    <div id="k-dec"><span class="dc on">cancel</span><span class="dc">switch</span><span class="dc">downgrade</span><span class="dc">renegotiate</span></div>
+    <div id="k-ill">Illustrative · no live search shown · prices only with source + date</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 21.3. VO: "compares market alternatives" 0.1–1.0, "anomalies" 2.5, "recommendations" 3.7.
+      tl.fromTo(["#root"], { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0);
+      tl.fromTo("#k-title", { opacity: 0, scale: 1.2, filter: "blur(10px)", transformOrigin: "0% 0%" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 0.05);
+      tl.fromTo("#k-q", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 0.25);
+      tl.fromTo("#k-alts", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.35, ease: "expo.out" }, 0.4);
+      tl.fromTo(".al", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.3, stagger: 0.15, ease: "expo.out" }, 0.6);
+      tl.fromTo("#k-ill", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.8);
+      tl.fromTo("#k-cur", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 1.4);
+      tl.fromTo(".dc", { opacity: 0, scale: 0.9, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.25, stagger: 0.1, ease: "back.out(1.4)" }, 2.5);
+      tl.to("#root > *", { opacity: 0, filter: "blur(10px)", duration: 0.25, ease: "power3.in" }, 4.4);
+      window.__timelines["market"] = tl;
+    })();
+  </script>
+</template>
