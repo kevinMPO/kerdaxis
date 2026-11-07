@@ -1,0 +1,54 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    #o-title { position: absolute; left: 110px; top: 110px; font-weight: 900; font-size: 128px; line-height: 1.0; letter-spacing: -0.05em; }
+    #o-title .l1 { color: #b4f768; }
+    #o-title div { opacity: 0; }
+    .tx { position: absolute; left: 0; height: 64px; padding: 0 22px; border-radius: 14px; border: 2px solid #26343d; background: #111a22;
+      font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 30px; line-height: 60px; white-space: nowrap; opacity: 0; }
+    .tx .am { margin-left: 22px; color: #a3b4b9; }
+    #o-node { position: absolute; left: 1320px; top: 470px; width: 500px; height: 180px; border-radius: 28px; border: 4px solid #b4f768; background: #0f1a12; }
+    #o-node .k { position: absolute; left: 30px; top: 30px; width: 76px; height: 76px; border: 3px solid rgba(180,247,104,.55); border-radius: 22px;
+      color: #b4f768; font-weight: 900; font-size: 46px; line-height: 70px; text-align: center; }
+    #o-node .t { position: absolute; left: 126px; top: 36px; font-weight: 900; font-size: 44px; letter-spacing: -0.03em; }
+    #o-node .s { position: absolute; left: 126px; top: 92px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; }
+    #o-count { position: absolute; left: 1350px; top: 680px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 30px; color: #b4f768; white-space: nowrap; }
+    #o-demo { position: absolute; left: 110px; top: 840px; font-weight: 700; font-size: 28px; color: #6f8389; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="opportunity" data-width="1920" data-height="1080">
+    <div id="tx0" class="tx"><span class="nm">Nuvio CRM</span><span class="am">−129.00 €</span></div>
+    <div id="tx1" class="tx"><span class="nm">Instantly</span><span class="am">−86.00 €</span></div>
+    <div id="tx2" class="tx"><span class="nm">ChatGPT</span><span class="am">−84.00 €</span></div>
+    <div id="tx3" class="tx"><span class="nm">Waalaxy</span><span class="am">−51.00 €</span></div>
+    <div id="tx4" class="tx"><span class="nm">Figma</span><span class="am">−48.00 €</span></div>
+    <div id="tx5" class="tx"><span class="nm">Google Workspace</span><span class="am">−29.00 €</span></div>
+    <div id="tx6" class="tx"><span class="nm">FX fee · card</span><span class="am">−4.20 €</span></div>
+    <div id="tx7" class="tx"><span class="nm">Loom</span><span class="am">−23.00 €</span></div>
+    <div id="o-node"><div class="k">K</div><div class="t">KERDAXIS</div><div class="s">reads every transaction</div></div>
+    <div id="o-count">0 transactions read</div>
+    <div id="o-title"><div class="l1">YOUR AI CFO.</div><div class="l2">FROM INSIGHT TO ACTION.</div></div>
+    <div id="o-demo">Demo transactions · fictional company</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Transactions stream along three lanes into the Kerdaxis node (abs = local).
+      const lanes = [430, 530, 630];
+      for (let i = 0; i < 8; i++) {
+        const t = 0.05 + i * 0.32, y = lanes[i % 3];
+        tl.fromTo("#tx" + i, { x: -520, y: y, opacity: 0 }, { x: 420, opacity: 1, duration: 0.45, ease: "power2.out" }, t);
+        tl.to("#tx" + i, { x: 1330, y: 530, scale: 0.6, opacity: 0, duration: 0.7, ease: "power2.in" }, t + 0.55);
+      }
+      const c = { v: 0 };
+      tl.to(c, { v: 8, duration: 2.9, ease: "none", onUpdate: () => {
+        document.querySelector("#o-count").textContent = Math.round(c.v) + " transactions read";
+      } }, 0.6);
+      tl.fromTo("#o-node", { opacity: 0, scale: 0.9, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.4)" }, 0.05);
+      tl.fromTo("#o-demo", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.3);
+      // "What if AI…" ~3.4: the promise.
+      tl.fromTo("#o-title .l1", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 3.3);
+      tl.fromTo("#o-title .l2", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 3.6);
+      window.__timelines["opportunity"] = tl;
+    })();
+  </script>
+</template>
