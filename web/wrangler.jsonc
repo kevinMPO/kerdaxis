@@ -3,7 +3,7 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-07-12",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS", "html_handling": "none" },
 
   // -------------------------------------------------------------------------
   // Variables NON secrètes. Les secrets (clés d'API, clé de chiffrement des
@@ -14,8 +14,15 @@
   // Elle doit correspondre EXACTEMENT à l'URL réellement servie, sinon Qonto
   // rejette le retour.
   // -------------------------------------------------------------------------
+  // app.kerdaxis.com : servie par ce Worker (avant : tunnel cloudflared vers le portable).
+  "routes": [{ "pattern": "app.kerdaxis.com", "custom_domain": true }],
+  "workers_dev": true,
+
   "vars": {
-    "ARGENTIER_BASE_URL": "https://argentier.bonjour-e83.workers.dev",
+    "ARGENTIER_BASE_URL": "https://app.kerdaxis.com",
+    "KERDAXIS_APP_ORIGIN": "https://app.kerdaxis.com",
+    "PORTAL_BASE_URL": "https://portal.kerdaxis.com",
+    "PORTAL_LANG": "en",
     "QONTO_OAUTH_PROVIDER": "mcp-proxy",
     "QONTO_OAUTH_CLIENT_ID": "qonto-mcp-public",
     "ARGENTIER_WINDOW_DAYS": "60"

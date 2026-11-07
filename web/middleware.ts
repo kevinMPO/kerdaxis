@@ -44,6 +44,32 @@ export async function middleware(req: NextRequest) {
     url.search = `?next=${encodeURIComponent(path)}`;
     return NextResponse.redirect(url);
   }
+  // Accueil = front Kerdaxis statique. Sur Cloudflare (OpenNext), la réécriture
+  // `beforeFiles` de next.config vers un fichier de public/ ne sert rien (404) :
+  // on la refait ici, où elle passe par la couche de routage qui voit les assets.
+  if (path === "/") {
+    const ctx = (globalThis as Record<symbol, unknown>)[Symbol.for("__cloudflare-context__")] as
+      | { env?: { ASSETS?: { fetch(u: string): Promise<Response> } } }
+      | undefined;
+    const assets = ctx?.env?.ASSETS;
+    if (assets) {
+      const page = await assets.fetch(new URL("/kerdaxis.html", req.url).toString());
+      if (page.ok) {
+        return new NextResponse(page.body, {
+          status: 200,
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-frame-options": "DENY",
+            "x-content-type-options": "nosniff",
+            "referrer-policy": "strict-origin-when-cross-origin",
+            "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+          },
+        });
+      }
+    }
+    return NextResponse.rewrite(new URL("/kerdaxis.html", req.url), { request: { headers } });
+  }
   return NextResponse.next({ request: { headers } });
 }
 

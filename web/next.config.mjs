@@ -22,7 +22,19 @@
 // sinon elle sera bloquée — c'est le but.
 // ---------------------------------------------------------------------------
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const racine = path.dirname(fileURLToPath(import.meta.url));
+
 /** Vrai en `next dev` : le HMR de Next a besoin d'`eval`, la prod non. */
+/**
+ * Build Cloudflare Workers (`npm run cf:build`) : Mastra + LibSQL (natifs Node)
+ * ne tournent pas sur workerd. On remplace l'orchestrateur de risque par un
+ * bouchon (lib/risk/orchestrator.cloudflare.ts) et on ne garde pas ces paquets
+ * en externes, sinon OpenNext tente de les embarquer.
+ */
+const cibleCloudflare = process.env.KERDAXIS_TARGET === "cloudflare";
 const developpement = process.env.NODE_ENV === "development";
 
 /** Worker Cloudflare qui encaisse les inscriptions à la liste d'attente. */
@@ -120,7 +132,7 @@ const nextConfig = {
 
   // Mastra + LibSQL embarquent des modules natifs Node : on les garde EXTERNES
   // (non bundlés) pour que `next build` et les routes serveur fonctionnent.
-  serverExternalPackages: [
+  serverExternalPackages: cibleCloudflare ? [] : [
     "@mastra/core",
     "@mastra/mcp",
     "@mastra/memory",
@@ -132,7 +144,7 @@ const nextConfig = {
 
   // Force l'inclusion des binaires natifs LibSQL dans la fonction serverless
   // /api/risk (sinon la mémoire/l'historique ne se chargent pas sur Vercel).
-  outputFileTracingIncludes: {
+  outputFileTracingIncludes: cibleCloudflare ? {} : {
     "/api/risk": [
       "./node_modules/@libsql/**",
       "./node_modules/libsql/**",
@@ -146,7 +158,15 @@ const nextConfig = {
   // Kerdaxis : le SDK Gladia importe des modules Node (fs, path, ws, undici)
   // derrière des tests d'environnement ; côté navigateur il utilise le
   // WebSocket natif. On les neutralise pour le bundle navigateur uniquement.
-  webpack(config, { isServer }) {
+  webpack(config, { isServer, webpack }) {
+    if (isServer && cibleCloudflare) {
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(
+          /lib[\\/]risk[\\/]orchestrator$/,
+          path.resolve(racine, "lib/risk/orchestrator.cloudflare.ts"),
+        ),
+      );
+    }
     if (!isServer) {
       config.resolve.fallback = { ...(config.resolve.fallback ?? {}), fs: false, path: false, ws: false, undici: false };
     }

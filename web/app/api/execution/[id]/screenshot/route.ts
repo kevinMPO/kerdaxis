@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/execution/store";
+import { getExecution } from "@/lib/execution/store";
 import { execGuard } from "@/lib/execution/http";
 
 export const runtime = "nodejs";
@@ -14,7 +14,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const g = execGuard(req);
   if ("denied" in g) return g.denied;
   const { id } = await params;
-  const exec = db.executions.get(id);
+  const exec = await getExecution(id);
   if (g.mode === "replay" && !exec?.replay) return new NextResponse(null, { status: 403 });
   const shot = exec?.lastScreenshot;
   if (!shot) return new NextResponse(null, { status: 404 });
