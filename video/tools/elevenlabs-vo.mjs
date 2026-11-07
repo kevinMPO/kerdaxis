@@ -61,7 +61,7 @@ async function post(path, body) {
 }
 
 async function voice(only) {
-  const out = join(ROOT, "assets/voice/eleven");
+  const out = join(ROOT, process.env.ELEVENLABS_OUT || "assets/voice/eleven");
   mkdirSync(out, { recursive: true });
   const metaPath = join(out, "lines.json");
   const meta = existsSync(metaPath) ? JSON.parse(readFileSync(metaPath, "utf8")) : {};
