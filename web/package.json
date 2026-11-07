@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "agent:runs": "node scripts/agent-runs.mjs",
     "cf:build": "KERDAXIS_TARGET=cloudflare opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion",
     "cf:deploy": "npm run cf:build && wrangler deploy"
   },

@@ -53,6 +53,10 @@ export const MOCK: AnalyzeResult = {
     // (dossier portal/). Le plus gros levier actif → cible de l'Autopilote,
     // qui le résilie réellement via un agent H Company.
     { id: "nuvio", label: "Nuvio CRM", to: "résilier · aucune connexion depuis 90 j", saving: 129, risk: "safe", active: true, action: "cancel", monthly: 129 },
+    // Kerdaxis : fournisseur FICTIF facturé par Stripe (mode test). L'agent H
+    // résilie dans le VRAI portail client de Stripe, au parcours recherché dans
+    // la doc officielle. Inactif par défaut : les totaux de la démo ne bougent pas.
+    { id: "lumen", label: "Lumen Analytics", to: "résilier · facturé via Stripe", saving: 39, risk: "safe", active: false, action: "cancel", monthly: 39 },
     { id: "inst", label: "Instantly", to: "1 seul workspace", saving: 86, risk: "med", active: true, action: "consolidate" },
     { id: "gpt", label: "ChatGPT", to: "Claude seul", saving: 84, risk: "safe", active: true, action: "cancel" },
     { id: "waa", label: "Waalaxy", to: "Apollo + Instantly", saving: 51, risk: "safe", active: true, action: "switch" },

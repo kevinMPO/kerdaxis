@@ -45,6 +45,20 @@ interface ExecView {
   events: { at: string; kind: string; message: string; url?: string }[];
   /** Essai gratuit : rediffusion d'une session réelle enregistrée. */
   replay?: boolean;
+  /** Le parcours remis à l'agent, et d'où il vient (catalogue ou doc officielle). */
+  playbook?: PlaybookView | null;
+}
+
+interface PlaybookView {
+  source: "catalog" | "research";
+  merchant: string | null;
+  officialDocUrl: string | null;
+  steps: string[];
+  finalButtonLabel: string;
+  retentionTraps: string[];
+  screenshots: { read: number; sent: number; steps: string[] } | null;
+  video: { title: string; url: string; steps: string[] } | null;
+  fallbackReason: string | null;
 }
 
 const TERMINAL: Status[] = ["supplier_confirmed", "failed", "needs_manual_action", "stopped_by_user"];
@@ -91,6 +105,15 @@ const T = {
     onAir: "En direct",
     replay: "Rediffusion · session réelle enregistrée",
     agentScreen: "Écran de l'agent",
+    pbTitle: "Parcours suivi par l'agent",
+    pbCatalog: "Fiche du catalogue Kerdaxis",
+    pbResearch: (m: string) => `Recherché dans la doc officielle · ${m} · Linkup`,
+    pbFallback: "Recherche indisponible : consigne générique",
+    pbShots: (r: number, n: number) => `Captures de la doc lues par un agent H Company (${r}/${n})`,
+    pbVideo: "Tutoriel vidéo écouté par Gladia",
+    pbFinal: "Bouton final",
+    pbTraps: "Pièges annoncés",
+    pbSource: "source ↗",
   },
   en: {
     title: "Execution · H Company agent",
@@ -127,6 +150,15 @@ const T = {
     onAir: "Live",
     replay: "Replay · recorded real session",
     agentScreen: "Agent screen",
+    pbTitle: "Path the agent follows",
+    pbCatalog: "Kerdaxis catalog entry",
+    pbResearch: (m: string) => `Researched in the official docs · ${m} · Linkup`,
+    pbFallback: "Research unavailable: generic instructions",
+    pbShots: (r: number, n: number) => `Doc screenshots read by an H Company agent (${r}/${n})`,
+    pbVideo: "Video tutorial heard by Gladia",
+    pbFinal: "Final button",
+    pbTraps: "Expected traps",
+    pbSource: "source ↗",
   },
 };
 
@@ -365,6 +397,8 @@ export default function ExecutionPanel({ id, lang, onClose }: { id: string; lang
             </div>
           )}
 
+          {view?.playbook && <PlaybookBox playbook={view.playbook} t={t} />}
+
           <div className="kx-jbox">
             <p className="kx-journal">{t.journal}</p>
             <ol className="kx-log" ref={logRef}>
@@ -379,6 +413,67 @@ export default function ExecutionPanel({ id, lang, onClose }: { id: string; lang
         </section>
       </div>
     </div>
+  );
+}
+
+function PlaybookBox({ playbook, t }: { playbook: PlaybookView; t: (typeof T)["en"] }) {
+  const origin =
+    playbook.fallbackReason
+      ? t.pbFallback
+      : playbook.source === "catalog"
+        ? t.pbCatalog
+        : t.pbResearch(playbook.merchant ?? "");
+  return (
+    <details className="kx-pb" open={playbook.source === "research"}>
+      <summary>
+        <span className="kx-journal">{t.pbTitle}</span>
+        <span className={`kx-pb-src ${playbook.fallbackReason ? "warn" : ""}`}>{origin}</span>
+        {playbook.officialDocUrl && (
+          <a className="kx-pb-link" href={playbook.officialDocUrl} target="_blank" rel="noreferrer">
+            {t.pbSource}
+          </a>
+        )}
+      </summary>
+      <ol className="kx-pb-steps">
+        {playbook.steps.map((step, i) => (
+          <li key={i}>{step}</li>
+        ))}
+      </ol>
+      {playbook.screenshots && (
+        <div className="kx-pb-sub">
+          <p>🖼️ {t.pbShots(playbook.screenshots.read, playbook.screenshots.sent)}</p>
+          <ol className="kx-pb-steps">
+            {playbook.screenshots.steps.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+      {playbook.video && (
+        <div className="kx-pb-sub">
+          <p>
+            🎧 {t.pbVideo} ·{" "}
+            <a className="kx-pb-link" href={playbook.video.url} target="_blank" rel="noreferrer">
+              {playbook.video.title} ↗
+            </a>
+          </p>
+          <ol className="kx-pb-steps">
+            {playbook.video.steps.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+      <p className="kx-pb-meta">
+        {t.pbFinal} · <b>« {playbook.finalButtonLabel} »</b>
+        {playbook.retentionTraps.length > 0 && (
+          <>
+            <br />
+            {t.pbTraps} · {playbook.retentionTraps.join(" · ")}
+          </>
+        )}
+      </p>
+    </details>
   );
 }
 
@@ -517,4 +612,17 @@ const CSS = `
   .kx-steps li::after{display:none;}
 }
 @media(prefers-reduced-motion:reduce){.kx-gate,.kx-proof,.kx-ov{animation:none;}.kx-dot.run,.kx-onair i,.kx-gate-k i{animation:none;}.kx-screen.live::before{animation:none;opacity:0;}}
+/* Parcours suivi par l'agent (catalogue ou doc officielle) */
+.kx-pb{border:1px solid var(--c-line,#26343d);border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.015);}
+.kx-pb summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer;list-style:none;}
+.kx-pb summary::-webkit-details-marker{display:none;}
+.kx-pb summary .kx-journal{margin:0;}
+.kx-pb-src{font-size:12px;color:var(--c-vert,#66e6be);}
+.kx-pb-src.warn{color:var(--c-amber,#eedc9d);}
+.kx-pb-link{font-size:12px;color:var(--c-ink2,#a3b4b9);text-decoration:underline;text-underline-offset:2px;}
+.kx-pb-steps{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--c-ink2,#a3b4b9);}
+.kx-pb-sub{margin-top:10px;padding-top:8px;border-top:1px dashed var(--c-line,#26343d);}
+.kx-pb-sub p{margin:0;font-size:12.5px;font-weight:600;color:var(--c-ink,#eef8f5);}
+.kx-pb-meta{margin:10px 0 0;font-size:12px;color:var(--c-ink3,#7c8f96);}
+.kx-pb-meta b{color:var(--c-ink,#eef8f5);font-weight:600;}
 `;
