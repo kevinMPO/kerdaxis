@@ -169,6 +169,8 @@ const nextConfig = {
     }
     if (!isServer) {
       config.resolve.fallback = { ...(config.resolve.fallback ?? {}), fs: false, path: false, ws: false, undici: false };
+      // A fallback only applies when the module is missing; an `undici` in a parent node_modules would still be bundled.
+      config.resolve.alias = { ...(config.resolve.alias ?? {}), undici: false };
     }
     return config;
   },

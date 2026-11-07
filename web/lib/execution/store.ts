@@ -16,7 +16,7 @@
 
 import type { Approval, ActionParams } from "./policy";
 import type { ToolCall } from "./hcompany";
-import type { SupplierState } from "./suppliers";
+import type { SupplierState, SupplierTarget } from "./suppliers";
 import { baseD1SiPresente } from "@/lib/runtime/bindings";
 
 /** Statuts du PRD Kerdaxis (§4.5), + `running` et `stopped_by_user` pour l'affichage. */
@@ -43,6 +43,21 @@ export interface ExecutionEvent {
   message: string;
   url?: string;
   screenshot?: string;
+}
+
+/** Le parcours remis à l'agent, et d'où il vient. Visible dans le panneau d'exécution. */
+export interface PlaybookView {
+  source: "catalog" | "research";
+  /** Nom recherché (l'interface que l'agent verra). */
+  merchant: string | null;
+  officialDocUrl: string | null;
+  steps: string[];
+  finalButtonLabel: string;
+  retentionTraps: string[];
+  screenshots: { read: number; sent: number; steps: string[] } | null;
+  video: { title: string; url: string; steps: string[] } | null;
+  /** Recherche en échec : l'agent suit la consigne générique du catalogue. */
+  fallbackReason: string | null;
 }
 
 export interface Execution {
@@ -76,6 +91,15 @@ export interface Execution {
   events: ExecutionEvent[];
   /** Essai gratuit : rediffusion d'une session réelle enregistrée (aucun appel H Company). */
   replay?: { startedMs: number; goMs: number | null; shown: number };
+  playbook?: PlaybookView | null;
+  /** Ce que l'exécution a créé chez le fournisseur (abonnement de test Stripe), pour la preuve. */
+  target?: SupplierTarget | null;
+  /** Consignes de la mission, gardées pour relancer une session H bloquée sans refaire la recherche. */
+  launchGuide?: { text: string; finalLabel: string } | null;
+  /** Session H en cours : début, numéro d'essai, et si l'agent a déjà agi (événement de décision). */
+  sessionStartedAt?: string | null;
+  sessionAttempts?: number;
+  sessionActed?: boolean;
 }
 
 interface Db {
@@ -123,6 +147,7 @@ export function publicView(exec: Execution) {
     createdAt: exec.createdAt,
     updatedAt: exec.updatedAt,
     replay: Boolean(exec.replay),
+    playbook: exec.playbook ?? null,
     events: exec.events.slice(-40).map(({ screenshot: _s, ...rest }) => rest),
   };
 }
@@ -214,4 +239,63 @@ export async function withExecution<R>(
   } finally {
     await unlock(id);
   }
+}
+
+/** Exécutions récentes (garde « un seul agent actif »). D1 : les 50 dernières. */
+export async function recentExecutions(): Promise<Execution[]> {
+  const d = baseD1SiPresente();
+  if (!d) return [...db.executions.values()];
+  const r = await d
+    .prepare("SELECT body FROM exec_records WHERE kind = 'execution' ORDER BY updated_at DESC LIMIT 50")
+    .all<{ body: string }>();
+  return r.results.map((row) => JSON.parse(row.body) as Execution);
+}
+
+/**
+ * Garde vivant un travail lancé après la réponse HTTP. Sur Cloudflare Workers,
+ * une promesse non rattachée à `ctx.waitUntil` est coupée à la fin de la
+ * requête ; en `next dev`, elle tourne simplement.
+ */
+export function keepAlive(work: Promise<unknown>): void {
+  const ctx = (globalThis as Record<symbol, unknown>)[Symbol.for("__cloudflare-context__")] as
+    | { ctx?: { waitUntil?: (p: Promise<unknown>) => void } }
+    | undefined;
+  const guarded = work.catch(() => undefined);
+  if (ctx?.ctx?.waitUntil) ctx.ctx.waitUntil(guarded);
+}
+
+/**
+ * Réinjecte dans l'état stocké ce que le lancement en arrière-plan a produit
+ * (session, guide, cible, événements), sous verrou. Un arrêt humain survenu
+ * pendant la préparation l'emporte : le statut terminal stocké est conservé.
+ * Rend vrai si l'exécution a été arrêtée entre-temps.
+ */
+export async function mergeLaunch(local: Execution): Promise<boolean> {
+  let stoppedMeanwhile = false;
+  // La route enregistre l'exécution juste après le lancement : on l'attend si besoin.
+  for (let i = 0; i < 20 && !(await getExecution(local.id)); i++) await new Promise((r) => setTimeout(r, 250));
+  await withExecution(
+    local.id,
+    (stored) => {
+      if (stored === local) return; // mémoire du processus : même objet
+      const seen = new Set(stored.events.map((e) => `${e.at}|${e.message}`));
+      for (const ev of local.events) if (!seen.has(`${ev.at}|${ev.message}`)) stored.events.push(ev);
+      stored.events.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
+      stored.sessionId = local.sessionId;
+      stored.agentViewUrl = local.agentViewUrl;
+      stored.liveViewUrl = local.liveViewUrl ?? stored.liveViewUrl;
+      stored.launchGuide = local.launchGuide ?? stored.launchGuide;
+      stored.target = local.target ?? stored.target;
+      stored.fromIndex = Math.max(stored.fromIndex, local.fromIndex);
+      if (TERMINAL_STATUSES.has(stored.status)) {
+        stoppedMeanwhile = true;
+      } else {
+        stored.status = local.status;
+        stored.error = local.error;
+      }
+      stored.updatedAt = new Date().toISOString();
+    },
+    { wait: true },
+  );
+  return stoppedMeanwhile;
 }
