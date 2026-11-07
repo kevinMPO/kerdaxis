@@ -9,16 +9,16 @@
     .sub { position: absolute; left: 116px; width: 720px; font-weight: 700; font-size: 54px; line-height: 1.14; letter-spacing: -0.02em; }
     #pv-sub { top: 420px; }
     #pv-verb, #pv-sub { opacity: 0; }
-    #pv-card { position: absolute; left: 900px; top: 150px; width: 920px; height: 790px; border-radius: 32px; background: #ffffff; color: #17140f;
+    #pv-card { position: absolute; left: 900px; top: 130px; width: 920px; height: 724px; border-radius: 32px; background: #ffffff; color: #17140f;
       box-shadow: 0 24px 60px rgba(8, 13, 19, 0.18); opacity: 0; }
-    .pr { position: absolute; left: 40px; width: 840px; height: 146px; border-bottom: 2px solid #e4e0d6; }
-    #pr0 { top: 30px; } #pr1 { top: 176px; } #pr2 { top: 322px; } #pr3 { top: 468px; } #pr4 { top: 614px; border-bottom: 0; }
+    .pr { position: absolute; left: 40px; width: 840px; height: 140px; border-bottom: 2px solid #e4e0d6; }
+    #pr0 { top: 24px; } #pr1 { top: 164px; } #pr2 { top: 304px; } #pr3 { top: 444px; } #pr4 { top: 584px; border-bottom: 0; }
     .pr .lb { position: absolute; left: 0; top: 50px; font-weight: 700; font-size: 38px; white-space: nowrap; }
     .pr .vl { position: absolute; right: 86px; top: 52px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 32px; color: #5b554c; white-space: nowrap; }
     .pr .ck { position: absolute; right: 0; top: 46px; width: 54px; height: 54px; border-radius: 27px; background: #2f6f5b; color: #ffffff;
       font-weight: 900; font-size: 32px; line-height: 54px; text-align: center; opacity: 0; }
     #pr4 .ck { background: #8c5f1c; }
-    #pv-d30 { position: absolute; left: 1490px; top: 806px; height: 64px; padding: 0 22px; border-radius: 32px; background: #f4ebdd; color: #8c5f1c;
+    #pv-d30 { position: absolute; left: 1350px; top: 752px; height: 64px; padding: 0 22px; border-radius: 32px; background: #f4ebdd; color: #8c5f1c;
       font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 38px; line-height: 64px; white-space: nowrap; opacity: 0; }
     #pv-num { position: absolute; left: 514px; top: 296px; width: 366px; height: 72px; border-radius: 12px; background: #eaffd2; border: 3px solid #080d13;
       font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 46px; line-height: 66px; text-align: center; color: #080d13; opacity: 0; }
@@ -35,38 +35,36 @@
         <div id="pr1" class="pr"><div class="lb">Approved</div><div class="vl">by you · 1 click</div><div class="ck">✓</div></div>
         <div id="pr2" class="pr"><div class="lb">Executed</div><div class="vl">H Company agent</div><div class="ck">✓</div></div>
         <div id="pr3" class="pr"><div class="lb">Supplier-confirmed</div><div class="vl"></div><div class="ck">✓</div></div>
-        <div id="pr4" class="pr"><div class="lb">On your bank statement</div><div class="vl"></div><div class="ck">✓</div></div>
+        <div id="pr4" class="pr"><div class="lb">Bank statement check</div><div class="vl"></div><div class="ck">✓</div></div>
     </div>
-    <div id="pv-d30" data-layout-allow-overlap>D+30</div>
+    <div id="pv-d30" data-layout-allow-overlap>Scheduled · D+30</div>
     <div id="pv-num" data-layout-allow-overlap>NUV-RW3L2Y</div>
     <div id="pv-ink"></div>
   </div>
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      // Match cut on the go: the supplier's own page, number at frame (514..880, 296..368).
+      // abs = local + 42.0. VO: "confirms" ~0.25, "day thirty" ~2.7.
       tl.fromTo("#pv-page", { x: -520, y: -140, scale: 2.06 }, { x: -480, y: -120, scale: 2.0, duration: 0.4, ease: "expo.out" }, 0);
-      // "confirms" at abs 34.71 = local 1.16.
-      tl.fromTo("#pv-box", { opacity: 0, scale: 1.15, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(1.6)" }, 1.1);
-      // Carry: the number lifts off the page and lands in the ledger, the ground floods lime.
-      tl.set("#pv-num", { opacity: 1 }, 1.45);
-      tl.to(["#pv-page", "#pv-box"], { opacity: 0, filter: "blur(14px)", duration: 0.3, ease: "power3.in" }, 1.45);
-      tl.to("#pv-flood", { opacity: 1, duration: 0.4, ease: "power2.inOut" }, 1.45);
+      tl.fromTo("#pv-box", { opacity: 0, scale: 1.15, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(1.6)" }, 0.15);
+      // Carry: the supplier's number lifts off the page into the proof ledger; the ground floods lime.
+      tl.set("#pv-num", { opacity: 1 }, 0.45);
+      tl.to(["#pv-page", "#pv-box"], { opacity: 0, filter: "blur(14px)", duration: 0.3, ease: "power3.in" }, 0.45);
+      tl.to("#pv-flood", { opacity: 1, duration: 0.35, ease: "power2.inOut" }, 0.45);
       tl.fromTo("#pv-card", { opacity: 0, scale: 1.06, filter: "blur(12px)", transformOrigin: "50% 50%" },
-        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 1.6);
-      tl.to("#pv-num", { x: 900, y: 382, scale: 0.72, duration: 0.5, ease: "power2.inOut" }, 1.55);
-      tl.to("#pv-num", { filter: "blur(6px)", duration: 0.25, ease: "power2.in" }, 1.55);
-      tl.to("#pv-num", { filter: "blur(0px)", duration: 0.25, ease: "power2.out" }, 1.8);
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 0.55);
+      tl.to("#pv-num", { x: 880, y: 322, scale: 0.72, duration: 0.5, ease: "power2.inOut" }, 0.5);
+      tl.to("#pv-num", { filter: "blur(6px)", duration: 0.25, ease: "power2.in" }, 0.5);
+      tl.to("#pv-num", { filter: "blur(0px)", duration: 0.25, ease: "power2.out" }, 0.75);
       tl.fromTo("#pv-verb", { opacity: 0, scale: 1.25, filter: "blur(10px)", transformOrigin: "0% 0%" },
-        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 1.75);
-      tl.fromTo("#pv-sub", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 2.05);
-      // Ticks on the beats (abs 35.545, 36.045, 36.545, 37.045).
-      [1.995, 2.495, 2.995, 3.495].forEach((t, i) =>
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 0.7);
+      tl.fromTo("#pv-sub", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.95);
+      // Completed steps tick; the bank-statement check is only SCHEDULED (never ticked).
+      [1.0, 1.25, 1.5, 1.75].forEach((t, i) =>
         tl.fromTo("#pr" + i + " .ck", { opacity: 0, scale: 0.4, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(1.6)" }, t));
-      // "thirty" at abs 37.90 = local 4.35: the last proof is the bank statement, at D+30.
-      tl.fromTo("#pv-d30", { opacity: 0, scale: 0.5, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.6)" }, 4.3);
+      tl.fromTo("#pv-d30", { opacity: 0, scale: 0.6, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.6)" }, 2.2);
       gsap.set("#pv-ink", { scaleY: 0, transformOrigin: "50% 0%" });
-      tl.to("#pv-ink", { scaleY: 1, duration: 0.3, ease: "power2.inOut" }, 5.2);
+      tl.to("#pv-ink", { scaleY: 1, duration: 0.25, ease: "power2.inOut" }, 3.35);
       window.__timelines["prove"] = tl;
     })();
   </script>

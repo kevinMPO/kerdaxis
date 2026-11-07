@@ -1,0 +1,45 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    .verb { position: absolute; left: 104px; top: 90px; font-weight: 900; font-size: 230px; line-height: 0.9; letter-spacing: -0.06em; white-space: nowrap; color: #b4f768; }
+    #d-sub { position: absolute; left: 116px; top: 340px; width: 720px; font-weight: 700; font-size: 58px; line-height: 1.12; letter-spacing: -0.02em; }
+    #d-card { position: absolute; left: 900px; top: 110px; width: 920px; height: 760px; border-radius: 32px; background: #ffffff; color: #17140f; }
+    #d-head { position: absolute; left: 40px; top: 30px; font-weight: 700; font-size: 30px; color: #5b554c; white-space: nowrap; }
+    .dt { position: absolute; left: 24px; width: 872px; height: 126px; border-radius: 20px; border: 2px solid #e4e0d6; background: #ffffff; }
+    #dt0 { top: 86px; } #dt1 { top: 220px; } #dt2 { top: 354px; } #dt3 { top: 488px; } #dt4 { top: 622px; }
+    .dt .tg { position: absolute; left: 22px; top: 22px; padding: 2px 14px; border-radius: 10px; background: #080d13; color: #b4f768; font-weight: 900;
+      font-size: 28px; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+    .dt .nm { position: absolute; left: 22px; top: 62px; font-weight: 900; font-size: 38px; white-space: nowrap; }
+    .dt .sb { position: absolute; left: 340px; top: 24px; font-weight: 700; font-size: 28px; color: #5b554c; white-space: nowrap; }
+    .dt .am { position: absolute; right: 26px; top: 60px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 38px; white-space: nowrap; }
+    #d-demo { position: absolute; left: 904px; top: 884px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; }
+    #d-verb, #d-sub, #d-card, .dt { opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="detect" data-width="1920" data-height="1080">
+    <div id="d-verb" class="verb" style="font-size: 190px;">DETECT</div>
+    <div id="d-sub">Waste and savings opportunities.</div>
+    <div id="d-card">
+      <div id="d-head">Potential saving per month · demo data (fictional company)</div>
+        <div id="dt0" class="dt"><div class="tg">Unused</div><div class="nm">Nuvio CRM</div><div class="sb">no login in 90 days</div><div class="am">129 €</div></div>
+        <div id="dt1" class="dt"><div class="tg">Duplicate</div><div class="nm">ChatGPT + Claude</div><div class="sb">2 LLM subscriptions</div><div class="am">84 €</div></div>
+        <div id="dt2" class="dt"><div class="tg">Duplicate</div><div class="nm">Google Workspace ×2</div><div class="sb">2 accounts → 1</div><div class="am">29 €</div></div>
+        <div id="dt3" class="dt"><div class="tg">Price rise</div><div class="nm">Figma</div><div class="sb">+14.3% (42 → 48 €)</div><div class="am">6 €</div></div>
+        <div id="dt4" class="dt"><div class="tg">Fees</div><div class="nm">FX / ATM</div><div class="sb">→ Wise / Revolut card</div><div class="am">43 €</div></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 15.75. VO: "unused" ~1.4, "duplicates" ~2.4, "price rises" ~3.0.
+      tl.fromTo(["#d-verb", "#d-sub", "#d-card"], { opacity: 0, x: 1920, filter: "blur(20px)" },
+        { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, 0);
+      [0.3, 1.3, 1.45, 2.15, 2.45].forEach((t, i) =>
+        tl.fromTo("#dt" + i, { opacity: 0, y: 24, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, t));
+      tl.to("#dt0", { borderColor: "#080d13", backgroundColor: "#eaffd2", duration: 0.25, ease: "power2.out" }, 1.4);
+      // Carry: the card slides left and shrinks into COMPARE.
+      tl.to(["#d-verb", "#d-sub"], { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, 3.6);
+      tl.to("#d-card", { x: -1920, filter: "blur(16px)", duration: 0.25, ease: "power3.in" }, 3.6);
+      window.__timelines["detect"] = tl;
+    })();
+  </script>
+</template>
