@@ -69,6 +69,8 @@ export interface Supplier {
 /** Ce que l'exécution a créé chez le fournisseur (abonnement de test Stripe). */
 export interface SupplierTarget {
   subscriptionId: string;
+  /** Client Stripe : permet d'ouvrir un nouveau lien de portail si la session H doit être relancée. */
+  customerId?: string;
 }
 
 /**

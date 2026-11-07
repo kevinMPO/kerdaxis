@@ -101,12 +101,18 @@ export async function createPortalTarget(product: PortalProduct, executionId: st
     { customer: customer.id, "items[0][price]": priceId },
     `kerdaxis-exec-${executionId}-subscription`,
   );
+  const portalUrl = await openPortalSession(customer.id, configurationId);
+  return { subscriptionId: subscription.id, customerId: customer.id, portalUrl };
+}
+
+/** Nouveau lien de portail pour un client existant (relance d'une session H : même abonnement, nouveau lien). */
+export async function openPortalSession(customerId: string, configurationId?: string): Promise<string> {
   const portal = await call<{ url: string }>("POST", "/billing_portal/sessions", {
-    customer: customer.id,
-    configuration: configurationId,
+    customer: customerId,
+    configuration: configurationId ?? (await ensurePortalConfiguration()),
     return_url: PORTAL_RETURN_URL,
   });
-  return { subscriptionId: subscription.id, customerId: customer.id, portalUrl: portal.url };
+  return portal.url;
 }
 
 export interface StripeSubscription {

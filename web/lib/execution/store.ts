@@ -87,6 +87,12 @@ export interface Execution {
   playbook?: PlaybookView | null;
   /** Ce que l'exécution a créé chez le fournisseur (abonnement de test Stripe), pour la preuve. */
   target?: SupplierTarget | null;
+  /** Consignes de la mission, gardées pour relancer une session H bloquée sans refaire la recherche. */
+  launchGuide?: { text: string; finalLabel: string } | null;
+  /** Session H en cours : début, numéro d'essai, et si l'agent a déjà agi (événement de décision). */
+  sessionStartedAt?: string | null;
+  sessionAttempts?: number;
+  sessionActed?: boolean;
 }
 
 interface Db {

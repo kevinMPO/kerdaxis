@@ -107,7 +107,16 @@ export function pauseSession(id: string): Promise<unknown> {
   return hai(`/sessions/${encodeURIComponent(id)}/pause`, { method: "POST" });
 }
 
-/** Envoie un message à l'agent ; une session en pause ou en attente reprend. */
+/**
+ * Reprend une session mise en pause. Un message seul ne la réveille pas
+ * toujours : constaté le 2026-11-07, une session en pause qui reçoit le feu
+ * vert dans la même seconde reste en pause, message non lu.
+ */
+export function resumeSession(id: string): Promise<unknown> {
+  return hai(`/sessions/${encodeURIComponent(id)}/resume`, { method: "POST" });
+}
+
+/** Envoie un message à l'agent ; une session en attente (`idle`) reprend, une session en pause non (voir resumeSession). */
 export function sendMessage(id: string, message: string): Promise<unknown> {
   return hai(`/sessions/${encodeURIComponent(id)}/messages`, {
     method: "POST",
