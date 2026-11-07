@@ -374,7 +374,7 @@ h3{font-size:1.2rem;font-weight:560;letter-spacing:-.012em;line-height:1.3}
       <script>(function(){try{if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){var v=document.getElementById('heroLoop');v.removeAttribute('autoplay');v.autoplay=false;v.pause();}}catch(e){}})();</script>
       <button class="film-play" type="button" data-film aria-haspopup="dialog">
         <span class="play-dot" aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M4 2.5v11l9.5-5.5z" fill="currentColor"/></svg></span>
-        <span data-i="filmBtn">Watch the 46-second film</span>
+        <span data-i="filmBtn">Watch the 51-second film</span>
       </button>
     </div>
     <figcaption data-i="filmCaption">Recorded H Company session on our demo supplier portal (fictional supplier)</figcaption>
@@ -612,13 +612,13 @@ h3{font-size:1.2rem;font-weight:560;letter-spacing:-.012em;line-height:1.3}
 
 <dialog class="film-dialog" id="filmDialog" aria-labelledby="filmDialogTitle">
   <div class="dialog-bar">
-    <h2 id="filmDialogTitle" data-i="filmTitle">Kerdaxis in 46 seconds</h2>
+    <h2 id="filmDialogTitle" data-i="filmTitle">Kerdaxis in 51 seconds</h2>
     <button class="dialog-close" type="button" id="filmClose" aria-label="Close the film" data-i-aria="filmClose">
       <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </button>
   </div>
-  <video id="filmVideo" controls playsinline preload="none" poster="media/film-poster.jpg?v=7">
-    <source src="media/kerdaxis-film.mp4?v=7" type="video/mp4">
+  <video id="filmVideo" controls playsinline preload="none" poster="media/film-poster.jpg?v=8">
+    <source src="media/kerdaxis-film.mp4?v=8" type="video/mp4">
   </video>
   <p class="film-missing" id="filmMissing" hidden data-i="filmMissing">The film can't be loaded right now.</p>
   <p class="dialog-caption" data-i="filmCaption3">Recorded H Company session on our demo supplier portal (fictional supplier)</p>
@@ -638,7 +638,7 @@ en:{
   h1:"AI doesn't just find savings.<br>It makes them happen.",
   heroLede:"Kerdaxis reads your bank account, spots the subscriptions you no longer need, and sends an agent to cancel them on the supplier's portal. It stops before the final click and waits for your green light.",
   ctaPrimary:'Open the live app ↗',ctaAccess:'Request access',
-  filmBtn:'Watch the 46-second film',filmCaption:CAPTION_EN,filmCaption2:CAPTION_EN,filmCaption3:CAPTION_EN,
+  filmBtn:'Watch the 51-second film',filmCaption:CAPTION_EN,filmCaption2:CAPTION_EN,filmCaption3:CAPTION_EN,
   stackBuilt:'Built with',stackConnects:'Connects to',stackQonto:'Qonto, read-only',stackComing:'Coming',
   agentTitle:'It does the clicking. You approve the click that matters.',
   agentLede:"Kerdaxis hands each cancellation to an H Company computer-use agent. It works on the supplier's own portal the way a person would, and stops where a person should.",
@@ -698,7 +698,7 @@ en:{
   formInvalid:'Enter a valid email address, for example name@company.com.',
   mailSubject:'Kerdaxis early access request',mailBody:'Hello Kerdaxis team,\n\nI would like early access.\nMy work email: {email}\n\n',
   footNote:'H Company, Holo, Qonto, Gladia, Linkup, Sage and Pennylane are trademarks of their respective owners. The supplier shown in our recordings is fictional.',
-  filmTitle:'Kerdaxis in 46 seconds',filmClose:'Close the film',filmMissing:"The film can't be loaded right now."
+  filmTitle:'Kerdaxis in 51 seconds',filmClose:'Close the film',filmMissing:"The film can't be loaded right now."
 },
 fr:{
   metaTitle:"Kerdaxis — L'IA ne se contente pas de trouver des économies. Elle les concrétise.",
@@ -708,7 +708,7 @@ fr:{
   h1:'L’IA ne se contente pas de trouver des économies.<br>Elle les concrétise.',
   heroLede:'Kerdaxis lit votre compte bancaire, repère les abonnements dont vous n’avez plus besoin et envoie un agent les résilier sur le portail du fournisseur. Il s’arrête avant le clic final et attend votre feu vert.',
   ctaPrimary:'Ouvrir l’application ↗',ctaAccess:'Demander un accès',
-  filmBtn:'Voir le film de 46 secondes',filmCaption:CAPTION_FR,filmCaption2:CAPTION_FR,filmCaption3:CAPTION_FR,
+  filmBtn:'Voir le film de 51 secondes',filmCaption:CAPTION_FR,filmCaption2:CAPTION_FR,filmCaption3:CAPTION_FR,
   stackBuilt:'Conçu avec',stackConnects:'Se connecte à',stackQonto:'Qonto, en lecture seule',stackComing:'Bientôt',
   agentTitle:'Il fait les clics. Vous validez celui qui compte.',
   agentLede:'Kerdaxis confie chaque résiliation à un agent computer-use de H Company. Il travaille sur le portail du fournisseur comme le ferait une personne, et s’arrête là où une personne devrait s’arrêter.',
@@ -768,7 +768,7 @@ fr:{
   formInvalid:'Saisissez une adresse email valide, par exemple nom@entreprise.fr.',
   mailSubject:'Demande d’accès anticipé à Kerdaxis',mailBody:'Bonjour l’équipe Kerdaxis,\n\nJe souhaite un accès anticipé.\nMon email professionnel : {email}\n\n',
   footNote:'H Company, Holo, Qonto, Gladia, Linkup, Sage et Pennylane sont des marques de leurs propriétaires respectifs. Le fournisseur visible dans nos enregistrements est fictif.',
-  filmTitle:'Kerdaxis en 46 secondes',filmClose:'Fermer le film',filmMissing:'Le film ne peut pas être chargé pour le moment.'
+  filmTitle:'Kerdaxis en 51 secondes',filmClose:'Fermer le film',filmMissing:'Le film ne peut pas être chargé pour le moment.'
 }};
 
 var reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -848,7 +848,7 @@ if(reduce.addEventListener)reduce.addEventListener('change',onReduce);else if(re
 /* ---------- film dialog ---------- */
 var opener=null;
 function openFilm(e){
-  if(!dlg||typeof dlg.showModal!=='function'){location.href='media/kerdaxis-film.mp4?v=7';return;}
+  if(!dlg||typeof dlg.showModal!=='function'){location.href='media/kerdaxis-film.mp4?v=8';return;}
   opener=e&&e.currentTarget||document.activeElement;
   loops.forEach(function(v){v.pause();});
   dlg.showModal();
