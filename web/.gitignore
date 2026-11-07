@@ -22,3 +22,6 @@ next-env.d.ts
 # comptes et inscriptions (local, données personnelles) — jamais commités
 /data/accounts.json
 /data/leads.json
+
+# recherche de parcours (cache local, régénérable)
+/data/research/
