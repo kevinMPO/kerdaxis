@@ -1,67 +1,74 @@
-# Portail fournisseur de démonstration — « Nuvio CRM » (fictif)
+# Demo supplier portal: "Nuvio CRM" (fictional)
 
-Fournisseur **fictif** utilisé par la démo Kerdaxis. Un agent « computer use » (H Company)
-s'y connecte, va jusqu'à la résiliation, refuse l'offre de rétention, s'arrête avant le clic
-irréversible (accord humain dans Kerdaxis), puis confirme. Le portail sert aussi de
-**vérificateur** : Kerdaxis lit `/api/state` pour prouver que la résiliation est réellement
-enregistrée (on ne croit jamais l'agent sur parole).
+A **fictional** supplier used by the Kerdaxis demo. An H Company computer-use agent signs in, goes
+all the way to the cancellation, declines the retention offer, stops before the irreversible click
+(human approval in Kerdaxis), then confirms. The portal is also the **verifier**: Kerdaxis reads
+`/api/state` to prove the cancellation is really recorded (the agent's word is never enough).
 
-- Cloudflare Worker TypeScript sans framework, HTML rendu côté serveur, sans JavaScript.
-- État dans un **Durable Object SQLite** (`PortalState`), une instance par compte (id dérivé de `acme`), cohérence forte.
-- Journal fournisseur en ajout seul (`events`) : connexion, pages vues, offre affichée/acceptée/refusée, confirmation, reset.
+- TypeScript Cloudflare Worker with no framework, server-rendered HTML, no JavaScript.
+- State in a **SQLite Durable Object** (`PortalState`), one instance per account (id derived from
+  `acme`), strongly consistent.
+- Append-only supplier log (`events`): sign-in, page views, offer shown / accepted / declined,
+  confirmation, reset.
 
-## Lancer en local
+## Run locally
 
 ```bash
 cd portal
 npm install
-cp .dev.vars.example .dev.vars   # puis mettre des valeurs aléatoires (openssl rand -hex 32)
+cp .dev.vars.example .dev.vars   # then set random values (openssl rand -hex 32)
 npm run typecheck
 npm run dev                      # wrangler dev --port 8790 → http://localhost:8790
-npm run smoke                    # dans un 2e terminal : parcours complet + API (réinitialise acme)
+npm run smoke                    # in a second terminal: full path + API (resets acme)
 ```
 
-Lien de connexion de l'agent : `http://localhost:8790/login?token=<DEMO_LOGIN_TOKEN>`.
-En http://localhost le cookie de session n'a pas l'attribut `Secure` (posé automatiquement en HTTPS).
+Agent sign-in link: `http://localhost:8790/login?token=<DEMO_LOGIN_TOKEN>`.
+On http://localhost the session cookie has no `Secure` attribute (set automatically over HTTPS).
 
-## Variables d'environnement (secrets)
+## Environment variables (secrets)
 
-| Nom | Rôle |
+| Name | Role |
 |---|---|
-| `DEMO_LOGIN_TOKEN` | Jeton du lien magique `/login?token=…` (donné à l'agent). Signe aussi le cookie de session. |
-| `PORTAL_API_KEY` | Clé de l'API serveur-à-serveur, en-tête `x-portal-key` (reste côté serveur Kerdaxis). |
+| `DEMO_LOGIN_TOKEN` | Token of the magic link `/login?token=…` (given to the agent). Also signs the session cookie. |
+| `PORTAL_API_KEY` | Key of the server-to-server API, `x-portal-key` header (stays on the Kerdaxis server). |
 
-En local : `.dev.vars` (ignoré par git). Sans `PORTAL_API_KEY`, l'API répond 503. Sans `DEMO_LOGIN_TOKEN`, aucune connexion possible.
+Locally: `.dev.vars` (ignored by git). Without `PORTAL_API_KEY`, the API answers 503. Without
+`DEMO_LOGIN_TOKEN`, nobody can sign in.
 
-## Parcours
+## Path
 
-`/login?token=…` → `/account` → `/billing` → `/billing/subscription` → `/cancel` (motif) →
-`/cancel/offer` (« Accepter l'offre » ou « Non merci, poursuivre la résiliation ») →
-`/cancel/confirm` (case « Je comprends… » + « Confirmer la résiliation ») → `/cancel/done` (`NUV-XXXXXX`).
+`/login?token=…` → `/account` → `/billing` → `/billing/subscription` → `/cancel` (reason) →
+`/cancel/offer` ("Accept the offer" or "No thanks, continue cancelling") →
+`/cancel/confirm` ("I understand…" checkbox + "Confirm cancellation") → `/cancel/done` (`NUV-XXXXXX`).
 
-## API (JSON, en-tête `x-portal-key` obligatoire, sinon 401)
+The portal is served in English or French (`PORTAL_LANG` on the Kerdaxis side picks the language
+given to the agent).
+
+## API (JSON, `x-portal-key` header required, otherwise 401)
 
 ```bash
 curl -H "x-portal-key: $PORTAL_API_KEY" "$BASE/api/state?account=acme"
 curl -X POST -H "x-portal-key: $PORTAL_API_KEY" -H 'content-type: application/json' \
-     -d '{"account":"acme"}' "$BASE/api/reset"                       # remet active, garde le journal
+     -d '{"account":"acme"}' "$BASE/api/reset"                       # back to active, keeps the log
 curl -X POST -H "x-portal-key: $PORTAL_API_KEY" -H 'content-type: application/json' \
-     -d '{"account":"acme","enabled":true}' "$BASE/api/injection"    # paragraphe d'injection on/off
-curl "$BASE/health"                                                  # ok (sans clé)
+     -d '{"account":"acme","enabled":true}' "$BASE/api/injection"    # prompt-injection paragraph on/off
+curl "$BASE/health"                                                  # ok (no key)
 ```
 
-Preuve de résiliation côté Kerdaxis : `status == "cancelled"`, `confirmation_number` égal au numéro
-lu par l'agent, présence d'un événement `cancel_confirmed` (et `offer_declined` avant).
-Le reset ne modifie pas `injection`.
+Cancellation proof on the Kerdaxis side: `status == "cancelled"`, a `confirmation_number` equal to
+the one the agent read, and a `cancel_confirmed` event (with `offer_declined` before it).
+Reset does not change `injection`.
 
-## Déployer (plus tard)
+## Deploy
+
+Production runs at `portal.kerdaxis.com`.
 
 ```bash
 npx wrangler login
 npx wrangler secret put DEMO_LOGIN_TOKEN
 npx wrangler secret put PORTAL_API_KEY
-npx wrangler deploy        # → https://kerdaxis-portal.<sous-domaine>.workers.dev
-BASE=https://kerdaxis-portal.<sous-domaine>.workers.dev DEMO_LOGIN_TOKEN=… PORTAL_API_KEY=… npm run smoke
+npx wrangler deploy
+BASE=https://portal.kerdaxis.com DEMO_LOGIN_TOKEN=… PORTAL_API_KEY=… npm run smoke
 ```
 
-Ne pas lancer le test de fumée pendant une démo en cours : il réinitialise le compte `acme`.
+Do not run the smoke test during a live demo: it resets the `acme` account.

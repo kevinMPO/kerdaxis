@@ -38,7 +38,7 @@ supplier's portal shows the confirmation number.
 1. **Read.** Kerdaxis reads the bank account through the Qonto MCP. Every write tool is denied. It never moves money.
 2. **Count.** A deterministic engine computes every euro: recurring tools, structural costs, one-offs, the controllable run-rate. The LLM only labels; it never does arithmetic. A saving that depends on a market price (switch, downgrade, renegotiate) stays at 0 € until a price is found on the web with its source and date (see [Pricing a lever](#pricing-a-lever-observed-or-sourced)).
 3. **Decide.** The Autopilot card names one action, for example *Nuvio CRM: nobody has logged in for 90 days, 129 €/mo → 1,548 €/yr*. A human approves it.
-4. **Act.** An H Company agent opens the supplier's portal in its own cloud browser. It finds the subscription, gives a reason, declines the retention offer and reaches the final confirmation page.
+4. **Act.** If Linkup finds in the supplier's official docs that the cancellation can be done online, an H Company agent opens the supplier's portal in its own cloud browser. It finds the subscription, gives a reason, declines the retention offer and reaches the final confirmation page. Otherwise, or if the channel cannot be verified, Kerdaxis drafts a letter and the human sends it.
 5. **Stop.** Kerdaxis pauses the agent before *Confirm cancellation*. The panel shows the page the agent sees and waits for the human's final go.
 6. **Prove.** After the go, the agent confirms. Kerdaxis then reads the supplier's state through the portal's own API: *cancelled · NUV-…*. It does not take the agent's word for it.
 7. **Verify.** At D+30, the saving is checked on the bank statement. The ledger keeps five values apart: potential, approved, executed, supplier-confirmed, verified on statement.
@@ -98,6 +98,10 @@ The agent gets all of it as a map, with the rule "the screen is the truth". If t
 more than 150 s, the agent starts with a generic instruction instead: research never blocks a cancellation.
 Results are cached in `web/data/research/`.
 
+After the run, Kerdaxis checks the documented path against what the agent really did, without an LLM
+(`research/compare.ts`): each button label the docs quote is looked up in the agent's own log, and the run panel
+shows which ones the agent met.
+
 First real run, 7 Nov 2026 (H Company session on `billing.stripe.com`, Stripe test mode):
 
 | | |
@@ -139,7 +143,7 @@ flowchart TB
       Q[("Bank account<br/>read-only · e.g. Qonto")]
       DEMO[("Demo statement<br/>fictional · lib/demo")]
       AN["LLM · H Company Holo<br/>labels · letters · prices · risk text"]
-      LK["Linkup<br/>public prices"]
+      LK["Linkup<br/>public prices · official docs"]
       SCR["H web-scraper-flash<br/>official pricing page"]
       GOV["Public company registries<br/>e.g. BODACC"]
     end
@@ -149,10 +153,13 @@ flowchart TB
       LBL["Categorize<br/>LLM returns labels only<br/>rules as fallback"]
       BM["Benchmark<br/>source + date or dropped"]
       PRC["Pricing<br/>lib/engine/pricing · seats from the amount paid"]
+      CC["Cancel channel<br/>online → agent · else → letter"]
       RISK["Supplier risk agent<br/>LLM explains · engine scores"]
       ENG["Deterministic engine<br/>lib/engine · every euro"]
-      CACHE[("D1 caches<br/>prices 30 days · demo result per day")]
+      CACHE[("D1 caches 30 days<br/>prices · cancel channels<br/>+ demo result per day")]
       AP["Autopilot<br/>approval = action hash · 10 min · single use"]
+      LET["Letter<br/>drafted by Holo · sent by the human"]
+      RS["Path research<br/>Linkup article + H reads its screenshots"]
       EX["Execution runner<br/>two-turn mission · watchdog pause"]
       LED[("Ledger + access log<br/>5 saving states · every third-party call")]
       VO["Voice"]
@@ -161,12 +168,13 @@ flowchart TB
     subgraph OUT["Act · never without a human click"]
       direction LR
       H["H Company Agents API<br/>computer-use agent"]
-      P["Supplier website<br/>demo: portal.kerdaxis.com"]
+      P["Supplier website<br/>Nuvio: portal.kerdaxis.com<br/>Lumen: Stripe customer portal"]
     end
 
     U([Human])
     GL["Gladia live STT"]
-    ST["Payments<br/>e.g. Stripe, test mode"]
+    ST["Payments<br/>Stripe, test mode"]
+    ACC["Accounts + waitlist Worker<br/>my-app/"]
 
     Q -->|transactions| PIPE
     DEMO -->|transactions| PIPE
@@ -180,20 +188,28 @@ flowchart TB
     BM <-->|verified prices| CACHE
     BM -->|sourced prices| PRC
     PRC -->|saving or unverified| ENG
+    LK -->|official cancellation doc| CC
+    CC <-->|channel| CACHE
     LK --> RISK
     GOV --> RISK
     AN <-->|signals · explanation| RISK
-    ENG --> AP
+    ENG --> CC
+    CC -->|online| AP
+    CC -->|offline or unverified| LET
+    AN --> LET
     U -->|approve| AP
-    AP --> EX
+    AP --> RS
+    LK --> RS
+    RS -->|map of the path| EX
     U -->|final go · UI click only| EX
     EX --> LED
     EX <-->|session · pause · APPROVED| H
     H -->|cloud browser| P
-    P -->|state: cancelled · NUV-…| EX
+    P -->|supplier state: portal API or Stripe API| EX
     GL <--> VO
     VO -.->|explains · prepares · never the final go| AP
     ST --- APP
+    ACC --- APP
 ```
 
 ### Pricing a lever: observed or sourced
@@ -262,7 +278,7 @@ commit CI tested. D1 migrations are not part of the deploy: they are applied by 
 | Piece | Stack | Where it runs |
 |---|---|---|
 | Site, `kerdaxis.com` | Static HTML, EN/FR, the film | Cloudflare Worker, assets only (`site/`) |
-| App, `app.kerdaxis.com` | Next.js 15, React 19, TypeScript, built with OpenNext. D1 for executions, accounts, trial emails, the access log, price benchmarks (30 days) and the day's demo result; KV for OAuth tokens | Cloudflare Workers (`web/`), deployed from `main` by CI |
+| App, `app.kerdaxis.com` | Next.js 15, React 19, TypeScript, built with OpenNext. D1 for executions, accounts, trial emails, the access log, price benchmarks and cancellation channels (30 days each) and the day's demo result; KV for OAuth tokens | Cloudflare Workers (`web/`), deployed from `main` by CI |
 | Demo supplier portal | TypeScript Worker, server-rendered HTML, SQLite Durable Object | `portal.kerdaxis.com` (`portal/`) |
 | Accounts and waitlist | TypeScript Worker, KV | Cloudflare Workers (`my-app/`) |
 | Agents | H Company Agents API (`agp.eu.hcompany.ai/api/v2`): our cancellation agent (visual browser), a screenshot reader, and the pre-built `h/web-scraper-flash` for pricing pages | H Company cloud |
@@ -309,19 +325,24 @@ cd web && npm run cf:deploy
 ```
 site/                 kerdaxis.com: landing (EN/FR), film, posters, loops
 web/                  the Kerdaxis app (Next.js)
-  app/                dashboard (Kerdaxis.tsx), ExecutionPanel, VoiceCommand,
-                      access pages (try, signup, signin, login)
+  app/dashboard/      the dashboard served at /demo (today, subscriptions, runs, ledger, letters)
+  app/                landing, classic dashboard (Kerdaxis.tsx, /classic), ExecutionPanel,
+                      VoiceCommand, access pages (try, signup, signin, login), /risk, /rapport
   app/api/execution/  approve · start · status · [id] · final · stop · screenshot · reset
-  app/api/            try · signup · signin · signout · me · billing/{return,portal} · voice/gladia
+  app/api/            analyze · benchmark · cancel-channel · letter · risk · access-log ·
+                      auth/qonto/* · try · signup · signin · signout · me · billing/* · voice/*
   lib/analysis/       the one pipeline for a real account and the demo: categorize, then engine
-  lib/engine/         deterministic engine (core), pricing from sourced prices, public engine API
+  lib/engine/         the deterministic engine: every euro (core) and sourced prices (pricing)
   lib/demo/           fictional demo statement, its analysis and the D1 cache of the day's result
   lib/benchmark*.ts   Linkup search, Holo extraction, web-scraper fallback, D1 price cache
-  lib/execution/      policy (action hash) · runner (gate) · replay (trial) · suppliers · store
-  lib/auth/           signed session cookies, test access
-  lib/accounts/       local accounts and trial leads (scrypt passwords; data/ is gitignored)
+  lib/execution/      policy (action hash) · runner (gate) · replay (trial) · suppliers ·
+                      stripe-portal · store · run-copy (localized run log) ·
+                      research/ (path research, path check, cancel channel)
+  lib/risk/           supplier risk agent (identity, finances, BODACC, Linkup, Holo)
+  lib/mcp/            read-only Qonto client and its guard
+  lib/auth/           Qonto OAuth, signed session cookies, test access
+  lib/accounts/       accounts and trial leads (D1, or local JSON files under data/)
   lib/billing/        Stripe Checkout, subscription check, customer portal
-  lib/engine/         the deterministic engine: every euro (core) and sourced prices (pricing)
   middleware.ts       access levels and internal headers
   db/                 D1 migrations, applied by hand (see db/README.md)
   public/replay/      the 10 captures of the recorded run
@@ -329,7 +350,9 @@ portal/               fictional supplier portal (Cloudflare Worker + Durable Obj
 my-app/               accounts and waitlist Worker (/auth/*, /waitlist) called by the app
 video/                the 69 s film as code (HyperFrames): SPEC.md, compositions/, recorded
                       H session captures, voiceover script (VOICEOVER.md) and voice lines
-docs/, PRD + Claude Code/   product docs, the Kerdaxis PRD
+video-arch/, video-hackathon/, video-yc/   other cuts: architecture film, hackathon cut, launch cut
+scripts/, security/   secret and bank-data guard, dependency audit and its accepted exceptions
+docs/, PRD + Claude Code/   deployment notes, the Kerdaxis PRD
 ```
 
 ## The film
@@ -348,6 +371,7 @@ npm run render -- -o renders/kerdaxis.mp4
 
 ```bash
 cd web && npx tsc --noEmit && npx vitest run     # 760 tests, engine included
+cd my-app && npx vitest run                      # accounts and waitlist Worker
 bash scripts/check-secrets.sh                    # no secret or bank data in tracked files
 cd portal && npm run typecheck && npm run smoke  # full portal path + API (resets the demo account)
 ```
@@ -392,7 +416,7 @@ session started, Kerdaxis cancels it and opens a fresh one on the same approved 
 new portal link), up to 3 sessions, then fails cleanly (`STALL_MS` in `runner.ts`). The script reports how many
 relaunches each run needed.
 
-The tests cover the gate in both directions: a replay never confirms without the final go, and a refusal stops everything. Session cookies reject forged roles and expired values. GitHub Actions (`.github/workflows/ci.yml`) runs three blocking jobs: engine, web (types, tests, build) and secrets. A green run on `main` deploys the app (see [Deploy](#deploy-main-is-production)).
+The tests cover the gate in both directions: a replay never confirms without the final go, and a refusal stops everything. Session cookies reject forged roles and expired values. GitHub Actions (`.github/workflows/ci.yml`) runs two blocking jobs: web (types, tests including the engine, production build) and security (secret and bank-data guard, audit of production dependencies). A green run on `main` deploys the app (see [Deploy](#deploy-main-is-production)).
 
 ## Known limits
 
@@ -403,7 +427,7 @@ This is a hackathon build. Here is what that means today:
 - **Watchdog on unknown sites.** Layer 2 needs the final page's URL. For a researched supplier without a known URL, layers 1 and 3 and the supplier-side proof still apply.
 - **Only Qonto is connected.** Sage, Pennylane and SaaS/CRM tools are shown as "coming", not live.
 - **Stripe is in test mode.** No real money moves.
-- **D1 migrations are manual.** Until `0003_market_benchmarks.sql` and `0004_demo_results.sql` are applied, the price cache and the shared demo result are off: every *Verify prices* searches the web again, and the first demo visit on each isolate waits for Holo.
+- **D1 migrations are manual.** Until `0003_market_benchmarks.sql`, `0004_demo_results.sql` and `0005_cancel_channels.sql` are applied, the price and cancel-channel caches and the shared demo result are off: every *Verify prices* searches the web again, and the first demo visit on each isolate waits for Holo.
 - **The demo warm-up is not authenticated yet.** Production only serves `/api/analyze` to a signed-in visitor, so the deploy's warm-up call gets a 401 until it signs in with the test password.
 - **The pricing fallback reads the current supplier only.** The web-scraper agent fills the supplier's own plans (needed to count seats), not the competitors' prices, and only euro prices are kept.
 
@@ -416,7 +440,7 @@ Four rules apply everywhere in the codebase:
 3. **No personal data to the web.** Only a merchant name and category leave for price benchmarks.
 4. **A price needs a source and a date**, otherwise it is shown as "not verified".
 
-The Company Risk agent (`/risk`) and the deployment notes are documented in [`docs/`](docs/).
+The supplier risk agent (`/risk`) lives in `web/lib/risk/`. Deployment notes are in [`docs/`](docs/), the D1 schema in [`web/db/README.md`](web/db/README.md).
 
 ---
 
