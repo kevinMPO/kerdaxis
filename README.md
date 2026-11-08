@@ -232,7 +232,7 @@ through `lib/execution/hcompany.ts` (Agents API, `agp.eu.hcompany.ai/api/v2`) or
 |---|---|---|---|
 | Cancel at the supplier | Custom agent `kerdaxis-supplier-cancel`, `web` environment in `visual` mode (1280×720) | `instructions`, `answer_format` (structured report), `messages` for the `APPROVED` go, `pause` / `resume`, `DELETE` on stall or stop | `lib/execution/runner.ts` |
 | Read the help article's screenshots | Custom agent `kerdaxis-doc-reader`, no browser | Images attached to the message (two per session), a client tool `flag_unreadable_screenshot` answered through `tool_results`, `answer_format` | `lib/execution/research/screenshots.ts` |
-| Read an official pricing page | Pre-built `h/web-scraper-flash` (text browser) | `overrides` on `start_url` and `answer_format` | `lib/benchmark-scraper.ts` |
+| Read an official pricing page, **fallback for Linkup only**: runs when the pages Linkup found give no price for the current supplier (not when Linkup finds nothing) | Pre-built `h/web-scraper-flash` (text browser) | `overrides` on `start_url` and `answer_format` | `lib/benchmark-scraper.ts` |
 | Label transactions, extract prices, draft letters, explain supplier risk | Holo (`holo4-27b` by default) | Chat completions. The model returns labels or text, never euros | `lib/categorize.ts`, `lib/benchmark.ts`, `lib/letters.ts`, `lib/risk/` |
 
 How a cancellation session is run:
