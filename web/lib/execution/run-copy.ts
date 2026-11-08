@@ -45,6 +45,7 @@ export interface RunCopy {
   stepRetry: (error: string) => string;
   policyCancelled: string;
   paused: string;
+  pauseFailed: (error: string) => string;
   needsHumanDefault: string;
   needsHuman: (error: string) => string;
   agentStoppedAtFinal: string;
@@ -103,6 +104,7 @@ const fr: RunCopy = {
   stepRetry: (e) => `Étape en échec, l'agent réessaie : ${e}`,
   policyCancelled: "Session H Company annulée par la politique Kerdaxis. Reprise manuelle nécessaire.",
   paused: "Kerdaxis a mis l'agent en pause devant la confirmation finale. Il attend ton feu vert.",
+  pauseFailed: (e) => `Pause refusée par H Company (${e}) : l'agent n'est retenu que par sa consigne, nouvel essai à la prochaine page.`,
   needsHumanDefault: "l'agent demande une intervention humaine",
   needsHuman: (e) => `Intervention humaine nécessaire : ${e}`,
   agentStoppedAtFinal: "L'agent est arrêté devant la confirmation finale et attend ton feu vert.",
@@ -174,6 +176,7 @@ const en: RunCopy = {
   stepRetry: (e) => `Step failed, the agent retries: ${e}`,
   policyCancelled: "H Company session cancelled by Kerdaxis policy. Manual follow-up needed.",
   paused: "Kerdaxis paused the agent before the final confirmation. It is waiting for your go.",
+  pauseFailed: (e) => `H Company refused the pause (${e}): only the agent's instructions hold it back, retrying on the next page.`,
   needsHumanDefault: "the agent asks for human help",
   needsHuman: (e) => `Human action needed: ${e}`,
   agentStoppedAtFinal: "The agent stopped before the final confirmation and is waiting for your go.",

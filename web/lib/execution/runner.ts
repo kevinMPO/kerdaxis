@@ -536,6 +536,26 @@ function pathOf(url: string | undefined): string {
 
 const H_TERMINAL = new Set(["completed", "failed", "timed_out", "interrupted"]);
 
+/**
+ * Couche 2 du point d'arrêt. Si l'API refuse la pause, l'agent n'est plus
+ * retenu que par le découpage en deux tours (couche 1) et le vérificateur
+ * (couche 3) : on le dit au journal au lieu de l'avaler, et `paused` reste faux
+ * pour que la prochaine observation de la page finale retente la pause.
+ */
+export async function pauseAtFinalStep(exec: Execution, sessionId: string): Promise<boolean> {
+  try {
+    await pauseSession(sessionId);
+    return true;
+  } catch (err) {
+    if (!exec.pauseFailed) {
+      exec.pauseFailed = true;
+      const reason = err instanceof Error ? err.message : String(err);
+      appendEvent(exec, { kind: "warning", message: runCopy(exec.lang).pauseFailed(reason.slice(0, 120)) });
+    }
+    return false;
+  }
+}
+
 /** Fait avancer l'exécution : lit les nouveautés H, applique la politique, conclut. */
 export async function advanceExecution(exec: Execution, waitForSeconds = 5): Promise<Execution> {
   if (TERMINAL_STATUSES.has(exec.status) || !exec.sessionId) return exec;
@@ -579,13 +599,9 @@ export async function advanceExecution(exec: Execution, waitForSeconds = 5): Pro
 
     // Couche 2 : pause imposée devant la confirmation finale.
     if (res.atFinalStep && !exec.finalDecision && !exec.paused) {
-      exec.paused = true;
-      await pauseSession(exec.sessionId).catch(() => undefined);
+      exec.paused = await pauseAtFinalStep(exec, exec.sessionId);
       exec.status = "awaiting_final_approval";
-      appendEvent(exec, {
-        kind: "approval",
-        message: runCopy(exec.lang).paused,
-      });
+      if (exec.paused) appendEvent(exec, { kind: "approval", message: runCopy(exec.lang).paused });
     }
 
     const phase2 = Boolean(exec.finalDecision) && exec.answerCount > exec.answerCountAtDecision;
