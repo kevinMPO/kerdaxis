@@ -237,11 +237,7 @@ async function prepareTarget(exec: Execution, supplier: Supplier): Promise<strin
 }
 
 /** Lance l'exécution d'un accord. L'accord est consommé (usage unique). */
-export async function startExecution(
-  approval: Approval,
-  orgId: string,
-  opts: { startedByTrial?: boolean } = {},
-): Promise<Execution> {
+export async function startExecution(approval: Approval, orgId: string): Promise<Execution> {
   const check = await checkApproval(approval, orgId);
   if (!check.ok) throw new Error(`accord_invalide:${check.reason}`);
 
@@ -281,7 +277,6 @@ export async function startExecution(
     createdAt: now,
     updatedAt: now,
     events: [],
-    ...(opts.startedByTrial ? { startedByTrial: true } : {}),
   };
   appendEvent(exec, {
     kind: "approval",

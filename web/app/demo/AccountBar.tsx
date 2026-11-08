@@ -33,7 +33,7 @@ export default function AccountBar() {
       {me.role === "trial" && (
         <>
           <span className="kab-tag">Free trial</span>
-          <span className="kab-txt">Nuvio CRM is a replay. Other runs are real.</span>
+          <span className="kab-txt">Nuvio CRM is a replay. Live runs are for subscribers.</span>
           <a className="kab-cta" href="/signup">Go live · 5 €/mo</a>
         </>
       )}

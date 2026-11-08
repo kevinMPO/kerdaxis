@@ -10,7 +10,7 @@ import { StatusPill } from "./StatusPill";
 
 export function RunsView({ d }: { d: Dashboard }): React.ReactElement {
   const { copy, runs, selectedRunId, selectRun } = d;
-  const starter = d.levers.find((l) => l.action === "cancel" && d.isExecutable(l.id)) ?? d.levers.find((l) => d.agentState(l.id) === "offline");
+  const starter = d.levers.find((l) => l.action === "cancel" && d.agentState(l.id) === "ready") ?? d.levers.find((l) => d.agentState(l.id) === "offline");
 
   if (runs.length === 0) {
     return (
@@ -67,7 +67,8 @@ export function RunWatcher({ id, d }: { id: string; d: Dashboard }): null {
 export function LaunchButton({ d, lever, label, tone = "primary" }: { d: Dashboard; lever: Lever; label?: string; tone?: "primary" | "quiet" }): React.ReactElement {
   const state = d.agentState(lever.id);
   const busy = d.launchingId === lever.id;
-  const reason = state === "offline" ? d.copy.agentOffline : state === "unsupported" ? d.copy.agentSoon : undefined;
+  const reason =
+    state === "offline" ? d.copy.agentOffline : state === "unsupported" ? d.copy.agentSoon : state === "subscribers" ? d.copy.agentSubscribers : undefined;
   return (
     <button
       className={`kd-btn ${tone === "primary" ? "kd-btn-accent" : "kd-btn-quiet"}`}

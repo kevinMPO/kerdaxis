@@ -23,7 +23,7 @@ export function TodayView({ d }: { d: Dashboard }): React.ReactElement {
   // Cancellations the agent can run come first, then the biggest risk-free savings.
   const toApprove: Lever[] = [...levers]
     .filter((l) => l.action === "cancel" && d.agentState(l.id) !== "unsupported" && !startedSuppliers.has(l.id))
-    .sort((a, b) => Number(d.isExecutable(b.id)) - Number(d.isExecutable(a.id)) || b.saving - a.saving)
+    .sort((a, b) => Number(d.agentState(b.id) === "ready") - Number(d.agentState(a.id) === "ready") || b.saving - a.saving)
     .slice(0, MAX_APPROVAL_ITEMS);
 
   const toClarify = data.flux.filter((f) => f.kind === "check" || f.kind === "dup");
@@ -76,6 +76,7 @@ export function TodayView({ d }: { d: Dashboard }): React.ReactElement {
                   <p className="kd-need-title">{copy.needApprove(lever.label)}</p>
                   <p className="kd-need-why">
                     {d.agentState(lever.id) === "offline" ? `${copy.agentOffline} · ` : ""}
+                    {d.agentState(lever.id) === "subscribers" ? `${copy.agentSubscribers} · ` : ""}
                     {lever.to} · <span className="kd-num">{eur(lever.saving)}</span>
                     {copy.perMonth} · <span className="kd-num kd-money">{eur(lever.saving * 12)}</span>
                     {copy.perYear}

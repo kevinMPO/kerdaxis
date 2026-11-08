@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request): Promise<Response> {
   const configured = SUPPLIER_IDS.map((id) => getSupplier(id)).filter((s) => s !== null);
   const nuvio = getSupplier("nuvio");
+  const isTrial = req.headers.get("x-kx-role") === "trial";
   return noStore(
     NextResponse.json({
       hcompany: haiConfigured(),
@@ -22,8 +23,9 @@ export async function GET(req: Request): Promise<Response> {
         .filter((s) => reachableByAgent(s))
         .map((s) => ({ id: s.id, vendor: s.vendor, host: s.allowedHost, playbook: s.guide.source })),
       portal: { configured: Boolean(nuvio), online: nuvio ? reachableByAgent(nuvio) : false },
-      // Essai gratuit : seul ce fournisseur est rejoué (session enregistrée), les autres tournent pour de vrai.
-      replaySupplierId: req.headers.get("x-kx-role") === "trial" ? REPLAY_SUPPLIER_ID : null,
+      // Essai gratuit : seul ce fournisseur est rejoué (session enregistrée), les autres sont réservés aux abonnés.
+      replay: isTrial,
+      replaySupplierId: isTrial ? REPLAY_SUPPLIER_ID : null,
     }),
   );
 }

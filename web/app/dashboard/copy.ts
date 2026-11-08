@@ -53,6 +53,7 @@ export interface DashboardCopy {
   prepareLetter: string;
   agentOffline: string;
   agentSoon: string;
+  agentSubscribers: string;
   risk: Record<Risk, string>;
   runsTitle: string;
   runsEmpty: string;
@@ -156,6 +157,7 @@ const fr: DashboardCopy = {
   prepareLetter: "Lettre",
   agentOffline: "Portail du fournisseur injoignable pour l'agent en ce moment.",
   agentSoon: "Parcours de résiliation pas encore disponible pour ce fournisseur.",
+  agentSubscribers: "Essai gratuit : seule la session Nuvio CRM est rejouée. La résiliation en direct est réservée aux abonnés.",
   risk: { safe: "Sans risque", med: "À revoir", hard: "Projet" },
   runsTitle: "Résiliations",
   runsEmpty: "Lance une résiliation depuis À traiter ou Abonnements : l'agent H Company travaille sur le portail du fournisseur et s'arrête avant le clic définitif.",
@@ -258,6 +260,7 @@ const en: DashboardCopy = {
   prepareLetter: "Letter",
   agentOffline: "The supplier's portal is unreachable for the agent right now.",
   agentSoon: "No cancellation path for this supplier yet.",
+  agentSubscribers: "Free trial: only the Nuvio CRM session is replayed. Live cancellation is for subscribers.",
   risk: { safe: "Risk-free", med: "To review", hard: "Project" },
   runsTitle: "Cancellations",
   runsEmpty: "Start a cancellation from Needs you or Subscriptions: the H Company agent works on the supplier's portal and stops before the irreversible click.",
@@ -311,6 +314,7 @@ const en: DashboardCopy = {
 
 const de: DashboardCopy = {
   ...en,
+  agentSubscribers: "Kostenloser Test: Nur die Nuvio-CRM-Sitzung wird abgespielt. Live-Kündigung ist für Abonnenten.",
   nav: { today: "Heute", subscriptions: "Abos", runs: "Kündigungen", ledger: "Hauptbuch" },
   navClassic: "Vorherige Ansicht",
   navPitch: "Der Pitch",
@@ -346,6 +350,7 @@ const de: DashboardCopy = {
 
 const es: DashboardCopy = {
   ...en,
+  agentSubscribers: "Prueba gratuita: solo se reproduce la sesión de Nuvio CRM. La cancelación en directo es para suscriptores.",
   nav: { today: "Hoy", subscriptions: "Suscripciones", runs: "Cancelaciones", ledger: "Libro mayor" },
   navClassic: "Vista anterior",
   navPitch: "El pitch",
@@ -381,6 +386,7 @@ const es: DashboardCopy = {
 
 const it: DashboardCopy = {
   ...en,
+  agentSubscribers: "Prova gratuita: viene riprodotta solo la sessione Nuvio CRM. La disdetta dal vivo è per gli abbonati.",
   nav: { today: "Oggi", subscriptions: "Abbonamenti", runs: "Disdette", ledger: "Libro mastro" },
   navClassic: "Vista precedente",
   navPitch: "Il pitch",

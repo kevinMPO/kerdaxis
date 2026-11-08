@@ -91,8 +91,6 @@ export interface Execution {
   events: ExecutionEvent[];
   /** Essai gratuit : rediffusion d'une session réelle enregistrée (aucun appel H Company). */
   replay?: { startedMs: number; goMs: number | null; shown: number };
-  /** Run réel lancé depuis un compte d'essai (tout fournisseur hors rediffusion). */
-  startedByTrial?: boolean;
   playbook?: PlaybookView | null;
   /** Ce que l'exécution a créé chez le fournisseur (abonnement de test Stripe), pour la preuve. */
   target?: SupplierTarget | null;

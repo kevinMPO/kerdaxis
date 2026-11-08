@@ -8,7 +8,7 @@ import { clientIp } from "@/lib/auth/client-ip";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Essai gratuit : e-mail seul → session « trial » (Nuvio rejoué, les autres fournisseurs en vrai). */
+/** Essai gratuit : e-mail seul → session « trial » (Nuvio rejoué, aucun agent H Company réel). */
 export async function POST(req: Request): Promise<Response> {
   if (!sessionConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 503 });
   if (rateLimitHit(`try:${clientIp(req)}`)) return NextResponse.json({ error: "too_many_attempts" }, { status: 429 });

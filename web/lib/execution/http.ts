@@ -35,7 +35,7 @@ export function operatorGuard(req: Request): NextResponse | null {
  *  - "live"  : opérateur / test / abonné → agent H Company réel ;
  *  - "trial" : essai gratuit (x-kx-role posé par middleware.ts) → rediffusion
  *              enregistrée pour le fournisseur de démo (REPLAY_SUPPLIER_ID),
- *              agent H Company réel pour tous les autres.
+ *              aucun agent H Company réel, les autres fournisseurs sont refusés.
  */
 export function execGuard(req: Request): { denied: NextResponse } | { mode: "live" | "trial" } {
   if (!operatorGuard(req)) return { mode: "live" };
@@ -43,9 +43,9 @@ export function execGuard(req: Request): { denied: NextResponse } | { mode: "liv
   return { denied: NextResponse.json({ error: "forbidden" }, { status: 403 }) };
 }
 
-/** Un compte d'essai ne pilote que ce qu'un essai a lancé : ses rediffusions et ses runs réels. */
+/** Un compte d'essai ne pilote que des rediffusions, jamais une exécution réelle. */
 export function trialMayAccess(exec: Execution): boolean {
-  return Boolean(exec.replay) || exec.startedByTrial === true;
+  return Boolean(exec.replay);
 }
 
 export function noStore(res: NextResponse): NextResponse {
