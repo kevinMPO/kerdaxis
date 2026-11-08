@@ -32,7 +32,10 @@ function source(chemin: string): string {
 }
 
 /** Écrans qui consomment /api/analyze et doivent donc traiter les refus. */
-const ECRANS = ["app/Kerdaxis.tsx"];
+const ECRANS = ["app/Kerdaxis.tsx", "app/dashboard/use-dashboard.ts"];
+
+/** Début de l'appel, avec ou sans options (`fetch("/api/analyze", { signal })`). */
+const APPEL_ANALYZE = 'fetch("/api/analyze"';
 
 describe("invariant de dépôt : un refus HTTP n'est pas une analyse", () => {
   it("trouve bien l'appel à /api/analyze (sinon le test ne garde rien)", () => {
@@ -40,7 +43,7 @@ describe("invariant de dépôt : un refus HTTP n'est pas une analyse", () => {
     // que de passer au vert en ne vérifiant plus rien.
     for (const ecran of ECRANS) {
       expect(source(ecran), `${ecran} n'appelle plus /api/analyze`).toContain(
-        'fetch("/api/analyze")',
+        APPEL_ANALYZE,
       );
     }
   });
@@ -48,7 +51,7 @@ describe("invariant de dépôt : un refus HTTP n'est pas une analyse", () => {
   it("vérifie le statut de la réponse avant de l'interpréter", () => {
     for (const ecran of ECRANS) {
       const code = source(ecran);
-      const depart = code.indexOf('fetch("/api/analyze")');
+      const depart = code.indexOf(APPEL_ANALYZE);
       // La chaîne de promesses qui suit l'appel. 1200 caractères couvrent
       // largement le `.then()` de traitement sans mordre sur le reste.
       const chaine = code.slice(depart, depart + 1200);
@@ -66,7 +69,7 @@ describe("invariant de dépôt : un refus HTTP n'est pas une analyse", () => {
   it("ne conserve aucun `.then((r) => r.json())` nu sur cet appel", () => {
     for (const ecran of ECRANS) {
       const code = source(ecran);
-      const depart = code.indexOf('fetch("/api/analyze")');
+      const depart = code.indexOf(APPEL_ANALYZE);
       const chaine = code.slice(depart, depart + 400).replace(/\s+/g, " ");
 
       // Le motif exact du bug d'origine.

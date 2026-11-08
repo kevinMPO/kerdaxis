@@ -177,6 +177,9 @@
   font-weight: 600;
 }
 .kd-content { padding: 36px 40px 120px; max-width: 1240px; width: 100%; }
+.kd-analyzing { display: flex; align-items: center; gap: 12px; padding: 48px 0; color: var(--kd-ink-2); font-weight: 600; }
+.kd-analyzing-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--kd-accent); animation: kd-pulse 1.1s var(--kd-ease) infinite alternate; }
+@keyframes kd-pulse { from { opacity: 0.35; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
 .kd-page { display: flex; flex-direction: column; gap: 36px; }
 .kd-page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
