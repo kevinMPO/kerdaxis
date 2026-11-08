@@ -2,7 +2,11 @@
 // GET /api/auth/qonto/status — état de la connexion Qonto, pour l'interface.
 //
 // Contrat (stable, consommé par le front) :
-//   { connected, orgName?, readOnly, scopesAreWriteCapable }
+//   { connected, connectable, orgName?, readOnly, scopesAreWriteCapable }
+//
+// `connectable` dit si « Connecter Qonto » peut aboutir sur cette origine
+// (faux sur un domaine hébergé tant que seul le proxy MCP est disponible) :
+// le front grise alors le bouton au lieu d'envoyer vers une impasse.
 //
 // Ce que la route ne fait JAMAIS :
 //   - exposer le jeton, son scope brut, sa date d'expiration ou son empreinte ;
@@ -27,7 +31,7 @@
 // ---------------------------------------------------------------------------
 
 import { NextResponse } from "next/server";
-import { activeProvider } from "@/lib/auth/providers";
+import { activeProvider, connexionQontoOuverte } from "@/lib/auth/providers";
 import { lireSession } from "@/lib/auth/session";
 import { getTokenStore } from "@/lib/auth/token-store";
 import { getOrganizationById } from "@/lib/db/tenant";
@@ -39,13 +43,17 @@ export async function GET(requete: Request): Promise<Response> {
   // Le jeton peut porter des droits d'écriture : on le sait par la description
   // du provider, jamais en inspectant le jeton lui-même.
   let scopesAreWriteCapable = true;
+  let connectable = false;
   try {
-    scopesAreWriteCapable = !activeProvider().readOnly;
+    const provider = activeProvider();
+    scopesAreWriteCapable = !provider.readOnly;
+    connectable = connexionQontoOuverte(provider);
   } catch {
     // Configuration OAuth incomplète : on reste sur l'hypothèse prudente.
   }
 
   const enveloppe = {
+    connectable,
     // Invariant produit : toute requête Qonto traverse l'allowlist read-only.
     readOnly: true,
     scopesAreWriteCapable,

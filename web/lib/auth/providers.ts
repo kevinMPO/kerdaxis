@@ -184,6 +184,27 @@ export const QONTO_DIRECT_READONLY: OAuthProvider = {
   },
 };
 
+function estLoopback(redirectUri: string): boolean {
+  let hote: string;
+  try {
+    hote = new URL(redirectUri).hostname;
+  } catch {
+    return false;
+  }
+  return hote === "localhost" || hote === "127.0.0.1" || hote === "[::1]";
+}
+
+/**
+ * Vrai si le flux OAuth peut aboutir avec ce provider sur l'origine actuelle.
+ * Le proxy MCP de Qonto refuse toute `redirect_uri` hors loopback (cf.
+ * `QONTO_MCP_PROXY`) : sur un domaine hébergé, la connexion est fermée tant
+ * que Qonto n'a pas délivré de client dédié. Partagé par `/start` (qui refuse
+ * de partir) et `/status` (qui le dit au front pour griser le bouton).
+ */
+export function connexionQontoOuverte(provider: OAuthProvider): boolean {
+  return provider.id !== QONTO_MCP_PROXY.id || estLoopback(provider.redirectUri);
+}
+
 /** Tous les providers connus, indexés par identifiant. */
 export const PROVIDERS: Record<string, OAuthProvider> = {
   [QONTO_MCP_PROXY.id]: QONTO_MCP_PROXY,

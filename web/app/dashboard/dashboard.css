@@ -222,6 +222,7 @@
 }
 .kd-btn:active:not(:disabled) { transform: translateY(1px); }
 .kd-btn:disabled { opacity: 0.55; cursor: progress; }
+.kd-btn-closed:disabled { cursor: not-allowed; }
 .kd-btn-accent { background: var(--kd-accent); color: var(--kd-on-accent); }
 .kd-btn-accent:hover:not(:disabled) { background: var(--kd-accent-hover); }
 .kd-btn-dark { background: var(--kd-ink); color: #fff; }
