@@ -5,12 +5,12 @@
 // du code. Le LLM ne fait que CLASSER (nature, pôle, action, motif) ; il ne
 // multiplie jamais, il n'émet jamais un nombre qui deviendrait un euro.
 //
-// C'est ce fichier qui a réparé la violation historique : `savingRatio` était un
-// NOMBRE À VIRGULE émis par le LLM (« 0.37 »), puis multiplié par le montant —
-// donc un euro décidé par le modèle. Désormais le LLM ne rend qu'une CATÉGORIE
-// (`action` / `motif`) et c'est la table `RATIO_ECONOMIE`, constante et testée,
-// détenue par le moteur, qui la traduit en euros. Même patron que le moteur de
-// risque (le LLM étiquette, la table `POINTS` score).
+// Deux origines d'euro, et aucune troisième :
+//   • le RELEVÉ : résiliation (tout le mensuel), doublon, hausse, frais de change ;
+//   • un PRIX PUBLIC sourcé et daté (Linkup), pour switch / downgrade /
+//     renégociation, transformé en économie par `pricing.ts`.
+// Tant que ce prix n'est pas cherché, le levier est `pending` à 0 € : plus de
+// pourcentage forfaitaire par action, qui n'était qu'une estimation figée.
 //
 // Produit un AnalyzeResult complet à partir des transactions normalisées et
 // des verdicts de catégorisation.
@@ -29,17 +29,19 @@ import type {
   Nature,
   NatureSlice,
   PoleSlice,
+  Risk,
   TvaPerdue,
   Tx,
 } from "@/lib/types";
 import { classifyEI, type MerchantInput } from "@/lib/categorize";
+import { isMarketPriced } from "./pricing";
 
 /**
  * Version du contrat de calcul. Exposée par l'API moteur (/api/v1/engine) et
  * jointe à chaque réponse : un client peut détecter qu'une règle a changé.
  * À incrémenter dès qu'une règle métier modifie un chiffre produit.
  */
-export const ENGINE_VERSION = "1.0.0";
+export const ENGINE_VERSION = "2.0.0";
 
 const DAY = 86_400_000;
 const NATURE_LABEL: Record<Nature, string> = {
@@ -50,21 +52,38 @@ const NATURE_LABEL: Record<Nature, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// RATIO_ECONOMIE — la table déterministe qui remplace le `savingRatio` du LLM.
-//
-// Le LLM choisit une ACTION (une étiquette) ; le MOTEUR détient la part
-// d'économie correspondante. Changer une de ces valeurs est une modification de
-// CODE (revue + test), jamais une sortie de modèle. C'est ce qui rend l'euro
-// reproductible : deux analyses des mêmes transactions donnent le même montant.
+// Part du mensuel OBSERVÉ récupérable, pour les seules actions dont l'économie
+// se lit sur le relevé. Résilier rend tout le mensuel ; dans un doublon, on garde
+// un des deux outils, et chacun des deux porte la moitié de la paire.
+// Les autres actions passent par un prix sourcé (pricing.ts), jamais par ici.
 // ---------------------------------------------------------------------------
-const RATIO_ECONOMIE: Record<LeverAction, number> = {
-  cancel: 1.0, // outil dormant / superflu → 100 % récupérable
-  consolidate: 0.5, // doublon fonctionnel → on garde un des deux
-  switch: 0.4, // alternative moins chère à usage égal
-  downgrade: 0.3, // plan surdimensionné → on descend d'un cran
-  renegotiate: 0.2, // contrat renégociable (télécom, banque)
-  keep: 0, // rien à optimiser
+const PART_OBSERVEE: Partial<Record<LeverAction, number>> = {
+  cancel: 1.0,
+  consolidate: 0.5,
 };
+
+// ---------------------------------------------------------------------------
+// Risque d'une action, fixé par le moteur et non par le modèle :
+//   • renégocier ou fusionner un doublon ne retire aucune capacité ;
+//   • résilier, descendre de palier ou changer d'outil demande de vérifier
+//     l'usage réel, que le relevé bancaire ne montre pas.
+// Le modèle ne garde qu'un drapeau : `hard` = migration lourde (CRM, téléphonie).
+// ---------------------------------------------------------------------------
+const RISQUE_PAR_ACTION: Record<LeverAction, Risk> = {
+  renegotiate: "safe",
+  consolidate: "safe",
+  cancel: "med",
+  downgrade: "med",
+  switch: "med",
+  keep: "safe",
+};
+
+export function riskFor(action: LeverAction, llmRisk: Risk): Risk {
+  return llmRisk === "hard" ? "hard" : RISQUE_PAR_ACTION[action];
+}
+
+/** Libellé d'attente tant que le prix du marché n'est pas cherché. */
+export const PENDING_LABEL = "prix à vérifier sur le web";
 
 const eurL = (n: number): Localized => ({
   fr: Math.round(n).toLocaleString("fr-FR") + " €",
@@ -242,10 +261,14 @@ export function build(input: BuildInput): AnalyzeResult {
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 6);
 
-  // --- leviers : économie €/mois = monthly × RATIO_ECONOMIE[action] ---------
-  // Le ratio est une CONSTANTE DU MOTEUR (table ci-dessus), pas une sortie du
-  // LLM. Le levier n'existe que si nature==='pilotable' ET motif ∈
-  // {abonnement, doublon} (le motif `fx` est un levier agrégé, traité à part).
+  // --- leviers ----------------------------------------------------------------
+  // Le levier n'existe que si nature==='pilotable' ET motif ∈ {abonnement,
+  // doublon} (le motif `fx` est un levier agrégé, traité à part).
+  //   • doublon / cancel   → part du mensuel OBSERVÉ (PART_OBSERVEE) ;
+  //   • hausse silencieuse → traitée plus bas, delta observé ;
+  //   • switch / downgrade / renegotiate → `pending` à 0 €, l'euro viendra d'un
+  //     prix sourcé (benchmark Linkup puis pricing.ts). L'alternative citée de
+  //     mémoire par le modèle n'est PAS affichée : seule une source du web l'est.
   const levers: Lever[] = [];
   const leverNames = new Set<string>();
   for (const a of aggs) {
@@ -253,20 +276,42 @@ export function build(input: BuildInput): AnalyzeResult {
     if (!v || v.nature !== "pilotable") continue;
     const motif = v.motif ?? deriveMotif(a, v);
     if (motif !== "abonnement" && motif !== "doublon") continue; // GATE
-    const ratio = motif === "doublon" ? RATIO_ECONOMIE.consolidate : RATIO_ECONOMIE[v.action];
-    const saving = Math.round(a.monthly * ratio);
-    if (saving <= 0) continue;
     const hausse = detectHausse(a);
+    const action: LeverAction = motif === "doublon" ? "consolidate" : v.action;
+    if (isMarketPriced(action)) {
+      if (action === "renegotiate" && hausse) continue; // levier de hausse, plus solide
+      levers.push({
+        id: slug(a.name),
+        label: a.name,
+        to: PENDING_LABEL,
+        saving: 0,
+        motif,
+        risk: riskFor(action, v.risk),
+        active: false,
+        action,
+        monthly: Math.round(a.monthly),
+        pole: v.pole,
+        basis: "pending",
+        ...(hausse ? { hausse } : {}),
+      });
+      leverNames.add(a.name.toLowerCase());
+      continue;
+    }
+    const saving = Math.round(a.monthly * (PART_OBSERVEE[action] ?? 0));
+    if (saving <= 0) continue;
+    const risk = riskFor(action, v.risk);
     levers.push({
       id: slug(a.name),
       label: a.name,
       to: v.alternative || v.action,
       saving,
       motif,
-      risk: v.risk,
-      active: v.risk === "safe",
-      action: v.action,
+      risk,
+      active: risk === "safe",
+      action,
       monthly: Math.round(a.monthly),
+      pole: v.pole,
+      basis: "observed",
       ...(hausse ? { hausse } : {}),
     });
     leverNames.add(a.name.toLowerCase());
@@ -286,13 +331,15 @@ export function build(input: BuildInput): AnalyzeResult {
     levers.push({
       id: slug(a.name),
       label: a.name,
-      to: v.alternative || "revenir au tarif précédent",
+      to: "revenir au tarif précédent",
       saving: Math.max(0, Math.round(hausse.apresEur - hausse.avantEur)),
       motif: "abonnement",
       risk: "safe",
       active: true,
       action: "renegotiate",
       monthly: Math.round(a.monthly),
+      pole: v.pole,
+      basis: "observed",
       hausse,
     });
     leverNames.add(key);
@@ -317,6 +364,7 @@ export function build(input: BuildInput): AnalyzeResult {
       active: true,
       action: "switch",
       monthly: fxMonthly,
+      basis: "observed",
     });
   }
 

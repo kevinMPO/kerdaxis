@@ -45,11 +45,23 @@ le LLM ne rend que des ETIQUETTES (categories), le moteur detient les euros.
 - **Motif** ∈ abonnement | doublon | fx | variable (orthogonal a la nature).
 - Un **levier** n'existe QUE si `nature = pilotable` ET `motif ∈ {abonnement, doublon, fx}`.
   Un one-off (`variable`) n'en produit jamais.
-- Economie €/mois = montant mensuel × `RATIO_ECONOMIE[action]`, table CONSTANTE du
-  moteur (cancel 1.0, consolidate 0.5, switch 0.4, downgrade 0.3, renegotiate 0.2). Le
-  LLM choisit l'`action` (une categorie) ; il n'emet jamais le ratio ni l'euro. Avant,
-  `savingRatio` etait un nombre EMIS par le LLM : c'etait la violation de la regle #2,
-  reparee (meme patron que le moteur de risque : le LLM etiquette, la table score).
+- L'euro d'un levier a DEUX origines possibles, jamais une estimation (`Lever.basis`) :
+  - `observed` : lu sur le releve. cancel = 100 % du mensuel, consolidate (doublon) =
+    50 % par cote de la paire, hausse silencieuse = delta observe, frais de change = somme.
+  - `pending` puis `sourced` : switch / downgrade / renegotiate dependent d'un prix du
+    marche. Le levier sort du moteur a 0 € (`pending`). Sur accord (bouton « verifier les
+    prix »), Linkup cherche les tarifs publics du fournisseur et des concurrents, Holo les
+    range en donnees (prix, par poste, comparable), et `web/lib/engine/pricing.ts` calcule :
+    nombre de postes deduit du montant paye / tarif actuel, puis mensuel − cout de l'offre.
+    Sans prix exploitable : `unverified`, avec la raison, et aucun euro affiche.
+  - Plus de pourcentage forfaitaire par action (l'ancienne table switch 0.4, downgrade 0.3,
+    renegotiate 0.2 n'etait qu'une estimation figee). L'alternative citee de memoire par
+    le modele n'est jamais affichee : seule une offre sourcee l'est.
+- Le **risque** vient d'une table du moteur (`riskFor`) : renegotiate / consolidate = sans
+  risque ; cancel / downgrade / switch = a revoir (le releve ne montre pas l'usage). Le
+  modele ne garde qu'un drapeau `hard` (migration lourde).
+- Les benchmarks verifies sont caches 30 jours dans D1 (`market_benchmarks`, db/0003),
+  table partagee entre organisations car elle ne contient que du web public.
 - `ENGINE_VERSION` est jointe a chaque reponse de l'API moteur.
 
 ## API moteur publique (`/api/v1/engine`) et Claude Tag
@@ -71,7 +83,9 @@ l'API moteur, Claude reprend les chiffres verbatim.
 |---|---|
 | `engine.py` | Moteur de calcul deterministe (le cerveau chiffre, cote CLI). |
 | `tests/test_engine.py` | Tests des regles (recurrence, annualisation, doublons, FX, classification). |
-| `web/lib/engine/core.ts` | Miroir web du moteur : leviers, motif, `RATIO_ECONOMIE`, `ENGINE_VERSION`. |
+| `web/lib/engine/core.ts` | Miroir web du moteur : leviers, motif, risque, `ENGINE_VERSION`. |
+| `web/lib/engine/pricing.ts` | Prix sources → economie (postes deduits, switch / downgrade / renego). |
+| `web/lib/benchmark.ts` | Linkup (tarifs publics) + extraction Holo, cache D1 (`lib/benchmark-cache.ts`). |
 | `web/lib/engine/api.ts` | Frontiere HTTP de l'API moteur (Zod strict, auth Bearer, analyze/simulate). |
 | `web/app/api/v1/engine/` | Routes publiques `analyze` / `simulate` / `health`. |
 | `claude-tag/` | Skill Slack (Claude Tag) : `SKILL.md`, `standing-instructions.md`, `ADMIN-SETUP.md`, `scripts/call_engine.py`. |

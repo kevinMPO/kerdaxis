@@ -82,6 +82,37 @@ export interface Hausse {
   apresEur: number;
 }
 
+/**
+ * D'où vient l'euro d'un levier :
+ *   - observed   : constaté sur le relevé (résiliation, hausse, frais de change) ;
+ *   - pending    : l'économie dépend d'un prix du marché pas encore cherché sur le
+ *                  web (switch, downgrade, renégociation). Économie = 0 tant que
+ *                  le benchmark Linkup n'a pas tourné, jamais une estimation ;
+ *   - sourced    : calculée par le moteur à partir d'un prix public sourcé + daté ;
+ *   - unverified : le benchmark a tourné sans prix exploitable (règle 4).
+ */
+export type PriceBasis = "observed" | "pending" | "sourced" | "unverified";
+
+/** Prix public trouvé sur le web, toujours rattaché à sa source (règle 4). */
+export interface SourcedOffer {
+  name: string;
+  /** Prix mensuel en €, par poste si `perSeat`. */
+  monthlyPrice: number;
+  perSeat: boolean;
+  sourceUrl: string;
+  /** Date portée par la source (souvent une année), ou "". */
+  sourceDate: string;
+  /** Jour où le prix a été relevé (AAAA-MM-JJ) : la date minimale garantie. */
+  checkedAt: string;
+}
+
+/** Preuve d'un levier `sourced` : l'offre retenue et le nombre de postes déduit. */
+export interface LeverEvidence {
+  offer: SourcedOffer;
+  /** Postes déduits du montant payé et du tarif actuel, null si offre forfaitaire. */
+  seats: number | null;
+}
+
 export interface Lever {
   id: string;
   label: string;
@@ -102,7 +133,17 @@ export interface Lever {
   monthly?: number;
   /** Hausse silencieuse (1re vs dernière occurrence) — présent seulement si détectée. */
   hausse?: Hausse;
+  /** Pôle métier du marchand : la seule « catégorie » envoyée au benchmark web. */
+  pole?: Pole;
+  /** Origine de l'euro. Absent sur les anciens clients : lu comme `observed`. */
+  basis?: PriceBasis;
+  /** Présent seulement si `basis === "sourced"`. */
+  evidence?: LeverEvidence;
+  /** Présent seulement si `basis === "unverified"` : pourquoi aucun euro n'est affiché. */
+  unverifiedReason?: UnverifiedReason;
 }
+
+export type UnverifiedReason = "no_price" | "no_seats" | "not_cheaper" | "web_down";
 
 export interface FluxItem {
   kind: "new" | "check" | "dup" | "ghost";
@@ -185,8 +226,8 @@ export interface MerchantVerdict {
   /**
    * Motif du levier, OPTIONNEL. Le LLM ne l'émet pas : le moteur le dérive
    * (récurrence, action, frais de change). L'API moteur peut le fournir pour
-   * forcer la catégorie. Jamais un montant — c'est la table `RATIO_ECONOMIE` du
-   * moteur qui traduit l'action en euros (règle #2 : le LLM ne calcule pas).
+   * forcer la catégorie. Jamais un montant : le moteur traduit l'action en euros,
+   * à partir du relevé ou d'un prix sourcé (règle #2 : le LLM ne calcule pas).
    */
   motif?: Motif;
   risk: Risk;

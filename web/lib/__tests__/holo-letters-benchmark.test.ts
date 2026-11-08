@@ -117,16 +117,17 @@ describe("benchmark", () => {
     expect(calls).toHaveLength(0);
   });
 
-  it("should search with Linkup and extract prices with Holo, dropping the merchant's own plans", async () => {
+  it("should search with Linkup and extract prices with Holo, keeping the merchant's own plans apart", async () => {
     process.env.HAI_API_KEY = "hai-test-key";
     process.env.LINKUP_API_KEY = "linkup-test-key";
     routes.set(LINKUP_URL, () => json(LINKUP_ANSWER));
     routes.set(HOLO_URL, () =>
       holoReply(
         JSON.stringify({
+          ownPlans: [{ name: "Plus", monthlyPrice: 12, unit: "/utilisateur/mois", perSeat: true, sourceIndex: 1 }],
           alternatives: [
-            { name: "Coda", monthlyPrice: 10, unit: "/utilisateur/mois", sourceIndex: 0 },
-            { name: "Notion Plus", monthlyPrice: 12, unit: "/utilisateur/mois", sourceIndex: 1 },
+            { name: "Coda", monthlyPrice: 10, unit: "/utilisateur/mois", perSeat: true, comparable: true, sourceIndex: 0 },
+            { name: "Notion Plus", monthlyPrice: 12, unit: "/utilisateur/mois", perSeat: true, comparable: true, sourceIndex: 1 },
           ],
         }),
       ),
@@ -142,17 +143,54 @@ describe("benchmark", () => {
         name: "Coda",
         monthlyPrice: 10,
         unit: "/utilisateur/mois",
+        perSeat: true,
+        comparable: true,
         sourceUrl: "https://coda.io/pricing",
         sourceDate: "2026",
       },
     ]);
+    expect(result.ownPlans).toEqual([
+      { name: "Plus", monthlyPrice: 12, unit: "/utilisateur/mois", perSeat: true, sourceUrl: "https://notion.so/pricing", sourceDate: "2026" },
+    ]);
+    expect(result.checkedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("should drop a price whose source index points nowhere instead of borrowing another source", async () => {
+    process.env.HAI_API_KEY = "hai-test-key";
+    process.env.LINKUP_API_KEY = "linkup-test-key";
+    routes.set(LINKUP_URL, () => json(LINKUP_ANSWER));
+    routes.set(HOLO_URL, () =>
+      holoReply(
+        JSON.stringify({
+          ownPlans: [],
+          alternatives: [{ name: "Coda", monthlyPrice: 10, unit: "/mois", perSeat: false, comparable: true, sourceIndex: 7 }],
+        }),
+      ),
+    );
+
+    const result = await benchmark("Notion Labs", "IA & Dev", 48);
+
+    expect(result.alternatives).toEqual([]);
+  });
+
+  it("should retry a rejected extraction exactly once", async () => {
+    process.env.HAI_API_KEY = "hai-test-key";
+    process.env.LINKUP_API_KEY = "linkup-test-key";
+    routes.set(LINKUP_URL, () => json(LINKUP_ANSWER));
+    routes.set(HOLO_URL, () => holoReply("not json"));
+
+    const result = await benchmark("Notion Labs", "IA & Dev", 48);
+
+    expect(calls.map((c) => c.url)).toEqual([LINKUP_URL, HOLO_URL, HOLO_URL]);
+    expect(result.verified).toBe(true);
+    expect(result.alternatives).toEqual([]);
   });
 
   it("should never send the observed monthly amount to Linkup or Holo", async () => {
     process.env.HAI_API_KEY = "hai-test-key";
     process.env.LINKUP_API_KEY = "linkup-test-key";
     routes.set(LINKUP_URL, () => json(LINKUP_ANSWER));
-    routes.set(HOLO_URL, () => holoReply(JSON.stringify({ alternatives: [] })));
+    routes.set(HOLO_URL, () => holoReply(JSON.stringify({ ownPlans: [], alternatives: [] })));
 
     await benchmark("Notion Labs", "IA & Dev", 48.37);
 

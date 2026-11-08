@@ -144,12 +144,24 @@ describe("justesse arithmétique du jeu de démo", () => {
       MOCK.runway.months,
       ...MOCK.natures.map((n) => n.amount),
       ...MOCK.poles.map((p) => p.amount),
-      ...MOCK.levers.map((l) => l.saving),
+      ...MOCK.levers.filter((l) => l.basis !== "pending").map((l) => l.saving),
     ];
 
     for (const montant of montants) {
       expect(Number.isFinite(montant)).toBe(true);
       expect(montant).toBeGreaterThan(0);
+    }
+  });
+
+  it("un levier en attente de prix n'affiche aucun euro écrit en dur", () => {
+    const enAttente = MOCK.levers.filter((l) => l.basis === "pending");
+
+    expect(enAttente.length).toBeGreaterThan(0);
+    for (const levier of enAttente) {
+      expect(levier.saving, levier.label).toBe(0);
+      expect(levier.active, levier.label).toBe(false);
+      expect(levier.monthly, levier.label).toBeGreaterThan(0);
+      expect(levier.pole, levier.label).toBeDefined();
     }
   });
 });

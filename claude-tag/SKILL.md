@@ -84,6 +84,11 @@ utilise le champ `annual` de `/api/v1/engine/simulate` (calculé par le moteur),
 une addition de ta tête. Si tu benchmarkes un prix (via une recherche web), chaque
 prix affiché = **source + date**, sinon « non vérifié ».
 
+Un levier `basis: "pending"` (switch / downgrade / renégociation) sort du moteur à
+**0 €** : son économie dépend d'un prix du marché pas encore vérifié. Ne l'affiche
+jamais comme « 0 € d'économie » : écris « prix à vérifier » et n'invente aucune
+alternative ni aucun montant.
+
 ## Ce que tu ne fais jamais
 
 - Bouger de l'argent, créer un virement, écrire dans Qonto. **Read-only.**

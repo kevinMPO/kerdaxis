@@ -1,4 +1,4 @@
-import type { Lang, Risk } from "@/lib/types";
+import type { Lang, Risk, UnverifiedReason } from "@/lib/types";
 
 export type ViewId = "today" | "subscriptions" | "runs" | "ledger";
 
@@ -96,6 +96,12 @@ export interface DashboardCopy {
   benchmark: string;
   benchSearching: string;
   benchNone: string;
+  checkPrices: (pending: number) => string;
+  checkingPrices: (done: number, total: number) => string;
+  checkPricesNote: string;
+  pricePending: string;
+  priceUnverified: Record<UnverifiedReason, string>;
+  priceSource: (checkedAt: string) => string;
   close: string;
   launching: string;
   error: string;
@@ -214,6 +220,17 @@ const fr: DashboardCopy = {
   benchmark: "Comparer les prix (Linkup)",
   benchSearching: "Recherche des prix publics…",
   benchNone: "Aucun prix public vérifiable trouvé.",
+  checkPrices: (n) => `Vérifier les prix sur le web (${n})`,
+  checkingPrices: (d, t) => `Recherche des prix publics… ${d}/${t}`,
+  checkPricesNote: "Seuls le nom du fournisseur et sa catégorie partent vers Linkup. Chaque euro est ensuite calculé par le moteur à partir d'un prix sourcé et daté.",
+  pricePending: "prix à vérifier",
+  priceUnverified: {
+    no_price: "non vérifié · aucun prix public trouvé",
+    no_seats: "non vérifié · nombre de postes inconnu",
+    not_cheaper: "non vérifié · aucune option moins chère trouvée",
+    web_down: "non vérifié · recherche web indisponible",
+  },
+  priceSource: (c) => `source · relevé le ${c}`,
   close: "Fermer",
   launching: "Lancement…",
   error: "Une erreur est survenue.",
@@ -322,6 +339,17 @@ const en: DashboardCopy = {
   benchmark: "Compare prices (Linkup)",
   benchSearching: "Looking up public prices…",
   benchNone: "No verifiable public price found.",
+  checkPrices: (n) => `Check prices on the web (${n})`,
+  checkingPrices: (d, t) => `Looking up public prices… ${d}/${t}`,
+  checkPricesNote: "Only the supplier name and its category go to Linkup. Every euro is then computed by the engine from a sourced, dated price.",
+  pricePending: "price to check",
+  priceUnverified: {
+    no_price: "not verified · no public price found",
+    no_seats: "not verified · seat count unknown",
+    not_cheaper: "not verified · no cheaper option found",
+    web_down: "not verified · web search unavailable",
+  },
+  priceSource: (c) => `source · checked ${c}`,
   close: "Close",
   launching: "Starting…",
   error: "Something went wrong.",
@@ -329,6 +357,10 @@ const en: DashboardCopy = {
 
 const de: DashboardCopy = {
   ...en,
+  checkPrices: (n) => `Preise im Web prüfen (${n})`,
+  checkingPrices: (d, t) => `Öffentliche Preise werden gesucht… ${d}/${t}`,
+  pricePending: "Preis zu prüfen",
+  priceSource: (c) => `Quelle · geprüft am ${c}`,
   agentSubscribers: "Kostenloser Test: Nur die Nuvio-CRM-Sitzung wird abgespielt. Live-Kündigung ist für Abonnenten.",
   nav: { today: "Heute", subscriptions: "Abos", runs: "Kündigungen", ledger: "Hauptbuch" },
   navClassic: "Vorherige Ansicht",
@@ -366,6 +398,10 @@ const de: DashboardCopy = {
 
 const es: DashboardCopy = {
   ...en,
+  checkPrices: (n) => `Verificar precios en la web (${n})`,
+  checkingPrices: (d, t) => `Buscando precios públicos… ${d}/${t}`,
+  pricePending: "precio por verificar",
+  priceSource: (c) => `fuente · consultada el ${c}`,
   agentSubscribers: "Prueba gratuita: solo se reproduce la sesión de Nuvio CRM. La cancelación en directo es para suscriptores.",
   nav: { today: "Hoy", subscriptions: "Suscripciones", runs: "Cancelaciones", ledger: "Libro mayor" },
   navClassic: "Vista anterior",
@@ -403,6 +439,10 @@ const es: DashboardCopy = {
 
 const it: DashboardCopy = {
   ...en,
+  checkPrices: (n) => `Verifica i prezzi sul web (${n})`,
+  checkingPrices: (d, t) => `Ricerca dei prezzi pubblici… ${d}/${t}`,
+  pricePending: "prezzo da verificare",
+  priceSource: (c) => `fonte · rilevata il ${c}`,
   agentSubscribers: "Prova gratuita: viene riprodotta solo la sessione Nuvio CRM. La disdetta dal vivo è per gli abbonati.",
   nav: { today: "Oggi", subscriptions: "Abbonamenti", runs: "Disdette", ledger: "Libro mastro" },
   navClassic: "Vista precedente",

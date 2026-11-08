@@ -2,8 +2,9 @@
 // Catégorisation des marchands via un modèle Holo de H Company (PRD §5.2),
 // par la Models API de H (compatible OpenAI, même clé HAI_API_KEY que l'agent).
 //
-// RÈGLE : le LLM CLASSE (nature, pôle, action, risque). Il ne calcule JAMAIS un
-// montant en euros ni un ratio : c'est le moteur qui applique RATIO_ECONOMIE.
+// RÈGLE : le LLM CLASSE (nature, pôle, action, drapeau de migration lourde). Il
+// ne calcule JAMAIS un montant en euros ni un ratio : le moteur chiffre à partir
+// du relevé ou d'un prix sourcé sur le web (engine/pricing.ts), et fixe le risque.
 //
 // Sans HAI_API_KEY, ou si l'appel échoue, on retombe sur un classifieur
 // déterministe par mots-clés (categorizeByRules) : l'app reste démontrable

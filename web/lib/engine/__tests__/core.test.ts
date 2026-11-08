@@ -2,8 +2,9 @@
 // Tests du moteur (engine/core) — la règle #2 rendue exécutable.
 //
 // Ce que ces tests VERROUILLENT, et qui était la violation réparée :
-//   • L'euro d'un levier vient d'une TABLE CONSTANTE du moteur (RATIO_ECONOMIE),
-//     indexée sur une ÉTIQUETTE (`action`) — jamais d'un nombre du LLM.
+//   • L'euro d'un levier vient du RELEVÉ (résiliation, doublon, hausse, fx) ou
+//     d'un prix sourcé ; une action qui dépend du marché reste `pending` à 0 €.
+//     Jamais d'un nombre du LLM, jamais d'un pourcentage forfaitaire.
 //   • Le motif est la porte : un levier n'existe que pour un `pilotable` de motif
 //     `abonnement`, `doublon` ou `fx`. Un one-off (`variable`) n'en produit pas.
 //   • Déterminisme : mêmes transactions ⇒ mêmes euros, à la copie près.
@@ -72,13 +73,32 @@ describe("l'euro d'un levier vient de la table du moteur, pas du LLM", () => {
     expect(l.saving).toBe(20); // 20 × 1.0
     expect(l.motif).toBe("abonnement");
     expect(l.action).toBe("cancel");
+    expect(l.basis).toBe("observed");
   });
 
-  it("renegotiate ⇒ 20 % (constante du moteur, pas un nombre du modèle)", () => {
-    const r = run(monthly("Free Mobile", 30), [verdict("Free Mobile", "renegotiate")]);
+  it("renegotiate ⇒ pending à 0 € tant qu'aucun prix sourcé n'existe", () => {
+    const r = run(monthly("Free Mobile", 30), [verdict("Free Mobile", "renegotiate", { alternative: "Sosh" })]);
     const l = r.levers.find((x) => x.label === "Free Mobile")!;
-    expect(l.saving).toBe(6); // 30 × 0.2
-    expect(l.saving).toBeLessThanOrEqual(l.monthly!);
+    expect(l.saving).toBe(0);
+    expect(l.basis).toBe("pending");
+    expect(l.active).toBe(false);
+    expect(l.monthly).toBe(30);
+    expect(l.to).not.toContain("Sosh"); // l'alternative de mémoire du modèle n'est jamais affichée
+  });
+
+  it("switch et downgrade attendent aussi un prix du marché", () => {
+    const r = run([...monthly("HubSpot", 60), ...monthly("HeyGen", 29)], [verdict("HubSpot", "switch"), verdict("HeyGen", "downgrade")]);
+    for (const label of ["HubSpot", "HeyGen"]) {
+      expect(r.levers.find((x) => x.label === label)).toMatchObject({ saving: 0, basis: "pending" });
+    }
+  });
+
+  it("une hausse observée l'emporte sur une renégociation en attente de prix", () => {
+    const txs = [tx("Figma", 42, "2026-06-15"), tx("Figma", 42, "2026-07-15"), tx("Figma", 48, "2026-08-15")];
+    const r = run(txs, [verdict("Figma", "renegotiate")]);
+    const l = r.levers.find((x) => x.label === "Figma")!;
+    expect(l.basis).toBe("observed");
+    expect(l.saving).toBe(6);
   });
 
   it("consolidate ⇒ motif doublon, 50 %", () => {
@@ -110,7 +130,24 @@ describe("le motif est la porte du levier", () => {
     const r = run(monthly("Zoom", 40), [verdict("Zoom", "renegotiate", { motif: "abonnement" })]);
     const l = r.levers.find((x) => x.label === "Zoom")!;
     expect(l.motif).toBe("abonnement");
-    expect(l.saving).toBe(8); // 40 × 0.2
+    expect(l.basis).toBe("pending");
+  });
+});
+
+describe("le risque vient de la table du moteur", () => {
+  it("résilier demande une revue : le relevé ne montre pas l'usage", () => {
+    const r = run(monthly("Loom", 20), [verdict("Loom", "cancel", { risk: "safe" })]);
+    expect(r.levers.find((x) => x.label === "Loom")).toMatchObject({ risk: "med", active: false });
+  });
+
+  it("fusionner un doublon est sans risque et retenu d'office", () => {
+    const r = run(monthly("Apollo", 100), [verdict("Apollo", "consolidate", { risk: "med" })]);
+    expect(r.levers.find((x) => x.label === "Apollo")).toMatchObject({ risk: "safe", active: true });
+  });
+
+  it("garde le drapeau « migration lourde » posé par le modèle", () => {
+    const r = run(monthly("HubSpot", 60), [verdict("HubSpot", "switch", { risk: "hard" })]);
+    expect(r.levers.find((x) => x.label === "HubSpot")!.risk).toBe("hard");
   });
 });
 

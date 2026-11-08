@@ -49,28 +49,37 @@ export const MOCK: AnalyzeResult = {
   },
   runway: { months: 5.4, note: { fr: "hors exceptionnel", en: "excl. one-offs" } },
   levers: [
+    // Deux origines d'euro, comme dans le moteur (lib/engine/core.ts) :
+    //   • basis "observed" : lu sur le relevé (résiliation, doublon, hausse, FX) ;
+    //   • basis "pending"  : switch / downgrade / renégociation. Aucune
+    //     alternative ni aucun euro écrit en dur : le bouton « vérifier les prix »
+    //     les cherche en direct sur le web (Linkup), et le moteur chiffre. D'où
+    //     des fournisseurs RÉELS ici, et un `monthly` + `pole` pour la recherche.
+    // Risque = table du moteur : résilier « à revoir » (le relevé ne montre pas
+    // l'usage), fusionner un doublon ou renégocier « sans risque ».
+    //
     // Kerdaxis : fournisseur FICTIF dont nous contrôlons le portail de démo
     // (dossier portal/). Le plus gros levier actif → cible de l'Autopilote,
     // qui le résilie réellement via un agent H Company.
-    { id: "nuvio", label: "Nuvio CRM", to: "résilier · aucune connexion depuis 90 j", saving: 129, risk: "safe", active: true, action: "cancel", monthly: 129 },
+    { id: "nuvio", label: "Nuvio CRM", to: "résilier · aucune connexion depuis 90 j", saving: 129, risk: "med", active: true, action: "cancel", monthly: 129, basis: "observed" },
     // Kerdaxis : fournisseur FICTIF facturé par Stripe (mode test). L'agent H
     // résilie dans le VRAI portail client de Stripe, au parcours recherché dans
     // la doc officielle. Inactif par défaut : les totaux de la démo ne bougent pas.
-    { id: "lumen", label: "Lumen Analytics", to: "résilier · facturé via Stripe", saving: 39, risk: "safe", active: false, action: "cancel", monthly: 39 },
-    { id: "inst", label: "Instantly", to: "1 seul workspace", saving: 86, risk: "med", active: true, action: "consolidate" },
-    { id: "gpt", label: "ChatGPT", to: "Claude seul", saving: 84, risk: "safe", active: true, action: "cancel" },
-    { id: "waa", label: "Waalaxy", to: "Apollo + Instantly", saving: 51, risk: "safe", active: true, action: "switch" },
-    { id: "fx", label: "Frais FX / ATM", to: "carte Wise / Revolut", saving: 43, risk: "safe", active: true, action: "switch" },
-    { id: "nesp", label: "Nespresso abo", to: "achat ponctuel", saving: 42, risk: "safe", active: true, action: "cancel" },
-    { id: "figma", label: "Figma", to: "revenir au tarif / renégo", saving: 6, risk: "safe", active: true, action: "renegotiate", monthly: 48, hausse: { pct: 14.3, avantEur: 42, apresEur: 48 } },
-    { id: "gw", label: "Google Workspace ×2", to: "1 compte", saving: 29, risk: "safe", active: true, action: "consolidate" },
-    { id: "repl", label: "Replit", to: "Claude Code + Cursor", saving: 30, risk: "med", active: true, action: "switch" },
-    { id: "hey", label: "HeyGen", to: "pause / annuel", saving: 28, risk: "safe", active: true, action: "downgrade" },
-    { id: "loom", label: "Loom", to: "capture native", saving: 23, risk: "safe", active: true, action: "cancel" },
-    { id: "uber", label: "Uber One", to: "couper", saving: 7, risk: "safe", active: true, action: "cancel" },
-    { id: "make", label: "Make", to: "n8n self-hosted", saving: 10, risk: "med", active: false, action: "switch" },
-    { id: "ring", label: "Ringover", to: "renégo forfait", saving: 65, risk: "hard", active: false, action: "renegotiate" },
-    { id: "hub", label: "HubSpot", to: "Pipedrive / Folk", saving: 54, risk: "hard", active: false, action: "switch" },
+    { id: "lumen", label: "Lumen Analytics", to: "résilier · facturé via Stripe", saving: 39, risk: "med", active: false, action: "cancel", monthly: 39, basis: "observed" },
+    { id: "inst", label: "Instantly", to: "1 seul workspace", saving: 86, risk: "safe", active: true, action: "consolidate", monthly: 172, basis: "observed" },
+    { id: "gpt", label: "ChatGPT", to: "Claude seul", saving: 84, risk: "med", active: true, action: "cancel", monthly: 84, basis: "observed" },
+    { id: "fx", label: "Frais FX / ATM", to: "carte Wise / Revolut", saving: 43, risk: "safe", active: true, action: "switch", monthly: 43, basis: "observed" },
+    { id: "nesp", label: "Nespresso abo", to: "achat ponctuel", saving: 42, risk: "med", active: true, action: "cancel", monthly: 42, basis: "observed" },
+    { id: "figma", label: "Figma", to: "revenir au tarif précédent", saving: 6, risk: "safe", active: true, action: "renegotiate", monthly: 48, basis: "observed", hausse: { pct: 14.3, avantEur: 42, apresEur: 48 } },
+    { id: "gw", label: "Google Workspace ×2", to: "1 compte", saving: 29, risk: "safe", active: true, action: "consolidate", monthly: 58, basis: "observed" },
+    { id: "loom", label: "Loom", to: "capture native", saving: 23, risk: "med", active: true, action: "cancel", monthly: 23, basis: "observed" },
+    { id: "uber", label: "Uber One", to: "couper", saving: 7, risk: "med", active: true, action: "cancel", monthly: 7, basis: "observed" },
+    { id: "waa", label: "Waalaxy", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 56, pole: "Outbound / Sales", basis: "pending" },
+    { id: "repl", label: "Replit", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 25, pole: "IA & Dev", basis: "pending" },
+    { id: "hey", label: "HeyGen", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "downgrade", monthly: 29, pole: "Marketing Ads", basis: "pending" },
+    { id: "make", label: "Make", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 10, pole: "IA & Dev", basis: "pending" },
+    { id: "ring", label: "Ringover", to: "prix à vérifier sur le web", saving: 0, risk: "hard", active: false, action: "renegotiate", monthly: 63, pole: "Bureau / Telco / Banque", basis: "pending" },
+    { id: "hub", label: "HubSpot", to: "prix à vérifier sur le web", saving: 0, risk: "hard", active: false, action: "switch", monthly: 60, pole: "Outbound / Sales", basis: "pending" },
   ],
   flux: [
     {

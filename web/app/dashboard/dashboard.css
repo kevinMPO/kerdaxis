@@ -716,3 +716,7 @@
 @media (prefers-reduced-motion: reduce) {
   .kd-root *, .kd-root *::before, .kd-root *::after { animation: none !important; transition: none !important; }
 }
+
+/* Market-price check: one consent click prices every pending lever on the web. */
+.kd-price-check { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-bottom: 18px; }
+.kd-price-check p { margin: 0; flex: 1 1 260px; }

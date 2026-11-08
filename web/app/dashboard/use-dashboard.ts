@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AnalyzeResult, Lang, Lever, Localized } from "@/lib/types";
+import type { AnalyzeResult, Lang, Lever, LeverEvidence, Localized, UnverifiedReason } from "@/lib/types";
 import { MOCK } from "@/lib/mock";
 import { detectLang, eur as eurFmt, LANGS } from "@/lib/i18n";
 import { buildPlanCsv, planFilename } from "@/lib/export";
@@ -13,6 +13,9 @@ import type { ExecutionView } from "./use-execution";
 const LANG_STORAGE_KEY = "argentier-lang";
 const RUNS_STORAGE_KEY = "kerdaxis-runs";
 const MAX_STORED_RUNS = 12;
+/** Recherches web lancées en parallèle par « vérifier les prix » : assez pour aller vite, assez peu pour le plafond de débit. */
+const PRICING_CONCURRENCY = 3;
+const DEFAULT_BENCH_CATEGORY = "outil SaaS";
 
 export type ApiRefusal = null | "reconnect" | "unavailable";
 
@@ -56,6 +59,55 @@ export interface BenchResult {
   bestSaving: number;
   bestAlternative: string | null;
   provider?: "linkup";
+}
+
+/** Réponse de /api/benchmark : le moteur a déjà transformé les prix en euros. */
+interface PricingResponse {
+  verified: boolean;
+  note?: string;
+  pricing:
+    | { status: "sourced"; saving: number; evidence: LeverEvidence; to?: string }
+    | { status: "unverified"; reason: Exclude<UnverifiedReason, "web_down"> }
+    | null;
+}
+
+export interface PricingRun {
+  status: "idle" | "running" | "done";
+  done: number;
+  total: number;
+}
+
+const IDLE_PRICING: PricingRun = { status: "idle", done: 0, total: 0 };
+
+/** Lever waiting for a market price: engine 2.0 marks it `pending`, its € is 0 until the web answers. */
+export function needsMarketPrice(lever: Lever): boolean {
+  return lever.basis === "pending" || lever.basis === "unverified";
+}
+
+function applyPricing(lever: Lever, response: PricingResponse | null): Lever {
+  const pricing = response?.pricing;
+  if (pricing?.status === "sourced") {
+    return {
+      ...lever,
+      saving: pricing.saving,
+      savingYearly: pricing.saving * 12,
+      basis: "sourced",
+      evidence: pricing.evidence,
+      to: pricing.to ?? pricing.evidence.offer.name,
+      active: lever.risk === "safe",
+      unverifiedReason: undefined,
+    };
+  }
+  const reason: UnverifiedReason = pricing?.status === "unverified" ? pricing.reason : "web_down";
+  return { ...lever, saving: 0, basis: "unverified", evidence: undefined, active: false, unverifiedReason: reason };
+}
+
+async function runPool<T>(items: T[], limit: number, work: (item: T) => Promise<void>): Promise<void> {
+  const queue = [...items];
+  const workers = Array.from({ length: Math.min(limit, queue.length) }, async () => {
+    for (let item = queue.shift(); item !== undefined; item = queue.shift()) await work(item);
+  });
+  await Promise.all(workers);
 }
 
 interface LetterSource {
@@ -117,6 +169,9 @@ export interface Dashboard {
   openLetter: (lever: Lever, sources?: LetterSource[]) => Promise<void>;
   closeLetter: () => void;
   runBenchmark: (lever: Lever) => Promise<void>;
+  pricing: PricingRun;
+  pendingPriceCount: number;
+  priceAllLevers: () => Promise<void>;
   regenerateWithPrices: () => void;
   onVoiceCommand: (text: string) => string;
 }
@@ -146,6 +201,7 @@ export function useDashboard(): Dashboard {
   const [launchError, setLaunchError] = useState<string | null>(null);
   const [runViews, setRunViews] = useState<Record<string, ExecutionView>>({});
   const [letter, setLetter] = useState<LetterState>(EMPTY_LETTER);
+  const [pricing, setPricing] = useState<PricingRun>(IDLE_PRICING);
 
   const copy = dashboardCopy(lang);
   const eur = useCallback((amount: number) => eurFmt(amount, lang), [lang]);
@@ -339,7 +395,7 @@ export function useDashboard(): Dashboard {
         const response = await fetch("/api/benchmark", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ merchant: lever.label, category: lever.to, monthly: lever.monthly ?? 0, lang }),
+          body: JSON.stringify({ merchant: lever.label, category: lever.pole ?? DEFAULT_BENCH_CATEGORY, monthly: lever.monthly ?? 0, action: lever.action, lang }),
         });
         const bench = (await response.json()) as BenchResult;
         setLetter((current) => ({ ...current, bench, benchLoading: false }));
@@ -350,6 +406,37 @@ export function useDashboard(): Dashboard {
     },
     [lang, copy.benchNone],
   );
+
+  const pendingPriceCount = useMemo(() => levers.filter(needsMarketPrice).length, [levers]);
+
+  // One consent click (rule 3): only each merchant's name and business pole leave, the engine turns prices into €.
+  const priceAllLevers = useCallback(async () => {
+    const targets = levers.filter(needsMarketPrice);
+    if (targets.length === 0 || pricing.status === "running") return;
+    setPricing({ status: "running", done: 0, total: targets.length });
+    await runPool(targets, PRICING_CONCURRENCY, async (lever) => {
+      let response: PricingResponse | null = null;
+      try {
+        const reply = await fetch("/api/benchmark", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            merchant: lever.label,
+            category: lever.pole ?? DEFAULT_BENCH_CATEGORY,
+            monthly: lever.monthly ?? 0,
+            action: lever.action,
+            lang,
+          }),
+        });
+        response = reply.ok ? ((await reply.json()) as PricingResponse) : null;
+      } catch {
+        response = null;
+      }
+      setLevers((all) => all.map((l) => (l.id === lever.id ? applyPricing(l, response) : l)));
+      setPricing((run) => ({ ...run, done: run.done + 1 }));
+    });
+    setPricing((run) => ({ ...run, status: "done" }));
+  }, [levers, lang, pricing.status]);
 
   const regenerateWithPrices = useCallback(() => {
     if (!letter.lever || !letter.bench) return;
@@ -436,6 +523,9 @@ export function useDashboard(): Dashboard {
     openLetter,
     closeLetter,
     runBenchmark,
+    pricing,
+    pendingPriceCount,
+    priceAllLevers,
     regenerateWithPrices,
     onVoiceCommand,
   };

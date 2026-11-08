@@ -7,6 +7,8 @@ sont dans [`../lib/db/__tests__/tenant.test.ts`](../lib/db/__tests__/tenant.test
 | Fichier | Rôle |
 |---|---|
 | `0001_init.sql` | Migration initiale : `organizations`, `decisions`, `audit_log` + index. Idempotente. |
+| `0002_accounts_executions.sql` | Comptes, inscriptions à l'essai, exécutions agent. Idempotente. |
+| `0003_market_benchmarks.sql` | Cache 30 jours des prix publics (Linkup + Holo). Web public uniquement, sans `org_id`. Idempotente. |
 
 ## Ce que le schéma garantit
 
@@ -70,6 +72,17 @@ En production (base D1 distante) :
 cd web
 npx wrangler d1 execute kerdaxis --remote --file=./db/0001_init.sql
 ```
+
+Même chose pour les migrations suivantes (base réelle : `argentier`, cf. `wrangler.jsonc`) :
+
+```bash
+cd web
+npx wrangler d1 execute argentier --local  --file=./db/0003_market_benchmarks.sql
+npx wrangler d1 execute argentier --remote --file=./db/0003_market_benchmarks.sql
+```
+
+Sans la table `market_benchmarks`, le benchmark marche quand même : le cache se tait
+et chaque recherche repart sur le web.
 
 La migration est **idempotente** (`CREATE TABLE / CREATE INDEX IF NOT EXISTS`,
 aucun `DROP`) : la rejouer sur une base déjà à jour ne fait rien et ne détruit

@@ -22,6 +22,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PLAFONDS, __resetRateLimitForTests } from "@/lib/api/rate-limit";
 
 vi.mock("@/lib/benchmark", () => ({
+  cachedBenchmark: vi.fn(async () => null),
   benchmark: vi.fn(async () => ({
     verified: true,
     note: "ok",

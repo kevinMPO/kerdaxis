@@ -55,6 +55,16 @@ export function SubscriptionsView({ d }: { d: Dashboard }): React.ReactElement {
         </p>
       </div>
 
+      {(d.pendingPriceCount > 0 || d.pricing.status === "running") && (
+        <div className="kd-price-check">
+          <button className="kd-btn" onClick={() => void d.priceAllLevers()} disabled={d.pricing.status === "running"}>
+            <Icon name="route" size={15} />{" "}
+            {d.pricing.status === "running" ? copy.checkingPrices(d.pricing.done, d.pricing.total) : copy.checkPrices(d.pendingPriceCount)}
+          </button>
+          <p className="kd-muted kd-small">{copy.checkPricesNote}</p>
+        </div>
+      )}
+
       <div className="kd-toolbar" role="toolbar">
         <div className="kd-segment" role="radiogroup">
           {(["all", "safe", "review"] as Filter[]).map((f) => (
@@ -100,6 +110,7 @@ function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElem
   const agent = d.agentState(lever.id);
   const canRun = lever.action === "cancel" && agent === "ready";
   const showAgent = lever.action === "cancel";
+  const hasEuro = lever.basis !== "pending" && lever.basis !== "unverified";
   return (
     <tr className={lever.active ? "" : "is-off"}>
       <td className="kd-col-check">
@@ -112,12 +123,14 @@ function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElem
         {lever.hausse && <span className="kd-tag kd-tag-warn">+{lever.hausse.pct.toFixed(1)}%</span>}
         {canRun && <span className="kd-tag kd-tag-accent">H Company</span>}
       </td>
-      <td className="kd-muted">{lever.to}</td>
+      <td className="kd-muted">
+        <ProposalCell lever={lever} d={d} />
+      </td>
       <td>
         <span className={`kd-risk kd-risk-${lever.risk}`}>{copy.risk[lever.risk]}</span>
       </td>
-      <td className="kd-col-num kd-num">{eur(lever.saving)}</td>
-      <td className="kd-col-num kd-num kd-money">{eur(lever.saving * 12)}</td>
+      <td className="kd-col-num kd-num">{hasEuro ? eur(lever.saving) : "—"}</td>
+      <td className="kd-col-num kd-num kd-money">{hasEuro ? eur(lever.saving * 12) : "—"}</td>
       <td className="kd-col-act">
         {showAgent ? (
           <LaunchButton d={d} lever={lever} tone="quiet" />
@@ -129,4 +142,22 @@ function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElem
       </td>
     </tr>
   );
+}
+
+function ProposalCell({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElement {
+  const { copy } = d;
+  if (lever.basis === "pending") return <span>{copy.pricePending}</span>;
+  if (lever.basis === "unverified") return <span>{copy.priceUnverified[lever.unverifiedReason ?? "no_price"]}</span>;
+  if (lever.basis === "sourced" && lever.evidence) {
+    const { offer } = lever.evidence;
+    return (
+      <span>
+        {lever.to}{" "}
+        <a className="kd-link" href={offer.sourceUrl} target="_blank" rel="noopener">
+          {copy.priceSource(offer.checkedAt)} <Icon name="external" size={12} />
+        </a>
+      </span>
+    );
+  }
+  return <span>{lever.to}</span>;
 }

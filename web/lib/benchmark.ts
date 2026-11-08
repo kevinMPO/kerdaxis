@@ -19,8 +19,13 @@
 // web dont le modèle choisit les requêtes. Elle reste un paramètre (la route
 // s'en sert pour soustraire), mais elle ne franchit plus la frontière réseau.
 //
-// Le calcul de l'économie N'EST PAS fait ici : la route/engine soustrait les
-// prix. Le LLM ne fournit que de la donnée sourcée.
+// Le calcul de l'économie N'EST PAS fait ici : `engine/pricing.ts` transforme
+// ces prix en euros. Le LLM ne fournit que de la donnée sourcée.
+//
+// Deux listes reviennent : les paliers publics du fournisseur ACTUEL (pour
+// déduire le nombre de postes payés et proposer un downgrade) et les
+// concurrents moins chers (switch, ou point d'appui d'une renégociation).
+// Un résultat vérifié est mis en cache 30 jours (lib/benchmark-cache.ts).
 // ---------------------------------------------------------------------------
 
 import { z } from "zod";
@@ -28,9 +33,12 @@ import { holoChat, holoConfigured } from "@/lib/llm/holo";
 import { assertNoPii, redactForLogs, sanitizeMerchantQuery } from "@/lib/privacy/egress";
 import type { Lang } from "./types";
 import { recordAccess } from "@/lib/privacy/access-log";
+import { readCachedBenchmark, writeCachedBenchmark } from "@/lib/benchmark-cache";
 
 const EXTRACT_TIMEOUT_MS = 30_000;
-const EXTRACT_MAX_TOKENS = 1500;
+const EXTRACT_MAX_TOKENS = 2000;
+/** Règle 4 : une extraction rejetée a droit à UN nouvel essai, pas plus. */
+const EXTRACT_ATTEMPTS = 2;
 
 export interface BenchSource {
   title: string;
@@ -38,13 +46,19 @@ export interface BenchSource {
   date: string; // page_age brut (« 3 months ago », « April 2025 »…) ou ""
 }
 
-export interface BenchAlternative {
+export interface BenchPlan {
   name: string;
-  /** Prix mensuel public en € (par utilisateur si SaaS), ou null si non chiffrable. */
+  /** Prix mensuel public en € (par utilisateur si `perSeat`), ou null si non chiffrable. */
   monthlyPrice: number | null;
   unit: string; // « /utilisateur/mois », « /mois »…
+  perSeat: boolean;
   sourceUrl: string;
   sourceDate: string;
+}
+
+export interface BenchAlternative extends BenchPlan {
+  /** Étiquette du modèle : fait le même travail que l'outil actuel. */
+  comparable: boolean;
 }
 
 export interface BenchmarkResult {
@@ -52,10 +66,16 @@ export interface BenchmarkResult {
   verified: boolean;
   summary: string;
   sources: BenchSource[];
+  /** Paliers publics du fournisseur actuel. */
+  ownPlans: BenchPlan[];
   alternatives: BenchAlternative[];
+  /** Jour du relevé (AAAA-MM-JJ) : la date garantie de chaque prix. */
+  checkedAt: string;
   note?: string;
   /** Qui a fait la recherche. */
   provider?: "linkup";
+  /** Vrai si le résultat sort du cache D1 plutôt que d'une recherche fraîche. */
+  cached?: boolean;
 }
 
 export function hasLinkupKey(): boolean {
@@ -80,8 +100,8 @@ async function searchLinkup(
 ): Promise<{ summary: string; sources: BenchSource[] }> {
   const q =
     lang === "fr"
-      ? `Quelles sont les 3 meilleures alternatives MOINS CHÈRES à "${merchant}" (catégorie : ${category}) en 2026 ? Pour chaque CONCURRENT (jamais ${merchant} lui-même), donne son nom, son prix mensuel public actuel (par utilisateur si applicable) et l'URL de sa page tarifs.`
-      : `What are the 3 best CHEAPER alternatives to "${merchant}" (category: ${category}) in 2026? For each COMPETITOR (never ${merchant} itself), give its name, its current public monthly price (per user if applicable) and its pricing-page URL.`;
+      ? `1) Quels sont les tarifs publics actuels de "${merchant}" (catégorie : ${category}) ? Liste chaque formule avec son prix mensuel en euros et précise s'il est par utilisateur. 2) Quelles sont les 3 meilleures alternatives MOINS CHÈRES qui font le même travail ? Pour chaque CONCURRENT (jamais ${merchant} lui-même), donne son nom, son prix mensuel public actuel (par utilisateur si applicable) et l'URL de sa page tarifs.`
+      : `1) What are the current public prices of "${merchant}" (category: ${category})? List each plan with its monthly price in euros and say whether it is per user. 2) What are the 3 best CHEAPER alternatives that do the same job? For each COMPETITOR (never ${merchant} itself), give its name, its current public monthly price (per user if applicable) and its pricing-page URL.`;
 
   // sourcedAnswer = réponse synthétisée (liste de concurrents + prix) + sources.
   // Bien plus exploitable par l'extraction que des snippets bruts (searchResults).
@@ -120,39 +140,50 @@ async function searchLinkup(
   return { summary, sources };
 }
 
+const PLAN_PROPERTIES = {
+  name: { type: "string" },
+  monthlyPrice: { type: ["number", "null"] },
+  unit: { type: "string" },
+  perSeat: { type: "boolean" },
+  sourceIndex: { type: "integer" },
+} as const;
+const PLAN_REQUIRED = ["name", "monthlyPrice", "unit", "perSeat", "sourceIndex"] as const;
+
 const EXTRACT_SCHEMA = {
   type: "object",
   properties: {
+    ownPlans: {
+      type: "array",
+      items: { type: "object", properties: PLAN_PROPERTIES, required: PLAN_REQUIRED, additionalProperties: false },
+    },
     alternatives: {
       type: "array",
       items: {
         type: "object",
-        properties: {
-          name: { type: "string" },
-          monthlyPrice: { type: ["number", "null"] },
-          unit: { type: "string" },
-          sourceIndex: { type: "integer" },
-        },
-        required: ["name", "monthlyPrice", "unit", "sourceIndex"],
+        properties: { ...PLAN_PROPERTIES, comparable: { type: "boolean" } },
+        required: [...PLAN_REQUIRED, "comparable"],
         additionalProperties: false,
       },
     },
   },
-  required: ["alternatives"],
+  required: ["ownPlans", "alternatives"],
   additionalProperties: false,
 } as const;
 
+const ExtractedPlan = z.object({
+  name: z.string().min(1),
+  monthlyPrice: z.number().nonnegative().nullable(),
+  unit: z.string(),
+  perSeat: z.boolean(),
+  sourceIndex: z.number().int(),
+});
+
 /** Ce qui revient du modèle est une donnée externe : revalidé avant usage. */
 const ExtractSchema = z.object({
-  alternatives: z.array(
-    z.object({
-      name: z.string(),
-      monthlyPrice: z.number().nullable(),
-      unit: z.string(),
-      sourceIndex: z.number().int(),
-    }),
-  ),
+  ownPlans: z.array(ExtractedPlan),
+  alternatives: z.array(ExtractedPlan.extend({ comparable: z.boolean() })),
 });
+type Extracted = z.infer<typeof ExtractSchema>;
 
 const NOTE: Record<"noKey" | "webDown" | "noSource" | "noMerchant", Record<Lang, string>> = {
   noMerchant: {
@@ -203,6 +234,40 @@ function sameBrand(altName: string, merchant: string): boolean {
  * @param currentMonthly dépense mensuelle observée. Sert UNIQUEMENT à l'appelant
  *   (soustraction du meilleur prix trouvé) : elle n'est transmise à aucun tiers.
  */
+function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Lecture du cache seule, sans réseau : la route l'appelle AVANT le plafond de débit. */
+export async function cachedBenchmark(merchant: string, category: string, lang: Lang = "fr"): Promise<BenchmarkResult | null> {
+  try {
+    const clean = sanitizeMerchantQuery(merchant, category);
+    const hit = await readCachedBenchmark(clean.merchant, clean.category, lang);
+    return hit ? { ...hit, merchant, cached: true } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rattache chaque prix extrait à SA source. Un index de source invalide fait
+ * tomber le prix : jamais de repli sur une autre source (règle 4).
+ */
+function attachSources(extracted: Extracted, sources: BenchSource[], merchant: string): Pick<BenchmarkResult, "ownPlans" | "alternatives"> {
+  const withSource = <T extends { sourceIndex: number; unit: string }>(item: T): (Omit<T, "sourceIndex"> & { sourceUrl: string; sourceDate: string }) | null => {
+    const src = sources[item.sourceIndex];
+    if (!src) return null;
+    const { sourceIndex: _ignored, ...rest } = item;
+    return { ...rest, unit: item.unit || "/mois", sourceUrl: src.url, sourceDate: src.date };
+  };
+  const ownPlans = extracted.ownPlans.map(withSource).filter((p): p is NonNullable<typeof p> => p !== null);
+  const alternatives = extracted.alternatives
+    .filter((a) => !sameBrand(a.name, merchant))
+    .map(withSource)
+    .filter((a): a is NonNullable<typeof a> => a !== null);
+  return { ownPlans, alternatives };
+}
+
 export async function benchmark(
   merchant: string,
   category: string,
@@ -214,7 +279,9 @@ export async function benchmark(
     verified: false,
     summary: "",
     sources: [],
+    ownPlans: [],
     alternatives: [],
+    checkedAt: today(),
   };
 
   if (!hasLinkupKey()) {
@@ -236,6 +303,9 @@ export async function benchmark(
     return { ...base, note: NOTE.noMerchant[lang] };
   }
 
+  const hit = await readCachedBenchmark(marchandSortant, categorieSortante, lang);
+  if (hit) return { ...hit, merchant, cached: true };
+
   // --- Passe 1 : recherche des prix (Linkup) --------------------------------
   const provider = "linkup" as const;
   let summary: string;
@@ -253,60 +323,55 @@ export async function benchmark(
 
   // --- Passe 2 : extraction structurée (le prix devient de la donnée) ------
   // Sans clé H Company, le résumé sourcé reste affiché, sans prix structurés.
-  let alternatives: BenchAlternative[] = [];
-  if (!holoConfigured()) {
-    return { merchant, verified: true, summary, sources, alternatives, provider };
-  }
+  const verifiedBase: BenchmarkResult = { ...base, verified: true, summary, sources, provider };
+  if (!holoConfigured()) return verifiedBase;
+
+  const sourceList = sources
+    .map((s, i) => `[${i}] ${s.title} — ${s.url} (${s.date || "date n.c."})`)
+    .join("\n");
+
+  // Ici, la matière première vient du WEB (résumé + titres + URL de sources),
+  // pas du compte : une page tarifaire peut très bien contenir un e-mail de
+  // contact ou une URL à identifiant. On CAVIARDE donc au lieu d'échouer —
+  // sinon une page mal fichue suffirait à priver l'utilisateur de son
+  // extraction. Les URL réellement affichées viennent de `sources`, jamais du
+  // texte renvoyé par le modèle : rien n'est cassé par le caviardage.
+  const contenu = redactForLogs(
+    `TEXTE :\n${summary}\n\nSOURCES :\n${sourceList}`,
+  ) as string;
+  const systemeExtraction =
+    "Tu extrais des prix depuis un texte de benchmark et une liste de sources numérotées. " +
+    "Pour chaque prix, donne le prix MENSUEL en euros (null si non chiffré ; un prix annuel est divisé par 12), " +
+    "l'unité, perSeat = vrai si le prix est par utilisateur, et l'index [n] de la source qui l'atteste. " +
+    "N'invente aucun prix ni source. " +
+    `ownPlans : les formules de « ${marchandSortant} » lui-même (Free, Pro, Business…). ` +
+    `alternatives : UNIQUEMENT des produits CONCURRENTS différents, jamais « ${marchandSortant} » ni ses formules ; ` +
+    "comparable = vrai seulement si le concurrent fait le même travail principal.";
   try {
-    const sourceList = sources
-      .map((s, i) => `[${i}] ${s.title} — ${s.url} (${s.date || "date n.c."})`)
-      .join("\n");
-
-    // Ici, la matière première vient du WEB (résumé + titres + URL de sources),
-    // pas du compte : une page tarifaire peut très bien contenir un e-mail de
-    // contact ou une URL à identifiant. On CAVIARDE donc au lieu d'échouer —
-    // sinon une page mal fichue suffirait à priver l'utilisateur de son
-    // extraction. Les URL réellement affichées viennent de `sources`, jamais du
-    // texte renvoyé par le modèle : rien n'est cassé par le caviardage.
-    const contenu = redactForLogs(
-      `TEXTE :\n${summary}\n\nSOURCES :\n${sourceList}`,
-    ) as string;
-    const systemeExtraction =
-      "Tu extrais des prix depuis un texte de benchmark et une liste de sources numérotées. " +
-      "Pour chaque alternative citée, donne le prix mensuel en euros (null si non chiffré), " +
-      "l'unité, et l'index [n] de la source qui l'atteste. N'invente aucun prix ni source. " +
-      `IMPORTANT : ne retiens QUE des produits CONCURRENTS différents. Exclus totalement « ${marchandSortant} » ` +
-      "et ses propres formules/paliers de prix (Free, Pro, Business, annuel…) — on cherche à le remplacer, pas à le lister.";
-    assertNoPii(
-      { system: systemeExtraction, user: contenu },
-      "extraction de prix H Company (passe 2)",
-    );
-    void recordAccess({ service: "hcompany", operation: "price extraction", direction: "sent", sent: `public web results about ${marchandSortant}'s alternatives` });
-
-    const brut = await holoChat({
-      system: systemeExtraction,
-      user: contenu,
-      jsonSchema: { name: "price_alternatives", schema: EXTRACT_SCHEMA },
-      maxTokens: EXTRACT_MAX_TOKENS,
-      timeoutMs: EXTRACT_TIMEOUT_MS,
-    });
-    const parsed = ExtractSchema.parse(JSON.parse(brut));
-    alternatives = parsed.alternatives
-      .filter((a) => !sameBrand(a.name, merchant))
-      .map((a) => {
-        const src = sources[a.sourceIndex] ?? sources[0];
-        return {
-          name: a.name,
-          monthlyPrice: a.monthlyPrice,
-          unit: a.unit || "/mois",
-          sourceUrl: src?.url ?? "",
-          sourceDate: src?.date ?? "",
-        };
-      });
+    assertNoPii({ system: systemeExtraction, user: contenu }, "extraction de prix H Company (passe 2)");
   } catch (err) {
-    console.error("Benchmark (passe 2, extraction) échoué :", err);
-    // On garde le résumé sourcé même sans extraction structurée.
+    console.error("Benchmark (passe 2) bloqué par le filtre anti-PII :", err);
+    return verifiedBase;
   }
+  void recordAccess({ service: "hcompany", operation: "price extraction", direction: "sent", sent: `public web results about ${marchandSortant}'s alternatives` });
 
-  return { merchant, verified: true, summary, sources, alternatives, provider };
+  for (let attempt = 1; attempt <= EXTRACT_ATTEMPTS; attempt++) {
+    try {
+      const brut = await holoChat({
+        system: systemeExtraction,
+        user: contenu,
+        jsonSchema: { name: "price_benchmark", schema: EXTRACT_SCHEMA },
+        maxTokens: EXTRACT_MAX_TOKENS,
+        timeoutMs: EXTRACT_TIMEOUT_MS,
+      });
+      const extracted = ExtractSchema.parse(JSON.parse(brut));
+      const result: BenchmarkResult = { ...verifiedBase, ...attachSources(extracted, sources, merchant) };
+      await writeCachedBenchmark(marchandSortant, categorieSortante, lang, { ...result, merchant: marchandSortant });
+      return result;
+    } catch (err) {
+      console.error(`Benchmark (passe 2, extraction, essai ${attempt}/${EXTRACT_ATTEMPTS}) échoué :`, err);
+    }
+  }
+  // On garde le résumé sourcé même sans extraction structurée.
+  return verifiedBase;
 }

@@ -69,10 +69,12 @@ export const PLAFONDS: Readonly<Record<string, readonly Fenetre[]>> = Object.fre
     { max: 3, secondes: 60 },
     { max: 20, secondes: 3600 },
   ]),
-  // Linkup + H Company, plusieurs secondes de recherche web par appel.
+  // Linkup + H Company, plusieurs secondes de recherche web par appel. Le
+  // bouton « vérifier les prix » benchmarke d'un coup chaque levier en attente
+  // (une quinzaine au plus) ; les réponses en cache D1 ne comptent pas.
   benchmark: Object.freeze([
-    { max: 5, secondes: 60 },
-    { max: 40, secondes: 3600 },
+    { max: 15, secondes: 60 },
+    { max: 60, secondes: 3600 },
   ]),
   // H Company seul, réponse courte : la plus tolérante des trois.
   letter: Object.freeze([

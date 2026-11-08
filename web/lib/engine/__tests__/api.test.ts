@@ -82,11 +82,11 @@ describe("simulation : les décisions pilotent le total", () => {
   it("désactiver un levier le retire du total", () => {
     const base = SimulateBody.parse({
       transactions: MONTHLY,
-      labels: [{ merchant: "Notion", nature: "pilotable", action: "cancel", isSubscription: true }],
+      labels: [{ merchant: "Notion", nature: "pilotable", action: "consolidate", isSubscription: true }],
     });
     const on = simulateFromBody(base);
-    expect(on.monthly).toBe(20);
-    expect(on.annual).toBe(240);
+    expect(on.monthly).toBe(10);
+    expect(on.annual).toBe(120);
 
     const leverId = on.levers[0].id;
     const off = simulateFromBody(SimulateBody.parse({ ...base, decisions: [{ leverId, active: false }] }));

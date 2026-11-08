@@ -532,7 +532,7 @@ export default function Kerdaxis() {
       const res = await fetch("/api/benchmark", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ merchant: l.label, category: l.to, monthly: l.monthly ?? 0, lang }),
+        body: JSON.stringify({ merchant: l.label, category: l.pole ?? "outil SaaS", monthly: l.monthly ?? 0, action: l.action, lang }),
       });
       setBench(await res.json());
     } catch {
