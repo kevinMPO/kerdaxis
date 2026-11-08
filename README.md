@@ -22,6 +22,7 @@ supplier's portal shows the confirmation number.
 - [Real suppliers: researched playbooks and the Stripe portal](#real-suppliers-researched-playbooks-and-the-stripe-portal)
 - [Access: free trial, subscription, jury](#access-free-trial-subscription-jury)
 - [Architecture](#architecture)
+  - [How Kerdaxis uses H Company](#how-kerdaxis-uses-h-company)
   - [Pricing a lever: observed or sourced](#pricing-a-lever-observed-or-sourced)
   - [The public demo runs the real engine](#the-public-demo-runs-the-real-engine)
   - [Deploy: `main` is production](#deploy-main-is-production)
@@ -215,10 +216,40 @@ flowchart TB
     H -->|cloud browser| P
     P -->|supplier state: portal API or Stripe API| EX
     GL <--> VO
+    GL -->|video tutorial → numbered steps · optional| RS
     VO -.->|explains · prepares · never the final go| AP
     ST --- APP
     ACC --- APP
 ```
+
+### How Kerdaxis uses H Company
+
+H Company does three different jobs: it acts on a UI, it reads images, and it labels text. Every call goes
+through `lib/execution/hcompany.ts` (Agents API, `agp.eu.hcompany.ai/api/v2`) or `lib/llm/holo.ts`
+(Models API, `api.hcompany.ai/v1`, OpenAI-compatible).
+
+| Use | Agent or model | H features used | Where |
+|---|---|---|---|
+| Cancel at the supplier | Custom agent `kerdaxis-supplier-cancel`, `web` environment in `visual` mode (1280×720) | `instructions`, `answer_format` (structured report), `messages` for the `APPROVED` go, `pause` / `resume`, `DELETE` on stall or stop | `lib/execution/runner.ts` |
+| Read the help article's screenshots | Custom agent `kerdaxis-doc-reader`, no browser | Images attached to the message (two per session), a client tool `flag_unreadable_screenshot` answered through `tool_results`, `answer_format` | `lib/execution/research/screenshots.ts` |
+| Read an official pricing page | Pre-built `h/web-scraper-flash` (text browser) | `overrides` on `start_url` and `answer_format` | `lib/benchmark-scraper.ts` |
+| Label transactions, extract prices, draft letters, explain supplier risk | Holo (`holo4-27b` by default) | Chat completions. The model returns labels or text, never euros | `lib/categorize.ts`, `lib/benchmark.ts`, `lib/letters.ts`, `lib/risk/` |
+
+How a cancellation session is run:
+
+- **Progress** is read with the `changes` long-poll (`from_index`, `wait_for_seconds`), not webhooks, so the app
+  needs no public callback and runs the same on Workers and locally. Each page the agent visits becomes a step in
+  the run panel, with its screenshot.
+- **Live view**: the session's `agent_view_url` is shown in the run panel while the agent works.
+- **No double launch**: `POST /sessions` carries an `Idempotency-Key` equal to the approval id
+  (`<approval>:<attempt>` on a relaunch), so a retried request never opens a second agent on the same action.
+  `group_id` ties every attempt of one run together in the H platform.
+- **Bounded time**: `max_time_s` 600 per session, `idle_timeout_s` 900 so the session waits for the human's go
+  after its first turn.
+- **Retries**: every call has a 20 s timeout. Reads, cancel, pause, resume and session creation (safe to replay
+  thanks to its `Idempotency-Key`) are retried with exponential backoff on timeouts, network errors, 429 and 5xx,
+  honouring `Retry-After`. A stalled session is cancelled and replaced (see
+  [Agent reliability](#agent-reliability-end-to-end)).
 
 ### Pricing a lever: observed or sourced
 
