@@ -10,6 +10,7 @@ import { parseIntent } from "@/lib/voice/intents";
 import { launchCancellation } from "../ExecutionPanel";
 import { dashboardCopy, type DashboardCopy, type ViewId } from "./copy";
 import type { ExecutionView } from "./use-execution";
+import { readStatementPdf, StatementImportError, type StatementImportErrorCode } from "@/lib/statement/read-pdf";
 
 const LANG_STORAGE_KEY = "argentier-lang";
 const RUNS_STORAGE_KEY = "kerdaxis-runs";
@@ -25,6 +26,19 @@ export type DashboardMode = "demo" | "live";
 
 const LIVE_SOURCE = "qonto";
 const HTTP_UNAUTHORIZED = 401;
+const HTTP_TOO_MANY_REQUESTS = 429;
+/** Categorizing a statement can take H Company 30 to 40 s. */
+const IMPORT_TIMEOUT_MS = 90_000;
+
+export type ImportErrorCode = StatementImportErrorCode | "rate_limited" | "failed";
+
+/** reading: pdf.js runs in the browser; analyzing: the parsed rows are in the engine. */
+export interface ImportState {
+  status: "idle" | "reading" | "analyzing" | "error";
+  error?: ImportErrorCode;
+}
+
+const IDLE_IMPORT: ImportState = { status: "idle" };
 
 /**
  * Suppliers the H Company agent has a cancellation path for (mirrors SUPPLIER_IDS on the server).
@@ -205,6 +219,9 @@ export interface Dashboard {
   priceAllLevers: () => Promise<void>;
   regenerateWithPrices: () => void;
   onVoiceCommand: (text: string) => string;
+  importState: ImportState;
+  /** Reads a PDF statement in the browser and replaces the analysis with it. */
+  importStatement: (file: File) => Promise<void>;
 }
 
 export interface LetterState {
@@ -236,6 +253,7 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
   const [runViews, setRunViews] = useState<Record<string, ExecutionView>>({});
   const [letter, setLetter] = useState<LetterState>(EMPTY_LETTER);
   const [pricing, setPricing] = useState<PricingRun>(IDLE_PRICING);
+  const [importState, setImportState] = useState<ImportState>(IDLE_IMPORT);
 
   const copy = dashboardCopy(lang);
   const eur = useCallback((amount: number) => eurFmt(amount, lang), [lang]);
@@ -326,6 +344,42 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
       await fetch("/api/auth/qonto/revoke", { method: "POST" });
     } finally {
       window.location.href = window.location.pathname;
+    }
+  }, []);
+
+  const importStatement = useCallback(async (file: File): Promise<void> => {
+    setImportState({ status: "reading" });
+    let statement;
+    try {
+      statement = await readStatementPdf(file);
+    } catch (error) {
+      setImportState({ status: "error", error: error instanceof StatementImportError ? error.code : "unreadable" });
+      return;
+    }
+
+    setImportState({ status: "analyzing" });
+    try {
+      const response = await fetch("/api/analyze/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(statement),
+        signal: AbortSignal.timeout(IMPORT_TIMEOUT_MS),
+      });
+      if (!response.ok) {
+        setImportState({ status: "error", error: response.status === HTTP_TOO_MANY_REQUESTS ? "rate_limited" : "failed" });
+        return;
+      }
+      const result = (await response.json()) as AnalyzeResult;
+      setData(result);
+      setLevers(result.levers);
+      setNeedsQonto(false);
+      setRefusal(null);
+      setPricing(IDLE_PRICING);
+      setLetter(EMPTY_LETTER);
+      setView("today");
+      setImportState(IDLE_IMPORT);
+    } catch {
+      setImportState({ status: "error", error: "failed" });
     }
   }, []);
 
@@ -599,5 +653,7 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
     priceAllLevers,
     regenerateWithPrices,
     onVoiceCommand,
+    importState,
+    importStatement,
   };
 }

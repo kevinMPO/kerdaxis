@@ -17,6 +17,7 @@
 // ---------------------------------------------------------------------------
 
 import type {
+  AnalysisSource,
   AnalyzeResult,
   Categorizer,
   FluxItem,
@@ -240,8 +241,10 @@ export interface BuildInput {
   txs: Tx[];
   verdicts: MerchantVerdict[];
   windowDays: number;
-  source: "qonto" | "mock";
+  source: AnalysisSource;
   categorized: Categorizer;
+  /** Last day of the statement. Defaults to today; an imported statement ends on its own last date. */
+  asOf?: Date;
 }
 
 export function build(input: BuildInput): AnalyzeResult {
@@ -262,7 +265,7 @@ export function build(input: BuildInput): AnalyzeResult {
   const merchantDebits = debits.filter((t) => !isFxLeverTx(t));
 
   // Fenêtre « ce mois » = 30 derniers jours (le relevé affiché).
-  const monthCutoff = ordinal(new Date().toISOString().slice(0, 10)) - DAYS_PER_MONTH;
+  const monthCutoff = ordinal((input.asOf ?? new Date()).toISOString().slice(0, 10)) - DAYS_PER_MONTH;
   const recentDebits = debits.filter((t) => ordinal(t.date) >= monthCutoff);
 
   // --- natures : montants OBSERVÉS sur 30 j (non annualisés) ----------------

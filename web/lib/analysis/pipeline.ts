@@ -8,7 +8,7 @@
 
 import { build, toMerchantInputs } from "@/lib/engine";
 import { categorizeByRules, categorizeWithHolo, hasHoloKey, type MerchantInput } from "@/lib/categorize";
-import type { AnalyzeResult, Categorizer, MerchantVerdict, Tx } from "@/lib/types";
+import type { AnalysisSource, AnalyzeResult, Categorizer, MerchantVerdict, Tx } from "@/lib/types";
 import { rollingWindowLabel } from "@/lib/window-label";
 
 const DAYS_PER_MONTH = 30;
@@ -17,7 +17,7 @@ export interface AnalysisInput {
   account: { name: string; bank: string; balance: number };
   txs: Tx[];
   windowDays: number;
-  source: "qonto" | "mock";
+  source: AnalysisSource;
   /**
    * Étiquettes déjà posées par l'appelant, comme `labels` de l'API moteur. Ces
    * marchands ne partent pas au modèle. Ce sont des CATÉGORIES, jamais des euros.
@@ -65,5 +65,6 @@ export async function runAnalysis(input: AnalysisInput): Promise<AnalyzeResult> 
     windowDays,
     source: input.source,
     categorized,
+    asOf: input.now,
   });
 }

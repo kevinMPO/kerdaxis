@@ -142,6 +142,7 @@ flowchart TB
       direction LR
       Q[("Bank account<br/>read-only · e.g. Qonto")]
       DEMO[("Demo statement<br/>fictional · lib/demo")]
+      PDF[("PDF bank statement<br/>parsed in the browser · lib/statement")]
       AN["LLM · H Company Holo<br/>labels · letters · prices · risk text"]
       LK["Linkup<br/>public prices · official docs"]
       SCR["H web-scraper-flash<br/>official pricing page"]
@@ -178,6 +179,7 @@ flowchart TB
 
     Q -->|transactions| PIPE
     DEMO -->|transactions| PIPE
+    PDF -->|rows: date · cleaned label · amount| PIPE
     PIPE --> LBL
     AN <-->|merchant + category| LBL
     LBL -->|nature · motif · action| ENG
@@ -256,6 +258,16 @@ The two fictional suppliers, Nuvio and Lumen, carry fixed labels so the cancella
 The demo is labelled by the keyword rules (`rulesOnly`), never by Holo. Its statement is fixed, so a 30 to 40 s Holo
 call on every visit taught nothing and kept the visitor waiting. The rules answer in milliseconds, the same way every
 time, so the demo needs no cache. Prices and cancel channels are still checked live, on request.
+
+### Importing a PDF statement (no Qonto needed)
+
+Anyone, on `/demo` or `/dashboard`, can import a PDF bank statement from any bank. The PDF is read **in the browser**
+(`lib/statement/read-pdf.ts`, pdf.js via `unpdf`, loaded only on click) and never uploaded. Fixed rules
+(`lib/statement/parse.ts`) turn its lines into rows: date, cleaned label, amount, debit or credit. Amounts are read
+from the Debit / Credit columns or from their sign, never guessed, and IBANs, card numbers and references are stripped
+from the label. Only those rows go to `POST /api/analyze/import`, validated with Zod, then through the same pipeline as a
+Qonto account (`source: "import"`), dated on the statement's own last day. Nothing is stored. A fictional sample is
+served at `/samples/releve-exemple.pdf` (`node scripts/generate-sample-statement.mjs` regenerates it).
 
 ### Deploy: `main` is production
 
