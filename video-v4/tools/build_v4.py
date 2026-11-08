@@ -4,7 +4,9 @@
 Run from video-v4/: python3 tools/build_v4.py. The voice is the clock: VO starts below come from the
 per-word timestamps of each line (Whisper), and every scene's local timings are written against them.
 """
-import json, re, subprocess
+import json, os, re, subprocess
+
+NO_CAPTIONS = os.environ.get("NO_CAPTIONS") == "1"  # clean 16:9 master for the square cut
 
 SCENES = [("trap", 0.0, 6.2), ("stop", 6.2, 6.3), ("confirm", 12.5, 4.1), ("dash", 16.6, 16.5),
           ("flow", 33.1, 8.5), ("proof", 41.6, 7.6), ("end", 49.2, 6.8)]
@@ -77,6 +79,7 @@ for _, _, start, d, text in lines:
     for c in chunks:
         g = " ".join(c); gd = span * len(g) / total
         groups.append((g, round(t, 3), round(t + gd, 3))); t += gd
+json.dump(groups, open("tools/caption-groups.json", "w"))
 cap_html = "\n".join(f'    <div id="cg{i}" class="cg"><span>{g}</span></div>' for i, (g, a, b) in enumerate(groups))
 cap_js = "\n".join(f'      tl.set("#cg{i}", {{ opacity: 1, visibility: "visible" }}, {a}); tl.set("#cg{i}", {{ opacity: 0, visibility: "hidden" }}, {b});'
                    for i, (g, a, b) in enumerate(groups))
@@ -101,6 +104,7 @@ open("compositions/captions.html", "w").write(f"""<template>
 </template>
 """)
 
+captions_host = f'      <div id="captions" class="clip" data-composition-id="captions" data-composition-src="compositions/captions.html" data-start="0" data-duration="{TOTAL}" data-track-index="2" data-track-kind="captions" data-width="1920" data-height="1080" style="z-index: 50"></div>'
 scene_html = "\n".join(
     f'      <div id="{n}" class="clip" data-composition-id="{n}" data-composition-src="compositions/{n}.html" data-start="{s}" data-duration="{d}" '
     f'data-track-index="1" data-track-kind="graphics" data-width="1920" data-height="1080" style="z-index: {i + 1}"></div>'
@@ -133,7 +137,7 @@ open("index.html", "w").write(f"""<!doctype html>
     <div id="root" data-composition-id="main" data-start="0" data-duration="{TOTAL}" data-width="1920" data-height="1080">
       <!-- Film v4 "The click it didn't make". Built by tools/build_v4.py; edit SCENES/VO_START/SFX there. -->
 {scene_html}
-      <div id="captions" class="clip" data-composition-id="captions" data-composition-src="compositions/captions.html" data-start="0" data-duration="{TOTAL}" data-track-index="2" data-track-kind="captions" data-width="1920" data-height="1080" style="z-index: 50"></div>
+{"" if NO_CAPTIONS else captions_host}
 
       <!-- Voice: AI voice "Liam" (ElevenLabs eleven_v3), every line Whisper-checked (tools/gen_lines.sh). -->
 {vo_html}

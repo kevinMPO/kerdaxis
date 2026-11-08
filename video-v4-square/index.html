@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Plus Jakarta Sans"; src: url("assets/fonts/plus-jakarta-sans-latin.woff2") format("woff2"); font-weight: 400 800; font-style: normal; }
+      @font-face { font-family: "Fira Code"; src: url("assets/fonts/fira-code-latin.woff2") format("woff2"); font-weight: 400 500; font-style: normal; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1080px; height: 1080px; overflow: hidden; background: #0d0d12; }
+      #root { position: relative; width: 100%; height: 100%; font-family: "Plus Jakarta Sans", sans-serif; color: #f4f4f8; }
+      #head { position: absolute; left: 0; top: 0; width: 1080px; height: 236px; }
+      #eye { position: absolute; left: 64px; top: 58px; font-family: "Fira Code", monospace; font-size: 28px; letter-spacing: 0.14em; color: #d4f53c; white-space: nowrap; }
+      #title { position: absolute; left: 64px; top: 104px; font-weight: 800; font-size: 72px; line-height: 1.05; letter-spacing: -0.04em; white-space: nowrap; }
+      #film { position: absolute; left: 0; top: 236px; width: 1080px; height: 608px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="56.0" data-width="1080" data-height="1080">
+      <!-- Square LinkedIn cut of film v4: the caption-free 16:9 master in the middle, a title band, large captions below. -->
+      <div id="head" class="clip" data-start="0" data-duration="56.0" data-track-index="1">
+        <div id="eye">YOUR AI CFO · KERDAXIS</div>
+        <div id="title">The click it didn't make.</div>
+      </div>
+      <video id="film" class="clip" src="assets/film-16x9.mp4" data-start="0" data-duration="56.0" data-track-index="0" data-has-audio="true" playsinline></video>
+      <div id="captions" class="clip" data-composition-id="captions" data-composition-src="compositions/captions.html" data-start="0" data-duration="56.0" data-track-index="2" data-track-kind="captions" data-width="1080" data-height="1080" style="z-index: 50"></div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>
