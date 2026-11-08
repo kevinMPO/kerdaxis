@@ -25,6 +25,11 @@ import { recordAccess } from "@/lib/privacy/access-log";
 
 // Voix multilingue par défaut (« Rachel ») — surchargée par ELEVENLABS_VOICE_ID.
 const DEFAULT_VOICE = "21m00Tcm4TlvDq8ikWAM";
+const DEFAULT_TTS_MODEL = "eleven_multilingual_v2";
+const ELEVENLABS_TTS_URL = "https://api.elevenlabs.io/v1/text-to-speech";
+const VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.75 } as const;
+/** Garde-fou coût/latence : ElevenLabs facture au caractère. */
+const MAX_TTS_CHARS = 2500;
 
 async function handlePost(req: Request): Promise<Response> {
   // Avant TOUT travail payant : le contrôle de débit.
@@ -39,7 +44,7 @@ async function handlePost(req: Request): Promise<Response> {
   let text = "";
   try {
     const body = (await req.json()) as { text?: string };
-    text = (body.text ?? "").toString().slice(0, 2500); // garde-fou coût/latence
+    text = (body.text ?? "").toString().slice(0, MAX_TTS_CHARS);
   } catch {
     /* body vide */
   }
@@ -53,8 +58,8 @@ async function handlePost(req: Request): Promise<Response> {
   // tout IBAN, e-mail, identifiant de transaction ou numéro de carte.
   const corps = {
     text: redactForLogs(text) as string,
-    model_id: "eleven_multilingual_v2",
-    voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+    model_id: process.env.ELEVENLABS_TTS_MODEL || DEFAULT_TTS_MODEL,
+    voice_settings: VOICE_SETTINGS,
   };
   try {
     assertNoPii(corps, "synthèse vocale ElevenLabs");
@@ -65,7 +70,7 @@ async function handlePost(req: Request): Promise<Response> {
   }
 
   try {
-    const el = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}`, {
+    const el = await fetch(`${ELEVENLABS_TTS_URL}/${voice}`, {
       method: "POST",
       headers: {
         "xi-api-key": key,

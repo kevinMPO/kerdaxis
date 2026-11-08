@@ -11,7 +11,8 @@
 // connexion bancaire reste, elle, portée par l'OAuth + SCA de Qonto.
 // ---------------------------------------------------------------------------
 
-const AUTH_BASE = "https://argentier-mcp.bonjour-e83.workers.dev";
+import { ACCOUNTS_WORKER_URL as AUTH_BASE } from "@/lib/site";
+
 const TOKEN_KEY = "argentier-token";
 
 export interface Account {

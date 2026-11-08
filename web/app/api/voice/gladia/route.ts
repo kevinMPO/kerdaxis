@@ -14,6 +14,9 @@ export const dynamic = "force-dynamic";
 // (`connectSession`). Format audio imposé : PCM 16 bits, 16 kHz, mono.
 // ---------------------------------------------------------------------------
 
+const GLADIA_LIVE_URL = "https://api.gladia.io/v2/live";
+const DEFAULT_GLADIA_MODEL = "solaria-1";
+
 const Body = z.object({ lang: z.string().max(5).default("fr") }).strict();
 
 const VOCABULARY = ["Kerdaxis", "Nuvio", "Qonto", "Instantly", "ChatGPT", "Waalaxy", "Autopilote", "H Company", "Linkup"];
@@ -29,11 +32,11 @@ async function handlePost(req: Request): Promise<Response> {
   const primary = parsed.data.lang === "en" ? "en" : "fr";
 
   void recordAccess({ service: "gladia", operation: "live transcription", direction: "sent", sent: "microphone audio of this voice command" });
-  const res = await fetch("https://api.gladia.io/v2/live", {
+  const res = await fetch(GLADIA_LIVE_URL, {
     method: "POST",
     headers: { "x-gladia-key": key, "content-type": "application/json" },
     body: JSON.stringify({
-      model: "solaria-1",
+      model: process.env.GLADIA_MODEL || DEFAULT_GLADIA_MODEL,
       encoding: "wav/pcm",
       sample_rate: 16000,
       bit_depth: 16,

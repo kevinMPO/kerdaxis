@@ -11,7 +11,7 @@ import { assertNoPii } from "@/lib/privacy/egress";
 import { ResearchError, type WrittenPath } from "./types";
 import { recordAccess } from "@/lib/privacy/access-log";
 
-const LINKUP_SEARCH_URL = "https://api.linkup.so/v1/search";
+export const LINKUP_SEARCH_URL = "https://api.linkup.so/v1/search";
 const LINKUP_FETCH_URL = "https://api.linkup.so/v1/fetch";
 const SEARCH_TIMEOUT_MS = 120_000;
 const FETCH_TIMEOUT_MS = 90_000;

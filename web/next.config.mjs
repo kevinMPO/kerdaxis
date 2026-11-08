@@ -37,8 +37,14 @@ const racine = path.dirname(fileURLToPath(import.meta.url));
 const cibleCloudflare = process.env.KERDAXIS_TARGET === "cloudflare";
 const developpement = process.env.NODE_ENV === "development";
 
-/** Worker Cloudflare qui encaisse les inscriptions à la liste d'attente. */
-const WORKER_LISTE_ATTENTE = "https://argentier-mcp.bonjour-e83.workers.dev";
+/**
+ * Worker Cloudflare qui encaisse les inscriptions à la liste d'attente.
+ * Même variable et même défaut que `ACCOUNTS_WORKER_URL` (lib/site.ts) : un
+ * fichier .mjs de configuration ne peut pas importer le module TypeScript.
+ */
+const WORKER_LISTE_ATTENTE = (
+  process.env.NEXT_PUBLIC_ACCOUNTS_WORKER_URL || "https://argentier-mcp.bonjour-e83.workers.dev"
+).replace(/\/+$/, "");
 
 /**
  * Politique de sécurité du contenu, directive par directive.

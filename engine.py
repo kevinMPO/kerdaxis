@@ -33,6 +33,17 @@ VARIABLE_MIN_EUR = 100.0
 # Retraits cash / especes : hors perimetre d'optimisation.
 CASH_KEYS = {"atm", "retrait", "distributeur"}
 
+DAYS_PER_MONTH = 30.0
+MONTHS_PER_YEAR = 12
+# Ecart median (jours) entre 2 prelevements pour une cadence d'abonnement.
+MONTHLY_CADENCE_MIN_DAYS = 20
+MONTHLY_CADENCE_MAX_DAYS = 45
+QUARTERLY_CADENCE_MAX_DAYS = 110
+# Hausse silencieuse : declenchee a partir de +5 % entre 1re et derniere occurrence.
+SILENT_INCREASE_RATIO = 1.05
+# TVA recuperable sur un montant TTC au taux normal : base * 20/120.
+VAT_RATE_PERCENT = 20.0
+
 # --- Classification EI : pro vs perso -------------------------------------
 PRO_KEYWORDS = [
     "hubspot", "apollo", "ringover", "google workspace", "google gsuite",
@@ -150,9 +161,9 @@ def cadence_of(median_interval):
     Volontairement STRICT : des depenses groupees sur quelques jours (un voyage)
     ne sont PAS une cadence -> elles ne seront jamais annualisees.
     """
-    if 20 <= median_interval <= 45:
+    if MONTHLY_CADENCE_MIN_DAYS <= median_interval <= MONTHLY_CADENCE_MAX_DAYS:
         return 1.0, "mensuel"
-    if 45 < median_interval <= 110:
+    if MONTHLY_CADENCE_MAX_DAYS < median_interval <= QUARTERLY_CADENCE_MAX_DAYS:
         return 1 / 3, "trimestriel"
     return None, None
 
@@ -209,7 +220,7 @@ def detect_hausse(txs, factor=1.0):
     ordered = sorted(txs, key=get_date)
     avant = get_amount(ordered[0])
     apres = get_amount(ordered[-1])
-    if avant <= 0 or apres < avant * 1.05:
+    if avant <= 0 or apres < avant * SILENT_INCREASE_RATIO:
         return None
     return {
         "pct": round((apres / avant - 1) * 100, 1),
@@ -217,7 +228,7 @@ def detect_hausse(txs, factor=1.0):
         "apres_eur": round(apres, 2),
         # Impact annuel = delta normalise en mensuel (delta brut x facteur de
         # cadence) x 12. Un abo trimestriel n'est donc pas sur-annualise.
-        "impact_annuel_eur": round((apres - avant) * factor * 12, 2),
+        "impact_annuel_eur": round((apres - avant) * factor * MONTHS_PER_YEAR, 2),
     }
 
 
@@ -238,7 +249,7 @@ def tva_perdue_candidate(debits):
     if not concerned:
         return None
     base_ttc = sum(get_amount(t) for t in concerned)
-    tva = base_ttc * 20.0 / 120.0
+    tva = base_ttc * VAT_RATE_PERCENT / (100.0 + VAT_RATE_PERCENT)
     if tva <= 0:
         return None
     return {
@@ -264,7 +275,7 @@ def fx_candidate(transactions, window_days):
         "nature": "fx",
         "occurrences": len(fx),
         "cadence": "{} frais / {} j".format(len(fx), window_days),
-        "montant_mensuel": round(total / (window_days / 30.0), 2),
+        "montant_mensuel": round(total / (window_days / DAYS_PER_MONTH), 2),
         "montant_optimisable_eur": round(annual, 2),
         "base": "annuel (frais 90 j extrapoles)",
         "niveau_confiance": "eleve" if len(fx) >= 3 else "moyen",
@@ -352,7 +363,7 @@ def analyze(transactions, window_days=WINDOW_DAYS):
                         "occurrences": len(c),
                         "cadence": cadence,
                         "montant_mensuel": round(monthly, 2),
-                        "montant_optimisable_eur": round(monthly * 12, 2),
+                        "montant_optimisable_eur": round(monthly * MONTHS_PER_YEAR, 2),
                         "base": "mensuel x12 (annuel)",
                         "niveau_confiance": confidence(len(c), amounts),
                     }
@@ -378,7 +389,7 @@ def analyze(transactions, window_days=WINDOW_DAYS):
                     "occurrences": len(recurring_txs),
                     "cadence": cadence,
                     "montant_mensuel": round(monthly, 2),
-                    "montant_optimisable_eur": round(monthly * 12, 2),
+                    "montant_optimisable_eur": round(monthly * MONTHS_PER_YEAR, 2),
                     "base": "mensuel x12 (annuel)",
                     "niveau_confiance": confidence(len(recurring_txs), amounts),
                 }

@@ -13,7 +13,8 @@ if (!KEY) {
   process.exit(1);
 }
 
-const BASE = "https://api.anthropic.com";
+const BASE = process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com";
+const DEFAULT_MODEL = "claude-sonnet-5";
 const H = {
   "x-api-key": KEY,
   "anthropic-version": "2023-06-01",
@@ -53,7 +54,7 @@ const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
   console.log("2) Agent Kerdaxis…");
   const agent = await api("POST", "/v1/agents", {
     name: "Kerdaxis Autopilote",
-    model: "claude-sonnet-5",
+    model: process.env.CMA_MODEL || DEFAULT_MODEL,
     system:
       "Tu es Kerdaxis, un agent DAF en LECTURE SEULE. Règles non négociables : " +
       "le moteur (code déterministe) calcule chaque euro, jamais toi ; tu ne bouges jamais d'argent ni ne fais d'action bancaire ; " +

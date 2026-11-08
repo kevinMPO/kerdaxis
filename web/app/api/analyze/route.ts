@@ -282,8 +282,11 @@ async function analyzeAvecSession(
   );
 }
 
+/** Deux fenêtres de 30 j glissantes ; surchargeable par ARGENTIER_WINDOW_DAYS. */
+const DEFAULT_WINDOW_DAYS = 60;
+
 async function analyze(requete: Request): Promise<NextResponse> {
-  const windowDays = Number(process.env.ARGENTIER_WINDOW_DAYS || 60);
+  const windowDays = Number(process.env.ARGENTIER_WINDOW_DAYS || DEFAULT_WINDOW_DAYS);
 
   const session = await lireSession(requete).catch((erreur) => {
     console.error("[kerdaxis][session] Cookie de session illisible :", erreur);

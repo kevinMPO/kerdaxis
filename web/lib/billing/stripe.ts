@@ -9,7 +9,10 @@
 // connexion. La clé ne quitte jamais le serveur.
 // ---------------------------------------------------------------------------
 
+import { appOrigin } from "@/lib/site";
+
 const API = "https://api.stripe.com/v1";
+const LOCAL_HOST = /^(localhost|127\.0\.0\.1)(:\d+)?$/;
 export const PRICE_LOOKUP_KEY = "kerdaxis_monthly_eur_5";
 
 export function stripeKey(): string | null {
@@ -114,7 +117,6 @@ export async function createPortal(customerId: string, origin: string): Promise<
 /** Origine publique pour les URL de retour : jamais tirée d'un en-tête libre du client. */
 export function publicOrigin(req: Request): string {
   const host = (req.headers.get("host") ?? "").toLowerCase();
-  if (host === "app.kerdaxis.com") return "https://app.kerdaxis.com";
-  if (/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host)) return `http://${host}`;
-  return process.env.KERDAXIS_APP_ORIGIN ?? "https://app.kerdaxis.com";
+  if (LOCAL_HOST.test(host)) return `http://${host}`;
+  return appOrigin();
 }

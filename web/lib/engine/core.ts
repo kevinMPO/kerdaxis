@@ -44,6 +44,27 @@ import { isMarketPriced } from "./pricing";
 export const ENGINE_VERSION = "2.0.0";
 
 const DAY = 86_400_000;
+const DAYS_PER_MONTH = 30;
+const MONTHS_PER_YEAR = 12;
+
+// Règles métier chiffrées, alignées sur engine.py (qui fait foi).
+/** Intervalle médian (jours) entre deux prélèvements pour une cadence mensuelle. */
+const MONTHLY_CADENCE_MIN_DAYS = 20;
+const MONTHLY_CADENCE_MAX_DAYS = 45;
+/** Hausse silencieuse : déclenchée à partir de +5 % entre 1re et dernière occurrence. */
+const SILENT_INCREASE_RATIO = 1.05;
+/** TVA récupérable sur un montant TTC au taux normal (20 %) : base × 20/120. */
+const VAT_RATE_PERCENT = 20;
+/** Runway affiché plafonné (mois), aussi utilisé quand le burn net est nul ou négatif. */
+const RUNWAY_CAP_MONTHS = 99;
+
+// Grille du score /100 (pénalités maximales par signal).
+const SCORE_MAX = 100;
+const PENALTY_DUPLICATES = 8;
+const PENALTY_MISSING_RECEIPTS_MAX = 8;
+/** Pénalité justificatifs = part des débits sans justificatif × ce facteur, plafonnée. */
+const MISSING_RECEIPTS_SCALE = 20;
+const PENALTY_OPTIMIZABLE_SHARE_MAX = 12;
 const NATURE_LABEL: Record<Nature, string> = {
   pilotable: "Pilotable",
   structurel: "Structurel",
@@ -137,7 +158,7 @@ function aggregate(debits: Tx[], months: number): MerchantAgg[] {
       const ords = txs.map((t) => ordinal(t.date)).sort((a, b) => a - b);
       const intervals = ords.slice(1).map((v, i) => v - ords[i]);
       const medInt = median(intervals);
-      const monthlyCadence = medInt >= 20 && medInt <= 45;
+      const monthlyCadence = medInt >= MONTHLY_CADENCE_MIN_DAYS && medInt <= MONTHLY_CADENCE_MAX_DAYS;
       if (monthlyCadence || dominantOp === "direct_debit") {
         isRecurring = true;
         monthly = median(amounts); // abonnement mensuel réel
@@ -214,7 +235,7 @@ export interface BuildInput {
 
 export function build(input: BuildInput): AnalyzeResult {
   const { txs, verdicts, windowDays } = input;
-  const months = Math.max(1, windowDays / 30);
+  const months = Math.max(1, windowDays / DAYS_PER_MONTH);
 
   const verdictOf = new Map(verdicts.map((v) => [v.name.toLowerCase(), v]));
   const natureOf = (name: string): Nature =>
@@ -230,7 +251,7 @@ export function build(input: BuildInput): AnalyzeResult {
   const merchantDebits = debits.filter((t) => !isFxLeverTx(t));
 
   // Fenêtre « ce mois » = 30 derniers jours (le relevé affiché).
-  const monthCutoff = ordinal(new Date().toISOString().slice(0, 10)) - 30;
+  const monthCutoff = ordinal(new Date().toISOString().slice(0, 10)) - DAYS_PER_MONTH;
   const recentDebits = debits.filter((t) => ordinal(t.date) >= monthCutoff);
 
   // --- natures : montants OBSERVÉS sur 30 j (non annualisés) ----------------
@@ -385,17 +406,17 @@ export function build(input: BuildInput): AnalyzeResult {
   // Économie ANNUELLE par levier = mensuel × 12, calculée PAR LE MOTEUR (jamais
   // par un client / un LLM). Un consommateur — l'API, Claude Tag — reprend ce
   // chiffre verbatim au lieu de multiplier lui-même (règle #2).
-  for (const l of levers) l.savingYearly = l.saving * 12;
+  for (const l of levers) l.savingYearly = l.saving * MONTHS_PER_YEAR;
 
   // --- score /100 : grille transparente ------------------------------------
   const drivers: Localized[] = [];
-  let score = 100;
+  let score = SCORE_MAX;
 
   const consolidations = levers.filter((l) =>
     verdictOf.get(l.label.toLowerCase())?.action === "consolidate",
   );
   if (consolidations.length > 0) {
-    const pen = 8;
+    const pen = PENALTY_DUPLICATES;
     score -= pen;
     drivers.push({
       fr: `Doublons fonctionnels (${consolidations.length}) −${pen}`,
@@ -405,7 +426,10 @@ export function build(input: BuildInput): AnalyzeResult {
 
   const needJustif = recentDebits.filter((t) => t.attachmentRequired && !t.hasAttachment);
   if (needJustif.length > 0) {
-    const pen = Math.min(8, Math.ceil((needJustif.length / Math.max(1, recentDebits.length)) * 20));
+    const pen = Math.min(
+      PENALTY_MISSING_RECEIPTS_MAX,
+      Math.ceil((needJustif.length / Math.max(1, recentDebits.length)) * MISSING_RECEIPTS_SCALE),
+    );
     score -= pen;
     drivers.push({
       fr: `Justificatifs TVA manquants (${needJustif.length}) −${pen}`,
@@ -415,7 +439,10 @@ export function build(input: BuildInput): AnalyzeResult {
 
   const activeSavings = levers.filter((l) => l.active).reduce((s, l) => s + l.saving, 0);
   if (runRate > 0 && activeSavings > 0) {
-    const pen = Math.min(12, Math.round((activeSavings / runRate) * 12));
+    const pen = Math.min(
+      PENALTY_OPTIMIZABLE_SHARE_MAX,
+      Math.round((activeSavings / runRate) * PENALTY_OPTIMIZABLE_SHARE_MAX),
+    );
     if (pen > 0) {
       score -= pen;
       drivers.push({
@@ -424,7 +451,7 @@ export function build(input: BuildInput): AnalyzeResult {
       });
     }
   }
-  score = Math.max(0, Math.min(100, score));
+  score = Math.max(0, Math.min(SCORE_MAX, score));
 
   // --- runway : solde ÷ burn net mensuel, hors ponctuel --------------------
   const recentCredits = credits.filter((t) => ordinal(t.date) >= monthCutoff);
@@ -433,9 +460,9 @@ export function build(input: BuildInput): AnalyzeResult {
     .reduce((s, t) => s + t.amount, 0);
   const inflow = recentCredits.reduce((s, t) => s + t.amount, 0);
   const netBurn = burnOut - inflow;
-  const months_left = netBurn > 0 ? input.account.balance / netBurn : 99;
+  const months_left = netBurn > 0 ? input.account.balance / netBurn : RUNWAY_CAP_MONTHS;
   const runway = {
-    months: Math.round(Math.min(99, Math.max(0, months_left)) * 10) / 10,
+    months: Math.round(Math.min(RUNWAY_CAP_MONTHS, Math.max(0, months_left)) * 10) / 10,
     note: { fr: "hors exceptionnel", en: "excl. one-offs" } as Localized,
   };
 
@@ -454,7 +481,7 @@ export function build(input: BuildInput): AnalyzeResult {
   let tvaPerdue: TvaPerdue | undefined;
   if (tvaConcerned.length > 0) {
     const baseTtc = tvaConcerned.reduce((s, t) => s + t.amount, 0);
-    const tva = (baseTtc * 20) / 120;
+    const tva = (baseTtc * VAT_RATE_PERCENT) / (100 + VAT_RATE_PERCENT);
     if (tva > 0) {
       tvaPerdue = {
         transactions: tvaConcerned.length,
@@ -491,7 +518,7 @@ function detectHausse(agg: MerchantAgg): Hausse | null {
   const ordered = [...agg.txs].sort((a, b) => ordinal(a.date) - ordinal(b.date));
   const avant = ordered[0].amount;
   const apres = ordered[ordered.length - 1].amount;
-  if (avant <= 0 || apres < avant * 1.05) return null;
+  if (avant <= 0 || apres < avant * SILENT_INCREASE_RATIO) return null;
   return {
     pct: Math.round((apres / avant - 1) * 1000) / 10, // arrondi 1 décimale
     avantEur: Math.round(avant * 100) / 100,
@@ -506,7 +533,7 @@ function detectFlux(
   monthCutoff: number,
 ): FluxItem[] {
   const flux: FluxItem[] = [];
-  const prevCutoff = monthCutoff - 30;
+  const prevCutoff = monthCutoff - DAYS_PER_MONTH;
 
   const recentByMerchant = new Map<string, Tx[]>();
   const prevByMerchant = new Map<string, Tx[]>();

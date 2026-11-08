@@ -13,10 +13,10 @@
 // ---------------------------------------------------------------------------
 
 import { call } from "@/lib/billing/stripe";
+import { SITE_URL } from "@/lib/site";
 
 export const STRIPE_PORTAL_HOST = "billing.stripe.com";
 const TEST_CARD_PAYMENT_METHOD = "pm_card_visa";
-const PORTAL_RETURN_URL = "https://kerdaxis.com";
 const CANCELLATION_REASONS = ["too_expensive", "missing_features", "unused", "other"];
 
 export interface PortalTarget {
@@ -110,7 +110,7 @@ export async function openPortalSession(customerId: string, configurationId?: st
   const portal = await call<{ url: string }>("POST", "/billing_portal/sessions", {
     customer: customerId,
     configuration: configurationId ?? (await ensurePortalConfiguration()),
-    return_url: PORTAL_RETURN_URL,
+    return_url: SITE_URL,
   });
   return portal.url;
 }

@@ -11,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import type { Lang } from "@/lib/types";
 import { detectLang, PITCH } from "@/lib/i18n";
 import { signup, login, me, logout, resendVerification, type Account } from "@/lib/account";
+import { WAITLIST_URL } from "@/lib/site";
 
 // Rend **gras** dans un texte.
 function emph(text: string, key: string): React.ReactNode[] {
@@ -48,7 +49,6 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
   const [fCgv, setFCgv] = useState(false);
   const [resent, setResent] = useState(false);
 
-  const WAITLIST_URL = "https://argentier-mcp.bonjour-e83.workers.dev/waitlist";
   const storeEmail = async (address: string, source: string) => {
     try {
       await fetch(WAITLIST_URL, {

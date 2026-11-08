@@ -11,6 +11,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { AnalyzeResult, Lang, Lever, Localized, Nature, NatureSlice, Risk } from "@/lib/types";
 import { buildPlanCsv, planFilename } from "@/lib/export";
 import { MOCK } from "@/lib/mock";
+import { WAITLIST_URL } from "@/lib/site";
 import { categorizerName, detectLang, eur as eurFmt, LANGS, LOCALE, natureLabel, PITCH, riskLabel, tr } from "@/lib/i18n";
 import { EUROPE_PATHS, EUROPE_VIEWBOX, EU_CITY_XY } from "@/lib/europeMap";
 import ExecutionPanel, { launchCancellation } from "./ExecutionPanel";
@@ -187,7 +188,7 @@ export default function Kerdaxis() {
     e.preventDefault();
     if (!qEmail.includes("@")) return;
     try {
-      await fetch("https://argentier-mcp.bonjour-e83.workers.dev/waitlist", {
+      await fetch(WAITLIST_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: qEmail.trim().toLowerCase(), lang, source: "connect-qonto-demo" }),

@@ -1,9 +1,10 @@
 import React from "react";
 import { BrandMark } from "@/app/dashboard/Icon";
 import { DASHBOARD_FONT_CLASS } from "@/app/dashboard/fonts";
+import { SITE_URL } from "@/lib/site";
 import "./auth.css";
 
-const SITE_URL = "https://kerdaxis.com";
+const SITE_HOST = new URL(SITE_URL).host;
 
 /** Night header band and centered card area shared by the access pages. */
 export function AuthShell({ children }: { children: React.ReactNode }): React.ReactElement {
@@ -15,7 +16,7 @@ export function AuthShell({ children }: { children: React.ReactNode }): React.Re
             <BrandMark />
             <span>Kerdaxis</span>
           </a>
-          <a className="ka-back" href={SITE_URL}>← kerdaxis.com</a>
+          <a className="ka-back" href={SITE_URL}>← {SITE_HOST}</a>
         </div>
       </header>
       <main className="ka-main">{children}</main>
