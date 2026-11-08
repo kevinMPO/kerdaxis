@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AnalyzeResult, Lang, Lever, LeverEvidence, Localized, UnverifiedReason } from "@/lib/types";
 import { MOCK } from "@/lib/mock";
+import { leverProposal } from "@/lib/lever-text";
 import { detectLang, eur as eurFmt, LANGS } from "@/lib/i18n";
 import { buildPlanCsv, planFilename } from "@/lib/export";
 import { parseIntent } from "@/lib/voice/intents";
@@ -66,7 +67,7 @@ interface PricingResponse {
   verified: boolean;
   note?: string;
   pricing:
-    | { status: "sourced"; saving: number; evidence: LeverEvidence; to?: string }
+    | { status: "sourced"; saving: number; evidence: LeverEvidence; to?: string; toLabel?: Localized }
     | { status: "unverified"; reason: Exclude<UnverifiedReason, "web_down"> }
     | null;
 }
@@ -94,6 +95,7 @@ function applyPricing(lever: Lever, response: PricingResponse | null): Lever {
       basis: "sourced",
       evidence: pricing.evidence,
       to: pricing.to ?? pricing.evidence.offer.name,
+      toLabel: pricing.toLabel,
       active: lever.risk === "safe",
       unverifiedReason: undefined,
     };
@@ -370,7 +372,7 @@ export function useDashboard(): Dashboard {
           body: JSON.stringify({
             merchant: lever.label,
             action: lever.action ?? "renegotiate",
-            alternative: lever.to,
+            alternative: leverProposal(lever, lang),
             savingMonthly: lever.saving,
             savingAnnual: lever.saving * 12,
             lang,

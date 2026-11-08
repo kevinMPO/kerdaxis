@@ -61,25 +61,25 @@ export const MOCK: AnalyzeResult = {
     // Kerdaxis : fournisseur FICTIF dont nous contrôlons le portail de démo
     // (dossier portal/). Le plus gros levier actif → cible de l'Autopilote,
     // qui le résilie réellement via un agent H Company.
-    { id: "nuvio", label: "Nuvio CRM", to: "résilier · aucune connexion depuis 90 j", saving: 129, risk: "med", active: true, action: "cancel", monthly: 129, basis: "observed" },
+    { id: "nuvio", label: "Nuvio CRM", to: "résilier · aucune connexion depuis 90 j", toLabel: { fr: "résilier · aucune connexion depuis 90 j", en: "cancel · no sign-in for 90 days" }, saving: 129, risk: "med", active: true, action: "cancel", monthly: 129, basis: "observed" },
     // Kerdaxis : fournisseur FICTIF facturé par Stripe (mode test). L'agent H
     // résilie dans le VRAI portail client de Stripe, au parcours recherché dans
     // la doc officielle. Inactif par défaut : les totaux de la démo ne bougent pas.
-    { id: "lumen", label: "Lumen Analytics", to: "résilier · facturé via Stripe", saving: 39, risk: "med", active: false, action: "cancel", monthly: 39, basis: "observed" },
-    { id: "inst", label: "Instantly", to: "1 seul workspace", saving: 86, risk: "safe", active: true, action: "consolidate", monthly: 172, basis: "observed" },
-    { id: "gpt", label: "ChatGPT", to: "Claude seul", saving: 84, risk: "med", active: true, action: "cancel", monthly: 84, basis: "observed" },
-    { id: "fx", label: "Frais FX / ATM", to: "carte Wise / Revolut", saving: 43, risk: "safe", active: true, action: "switch", monthly: 43, basis: "observed" },
-    { id: "nesp", label: "Nespresso abo", to: "achat ponctuel", saving: 42, risk: "med", active: true, action: "cancel", monthly: 42, basis: "observed" },
-    { id: "figma", label: "Figma", to: "revenir au tarif précédent", saving: 6, risk: "safe", active: true, action: "renegotiate", monthly: 48, basis: "observed", hausse: { pct: 14.3, avantEur: 42, apresEur: 48 } },
-    { id: "gw", label: "Google Workspace ×2", to: "1 compte", saving: 29, risk: "safe", active: true, action: "consolidate", monthly: 58, basis: "observed" },
-    { id: "loom", label: "Loom", to: "capture native", saving: 23, risk: "med", active: true, action: "cancel", monthly: 23, basis: "observed" },
-    { id: "uber", label: "Uber One", to: "couper", saving: 7, risk: "med", active: true, action: "cancel", monthly: 7, basis: "observed" },
-    { id: "waa", label: "Waalaxy", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 49, pole: "Outbound / Sales", basis: "pending" },
-    { id: "repl", label: "Replit", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 25, pole: "IA & Dev", basis: "pending" },
-    { id: "hey", label: "HeyGen", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "downgrade", monthly: 29, pole: "Marketing Ads", basis: "pending" },
-    { id: "make", label: "Make", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 10, pole: "IA & Dev", basis: "pending" },
-    { id: "ring", label: "Ringover", to: "prix à vérifier sur le web", saving: 0, risk: "hard", active: false, action: "renegotiate", monthly: 63, pole: "Bureau / Telco / Banque", basis: "pending" },
-    { id: "hub", label: "HubSpot", to: "prix à vérifier sur le web", saving: 0, risk: "hard", active: false, action: "switch", monthly: 60, pole: "Outbound / Sales", basis: "pending" },
+    { id: "lumen", label: "Lumen Analytics", to: "résilier · facturé via Stripe", toLabel: { fr: "résilier · facturé via Stripe", en: "cancel · billed through Stripe" }, saving: 39, risk: "med", active: false, action: "cancel", monthly: 39, basis: "observed" },
+    { id: "inst", label: "Instantly", to: "1 seul workspace", toLabel: { fr: "1 seul workspace", en: "a single workspace" }, saving: 86, risk: "safe", active: true, action: "consolidate", monthly: 172, basis: "observed" },
+    { id: "gpt", label: "ChatGPT", to: "Claude seul", toLabel: { fr: "Claude seul", en: "Claude only" }, saving: 84, risk: "med", active: true, action: "cancel", monthly: 84, basis: "observed" },
+    { id: "fx", label: "Frais FX / ATM", labelText: { fr: "Frais FX / ATM", en: "FX / ATM fees" }, to: "carte Wise / Revolut", toLabel: { fr: "carte Wise / Revolut", en: "Wise / Revolut card" }, saving: 43, risk: "safe", active: true, action: "switch", monthly: 43, basis: "observed" },
+    { id: "nesp", label: "Nespresso abo", to: "achat ponctuel", toLabel: { fr: "achat ponctuel", en: "one-off purchase" }, saving: 42, risk: "med", active: true, action: "cancel", monthly: 42, basis: "observed" },
+    { id: "figma", label: "Figma", to: "revenir au tarif précédent", toLabel: { fr: "revenir au tarif précédent", en: "go back to the previous price" }, saving: 6, risk: "safe", active: true, action: "renegotiate", monthly: 48, basis: "observed", hausse: { pct: 14.3, avantEur: 42, apresEur: 48 } },
+    { id: "gw", label: "Google Workspace ×2", to: "1 compte", toLabel: { fr: "1 compte", en: "a single account" }, saving: 29, risk: "safe", active: true, action: "consolidate", monthly: 58, basis: "observed" },
+    { id: "loom", label: "Loom", to: "capture native", toLabel: { fr: "capture native", en: "built-in screen capture" }, saving: 23, risk: "med", active: true, action: "cancel", monthly: 23, basis: "observed" },
+    { id: "uber", label: "Uber One", to: "couper", toLabel: { fr: "couper", en: "cancel" }, saving: 7, risk: "med", active: true, action: "cancel", monthly: 7, basis: "observed" },
+    { id: "waa", label: "Waalaxy", to: "prix à vérifier sur le web", toLabel: { fr: "prix à vérifier sur le web", en: "price to check on the web" }, saving: 0, risk: "med", active: false, action: "switch", monthly: 49, pole: "Outbound / Sales", basis: "pending" },
+    { id: "repl", label: "Replit", to: "prix à vérifier sur le web", toLabel: { fr: "prix à vérifier sur le web", en: "price to check on the web" }, saving: 0, risk: "med", active: false, action: "switch", monthly: 25, pole: "IA & Dev", basis: "pending" },
+    { id: "hey", label: "HeyGen", to: "prix à vérifier sur le web", toLabel: { fr: "prix à vérifier sur le web", en: "price to check on the web" }, saving: 0, risk: "med", active: false, action: "downgrade", monthly: 29, pole: "Marketing Ads", basis: "pending" },
+    { id: "make", label: "Make", to: "prix à vérifier sur le web", toLabel: { fr: "prix à vérifier sur le web", en: "price to check on the web" }, saving: 0, risk: "med", active: false, action: "switch", monthly: 10, pole: "IA & Dev", basis: "pending" },
+    { id: "ring", label: "Ringover", to: "prix à vérifier sur le web", toLabel: { fr: "prix à vérifier sur le web", en: "price to check on the web" }, saving: 0, risk: "hard", active: false, action: "renegotiate", monthly: 63, pole: "Bureau / Telco / Banque", basis: "pending" },
+    { id: "hub", label: "HubSpot", to: "prix à vérifier sur le web", toLabel: { fr: "prix à vérifier sur le web", en: "price to check on the web" }, saving: 0, risk: "hard", active: false, action: "switch", monthly: 60, pole: "Outbound / Sales", basis: "pending" },
   ],
   flux: [
     {

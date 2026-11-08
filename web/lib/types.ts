@@ -116,8 +116,12 @@ export interface LeverEvidence {
 export interface Lever {
   id: string;
   label: string;
-  /** Alternative / action lisible (« 1 seul workspace », « Claude seul »…). */
+  /** Alternative / action lisible (« 1 seul workspace », « Claude seul »…), en français. */
   to: string;
+  /** Même proposition, localisée pour l'écran. Absent : afficher `to`. */
+  toLabel?: Localized;
+  /** Nom affiché localisé, quand le moteur nomme lui-même le levier (frais de change). */
+  labelText?: Localized;
   /** Économie mensuelle en € — calculée par le moteur, jamais par le LLM. */
   saving: number;
   /** Économie annuelle en € = saving × 12, calculée par le moteur (jamais un
@@ -221,8 +225,10 @@ export interface MerchantVerdict {
   pole: Pole;
   isSubscription: boolean;
   action: LeverAction;
-  /** Texte de l'alternative (vide si action = keep). */
+  /** Texte de l'alternative, en français (vide si action = keep). */
   alternative: string;
+  /** Même texte en anglais, pour l'écran ; absent : on retombe sur `alternative`. */
+  alternativeEn?: string;
   /**
    * Motif du levier, OPTIONNEL. Le LLM ne l'émet pas : le moteur le dérive
    * (récurrence, action, frais de change). L'API moteur peut le fournir pour

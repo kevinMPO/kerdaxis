@@ -81,6 +81,7 @@ L'action est une ÉTIQUETTE — tu ne dis pas combien on économise, le moteur l
 - "cancel" : outil dormant ou superflu.
 - "renegotiate" : contrat renégociable (télécom, banque).
 - "keep" : rien à optimiser, alternative = "".
+"alternative" est un texte court en français ; "alternativeEn" est le même texte en anglais.
 Le risque : "safe" (sans perte de capacité), "med" (à valider), "hard" (projet, changement lourd).
 Ne propose jamais de couper un outil manifestement critique (banque, assurance obligatoire).`;
 
@@ -98,6 +99,7 @@ const SCHEMA = {
           isSubscription: { type: "boolean" },
           action: { type: "string", enum: ACTIONS },
           alternative: { type: "string" },
+          alternativeEn: { type: "string" },
           risk: { type: "string", enum: RISKS },
         },
         required: [
@@ -107,6 +109,7 @@ const SCHEMA = {
           "isSubscription",
           "action",
           "alternative",
+          "alternativeEn",
           "risk",
         ],
         additionalProperties: false,
@@ -127,6 +130,7 @@ const VerdictsSchema = z.object({
       isSubscription: z.boolean(),
       action: z.enum(ACTIONS),
       alternative: z.string(),
+      alternativeEn: z.string().optional(),
       risk: z.enum(RISKS),
     }),
   ),
@@ -264,10 +268,12 @@ function ruleVerdict(m: MerchantInput): MerchantVerdict {
   const { nature, pole } = classifyRule(m.name);
   let action: LeverAction = "keep";
   let alternative = "";
+  let alternativeEn = "";
   let risk: Risk = "safe";
   if (nature === "pilotable" && m.isRecurring) {
     action = "renegotiate";
     alternative = "revoir le plan / le tarif";
+    alternativeEn = "review the plan / price";
     risk = "med";
   }
   return {
@@ -277,6 +283,7 @@ function ruleVerdict(m: MerchantInput): MerchantVerdict {
     isSubscription: m.isRecurring && nature === "pilotable",
     action,
     alternative,
+    alternativeEn,
     risk,
   };
 }

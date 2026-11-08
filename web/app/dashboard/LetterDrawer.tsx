@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import type { Dashboard } from "./use-dashboard";
+import { leverName, leverProposal } from "@/lib/lever-text";
 import { LaunchButton } from "./RunsView";
 import { Icon } from "./Icon";
 
@@ -41,10 +42,10 @@ export function LetterDrawer({ d }: { d: Dashboard }): React.ReactElement | null
         <header className="kd-drawer-head">
           <div>
             <h2 id="drawer-title" className="kd-h2">
-              {lever.label}
+              {leverName(lever, d.lang)}
             </h2>
             <p className="kd-muted">
-              {lever.to} · <span className="kd-num kd-money">{eur(lever.saving * 12)}</span>
+              {leverProposal(lever, d.lang)} · <span className="kd-num kd-money">{eur(lever.saving * 12)}</span>
               {copy.perYear}
             </p>
           </div>
