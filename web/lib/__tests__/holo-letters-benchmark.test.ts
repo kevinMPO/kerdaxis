@@ -12,6 +12,7 @@ import { generateLetter, type LetterRequest } from "@/lib/letters";
 
 const HOLO_URL = "https://api.hcompany.ai/v1/chat/completions";
 const LINKUP_URL = "https://api.linkup.so/v1/search";
+const SCRAPER_SESSIONS_URL = "https://agp.eu.hcompany.ai/api/v2/sessions";
 const ENV_KEYS = ["HAI_API_KEY", "LINKUP_API_KEY", "HAI_MODELS_BASE_URL", "HAI_LLM_MODEL"] as const;
 
 interface CapturedCall {
@@ -206,12 +207,13 @@ describe("benchmark", () => {
 
     const result = await benchmark("Notion Labs", "IA & Dev", 48);
 
-    expect(calls.map((c) => c.url)).toEqual([LINKUP_URL, LINKUP_URL, HOLO_URL, HOLO_URL]);
+    const searchAndExtract = calls.map((c) => c.url).filter((url) => url !== SCRAPER_SESSIONS_URL);
+    expect(searchAndExtract).toEqual([LINKUP_URL, LINKUP_URL, HOLO_URL, HOLO_URL]);
     expect(result.verified).toBe(true);
     expect(result.alternatives).toEqual([]);
   });
 
-  it("should never send the observed monthly amount to Linkup or Holo", async () => {
+  it("should never send the observed monthly amount to Linkup, Holo or the scraper agent", async () => {
     process.env.HAI_API_KEY = "hai-test-key";
     process.env.LINKUP_API_KEY = "linkup-test-key";
     routes.set(LINKUP_URL, () => json(LINKUP_ANSWER));
@@ -219,7 +221,7 @@ describe("benchmark", () => {
 
     await benchmark("Notion Labs", "IA & Dev", 48.37);
 
-    expect(calls).toHaveLength(3);
+    expect(calls.map((c) => c.url)).toEqual([LINKUP_URL, LINKUP_URL, HOLO_URL, SCRAPER_SESSIONS_URL]);
     for (const call of calls) expect(JSON.stringify(call.body)).not.toContain("48.37");
   });
 
