@@ -676,9 +676,22 @@ var run=(function(){
   if(reduce.matches||!('IntersectionObserver' in window)){show(nodes.length);return;}
   var io=new IntersectionObserver(function(es){es.forEach(function(e){
     if(!e.isIntersecting)return;io.disconnect();
-    var i=0;(function step(){i++;show(i);if(i<nodes.length)setTimeout(step,reduce.matches?0:420);})();
+    // 04 · Approve is the human gate: the line waits there before Execute and Verify.
+    var i=0;(function step(){i++;show(i);if(i<nodes.length)setTimeout(step,reduce.matches?0:(nodes[i-1].classList.contains('node-human')?1300:420));})();
   });},{threshold:.35});
   io.observe(box);
+})();
+
+/* ---------- ledger: the line runs from Potential to Verified, once ---------- */
+(function(){
+  var list=document.querySelector('.ledger');if(!list||reduce.matches||!('IntersectionObserver' in window))return;
+  var items=[].slice.call(list.children);
+  list.classList.add('is-armed');
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(!e.isIntersecting)return;io.disconnect();
+    items.forEach(function(li,i){setTimeout(function(){li.classList.add('is-on');},i*220);});
+  });},{threshold:.4});
+  io.observe(list);
 })();
 
 /* ---------- business waiting list (existing /waitlist Worker, KV) ---------- */
@@ -714,7 +727,7 @@ function applyLang(next,save){
   document.title=t('metaTitle');
   var md=document.querySelector('meta[name="description"]');if(md)md.setAttribute('content',t('metaDesc'));
   run.render();
-  if(save){try{localStorage.setItem('kx-lang',lang);}catch(e){}}
+  if(save){document.documentElement.classList.add('hl-static');try{localStorage.setItem('kx-lang',lang);}catch(e){}}
 }
 [].forEach.call(document.querySelectorAll('[data-lang]'),function(b){b.addEventListener('click',function(){applyLang(b.getAttribute('data-lang'),true);});});
 var initial='en';
