@@ -1,11 +1,6 @@
-import Argentier from "../Argentier";
-import AccountBar from "./AccountBar";
+import { Dashboard } from "../dashboard/Dashboard";
+import { DASHBOARD_FONT_CLASS } from "../dashboard/fonts";
 
 export default function DemoPage() {
-  return (
-    <>
-      <Argentier />
-      <AccountBar />
-    </>
-  );
+  return <Dashboard fontClassName={DASHBOARD_FONT_CLASS} />;
 }
