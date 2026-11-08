@@ -12,6 +12,7 @@ import { z } from "zod";
 import { build } from "./lib/engine";
 import { categorizeByRules, classifyEI, type MerchantInput } from "./lib/categorize";
 import type { Tx } from "./lib/types";
+import { parseWaitlistBody } from "./waitlist";
 import {
   handleSignup,
   handleLogin,
@@ -271,23 +272,15 @@ export default {
           { status: 429, headers: CORS },
         );
       }
-      let email = "";
-      let lang = "";
-      let source = "";
-      try {
-        const body = (await request.json()) as { email?: string; lang?: string; source?: string };
-        email = (body.email ?? "").trim().toLowerCase();
-        lang = (body.lang ?? "").slice(0, 5);
-        source = (body.source ?? "").slice(0, 40);
-      } catch {
-        /* body invalide */
+      // Liste d'attente Business ET demandes de démo cabinets (kind = "partner").
+      const parsed = parseWaitlistBody(await request.json().catch(() => null));
+      if (!parsed.ok) {
+        return Response.json({ ok: false, error: parsed.error }, { status: 400, headers: CORS });
       }
-      if (!email.includes("@") || email.length < 5 || email.length > 200) {
-        return Response.json({ ok: false, error: "invalid_email" }, { status: 400, headers: CORS });
-      }
+      if ("bot" in parsed) return Response.json({ ok: true }, { headers: CORS });
       await env.WAITLIST.put(
-        `wl:${email}`,
-        JSON.stringify({ email, lang, source, at: new Date().toISOString() }),
+        parsed.key,
+        JSON.stringify({ ...parsed.entry, at: new Date().toISOString() }),
       );
       return Response.json({ ok: true }, { headers: CORS });
     }
