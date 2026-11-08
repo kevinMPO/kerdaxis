@@ -1,147 +1,125 @@
-# Base de données — socle multi-locataire (Cloudflare D1)
+# Database: multi-tenant base (Cloudflare D1)
 
-Ce dossier contient le **schéma SQL** de Kerdaxis. La couche d'accès typée qui
-l'exploite est dans [`../lib/db/tenant.ts`](../lib/db/tenant.ts) ; ses tests
-sont dans [`../lib/db/__tests__/tenant.test.ts`](../lib/db/__tests__/tenant.test.ts).
+This folder holds Kerdaxis's **SQL schema**. The typed access layer that uses it is
+[`../lib/db/tenant.ts`](../lib/db/tenant.ts); its tests are in
+[`../lib/db/__tests__/tenant.test.ts`](../lib/db/__tests__/tenant.test.ts).
 
-| Fichier | Rôle |
+| File | Role |
 |---|---|
-| `0001_init.sql` | Migration initiale : `organizations`, `decisions`, `audit_log` + index. Idempotente. |
-| `0002_accounts_executions.sql` | Comptes, inscriptions à l'essai, exécutions agent. Idempotente. |
-| `0003_market_benchmarks.sql` | Cache 30 jours des prix publics (Linkup + Holo). Web public uniquement, sans `org_id`. Idempotente. |
-| `0004_demo_results.sql` | Résultat du jour de la démo publique (relevé fictif), partagé entre isolats. Idempotente. |
+| `0001_init.sql` | Initial migration: `organizations`, `decisions`, `audit_log` and their indexes. |
+| `0002_accounts_executions.sql` | Kerdaxis accounts (`accounts`), trial sign-ups (`leads`), agent approvals and executions (`exec_records`). |
+| `0003_market_benchmarks.sql` | 30-day cache of public prices (Linkup + Holo). Public web only, no `org_id`. |
+| `0004_demo_results.sql` | Today's result of the public demo (fictional statement), shared between isolates. |
+| `0005_cancel_channels.sql` | 30-day cache of "can this supplier be cancelled online?" (Linkup). Public web only, no `org_id`. |
 
-## Ce que le schéma garantit
+Every migration is idempotent (`CREATE TABLE / CREATE INDEX IF NOT EXISTS`, no `DROP`).
 
-- **Une ligne = un locataire.** Chaque table métier porte un `org_id`. Toute
-  fonction de `tenant.ts` prend `orgId` en premier paramètre métier et l'injecte
-  dans sa clause `WHERE` : aucune requête ne peut traverser deux organisations.
-- **La base ne calcule aucun euro.** Les montants arrivent déjà calculés par
-  `lib/engine.ts` (règle 2 du projet). Pas de vue, pas de trigger, pas de
-  colonne générée qui dériverait un montant.
-- **La machine à états est contrainte par la base**, pas seulement par le code :
-  `CHECK (statut IN ('approuve', 'refuse', 'prouve'))`. Le flux réel est
-  `approuve | refuse` → `prouve` (état terminal, atteint quand la preuve J+30
-  est constatée).
-- **`audit_log` est immuable** : `tenant.ts` n'expose ni `UPDATE` ni `DELETE`
-  dessus. C'est le journal « qui a lu quoi, quand, avec quelle issue » que
-  réclame un DAF.
-- **Horodatages** : entiers = epoch en **millisecondes UTC** (`Date.now()`).
-  Seule `source_date` est une chaîne ISO `AAAA-MM-JJ` (date de publication de la
-  source d'un prix, règle 4).
+## What the schema guarantees
 
-## 1. Créer la base
+- **Tenant data is isolated by `org_id`.** Every table that holds a tenant's data carries an
+  `org_id`. Every function in `tenant.ts` takes `orgId` as its first business parameter and puts it
+  in its `WHERE` clause: no query can cross two organizations. The caches (`market_benchmarks`,
+  `cancel_channels`, `demo_results`) hold only public web or fictional data, so they are shared.
+- **The database computes no euro.** Amounts arrive already computed by `lib/engine/` (project
+  rule 2). No view, no trigger, no generated column that would derive an amount.
+- **The state machine is enforced by the database**, not only by the code:
+  `CHECK (statut IN ('approuve', 'refuse', 'prouve'))`. The real flow is
+  `approuve | refuse` → `prouve` (terminal state, reached when the D+30 proof is observed).
+- **`audit_log` is immutable**: `tenant.ts` exposes neither `UPDATE` nor `DELETE` on it. It is the
+  "who read what, when, with what outcome" log a CFO asks for.
+- **Timestamps**: integers are epoch **milliseconds UTC** (`Date.now()`). Only `source_date` is an
+  ISO `YYYY-MM-DD` string (publication date of a price's source, rule 4).
 
-Toutes les commandes se lancent **depuis `web/`** (c'est là que vit
-`wrangler.jsonc`). `--location weur` garde les données en Europe.
+## 1. Create the database
+
+Run every command **from `web/`** (that is where `wrangler.jsonc` lives). `--location weur` keeps
+the data in Europe. The production database is named `argentier`.
 
 ```bash
 cd web
-npx wrangler d1 create kerdaxis --location weur
+npx wrangler d1 create argentier --location weur
 ```
 
-Wrangler affiche l'`database_id`. Le bloc est **déjà** dans
-`web/wrangler.jsonc`, avec un identifiant à remplacer :
+Wrangler prints the `database_id`. The block is **already** in `web/wrangler.jsonc`; replace the id
+with the one printed above:
 
 ```jsonc
 "d1_databases": [
   {
     "binding": "ARGENTIER_DB",
-    "database_name": "kerdaxis",
-    "database_id": "<à provisionner>"   // ← le uuid renvoyé ci-dessus
+    "database_name": "argentier",
+    "database_id": "<uuid printed above>"
   }
 ]
 ```
 
-Le binding s'appelle `ARGENTIER_DB` : c'est le nom sous lequel le Worker reçoit
-l'objet `D1Database`. `lib/runtime/bindings.ts` va le chercher et rend `null`
-quand il n'existe pas (Vercel, `next dev`, tests) — dans ce cas l'analyse
-fonctionne, mais rien n'est journalisé.
+The binding is named `ARGENTIER_DB`: it is the name under which the Worker receives the
+`D1Database` object. `lib/runtime/bindings.ts` looks it up and returns `null` when it does not
+exist (`next dev`, tests). In that case the analysis works, but nothing is logged.
 
-## 2. Appliquer la migration
+## 2. Apply the migrations
 
-En local (base SQLite de `wrangler dev`, dans `.wrangler/state`) :
+Locally (the `wrangler dev` SQLite database, in `.wrangler/state`), then in production (remote D1),
+in order:
 
 ```bash
 cd web
-npx wrangler d1 execute kerdaxis --local --file=./db/0001_init.sql
+for f in db/000*.sql; do npx wrangler d1 execute argentier --local  --file="./$f"; done
+for f in db/000*.sql; do npx wrangler d1 execute argentier --remote --file="./$f"; done
 ```
 
-En production (base D1 distante) :
+Replaying a migration on an up-to-date database does nothing and destroys no data.
+
+Without `market_benchmarks` or `cancel_channels`, benchmarks and cancel-channel checks still work:
+the cache stays silent and every lookup goes back to the web.
+
+> In-app variant: `applyMigrations(db)` in `lib/db/tenant.ts` runs `0001_init.sql` from the Worker
+> (the file is embedded as a constant, since a Worker has no file system at runtime; a test forbids
+> any drift between the constant and the file). Useful to bootstrap a test or preview database
+> without the CLI. Later migrations are applied with the CLI.
+
+## 3. Check
 
 ```bash
 cd web
-npx wrangler d1 execute kerdaxis --remote --file=./db/0001_init.sql
-```
-
-Même chose pour les migrations suivantes (base réelle : `argentier`, cf. `wrangler.jsonc`) :
-
-```bash
-cd web
-npx wrangler d1 execute argentier --local  --file=./db/0003_market_benchmarks.sql
-npx wrangler d1 execute argentier --remote --file=./db/0003_market_benchmarks.sql
-npx wrangler d1 execute argentier --remote --file=./db/0004_demo_results.sql
-npx wrangler d1 execute argentier --remote --file=./db/0005_cancel_channels.sql
-```
-
-Sans la table `market_benchmarks`, le benchmark marche quand même : le cache se tait
-et chaque recherche repart sur le web.
-
-La migration est **idempotente** (`CREATE TABLE / CREATE INDEX IF NOT EXISTS`,
-aucun `DROP`) : la rejouer sur une base déjà à jour ne fait rien et ne détruit
-aucune donnée.
-
-> Variante applicative : `applyMigrations(db)` dans `lib/db/tenant.ts` exécute
-> exactement le même SQL depuis le Worker (le fichier y est embarqué en
-> constante, faute de système de fichiers à l'exécution ; un test interdit toute
-> dérive entre la constante et `0001_init.sql`). Utile pour amorcer une base de
-> test ou de preview sans passer par le CLI.
-
-## 3. Vérifier
-
-```bash
-cd web
-# Les trois tables sont-elles là ?
-npx wrangler d1 execute kerdaxis --remote \
+# Are the tables there?
+npx wrangler d1 execute argentier --remote \
   --command "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"
 
-# Les trois index ?
-npx wrangler d1 execute kerdaxis --remote \
+# The indexes?
+npx wrangler d1 execute argentier --remote \
   --command "SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%'"
 
-# Le CHECK de la machine à états est-il bien posé ?
-npx wrangler d1 execute kerdaxis --remote \
+# Is the state machine CHECK in place?
+npx wrangler d1 execute argentier --remote \
   --command "SELECT sql FROM sqlite_master WHERE name = 'decisions'"
 ```
 
-Remplacez `--remote` par `--local` pour interroger la base de développement.
+Replace `--remote` with `--local` to query the development database.
 
-## 4. Ajouter une migration plus tard
+## 4. Add a migration later
 
-1. Créez `db/000N_<sujet>.sql`, en ne mettant que des instructions idempotentes
-   et **non destructrices** (SQLite ne sait pas supprimer une colonne
-   proprement : préférez ajouter une colonne nullable).
-2. Ajoutez-la à la constante correspondante et au tableau `MIGRATIONS` de
-   `lib/db/tenant.ts`, pour que `applyMigrations` la joue aussi.
-3. Appliquez-la avec la commande de l'étape 2, en local **puis** en distant.
+1. Create `db/000N_<topic>.sql` with idempotent, **non-destructive** statements only (SQLite cannot
+   drop a column cleanly: prefer adding a nullable column).
+2. Add it to the table at the top of this file.
+3. Apply it with the commands of step 2, locally **then** remotely.
 
-## En cas de fausse manœuvre
+## If something goes wrong
 
-D1 conserve un historique (Time Travel) sur 30 jours :
+D1 keeps a 30-day history (Time Travel):
 
 ```bash
 cd web
-npx wrangler d1 time-travel info kerdaxis
-npx wrangler d1 time-travel restore kerdaxis --timestamp <ISO 8601>
+npx wrangler d1 time-travel info argentier
+npx wrangler d1 time-travel restore argentier --timestamp <ISO 8601>
 ```
 
 ## Tests
 
-Les tests n'ouvrent **aucune** base réelle : ils branchent un faux `D1Database`
-qui enregistre le SQL émis et évalue le sous-ensemble de SQL que `tenant.ts`
-produit. Ils échouent bruyamment si l'isolation par `org_id` disparaît d'un
-`WHERE`, si une valeur est concaténée dans une chaîne SQL, ou si le `CHECK` des
-statuts quitte la migration.
+The tests open **no** real database: they plug in a fake `D1Database` that records the emitted SQL
+and evaluates the subset of SQL that `tenant.ts` produces. They fail loudly if `org_id` isolation
+disappears from a `WHERE`, if a value is concatenated into an SQL string, or if the status `CHECK`
+leaves the migration.
 
 ```bash
 cd web

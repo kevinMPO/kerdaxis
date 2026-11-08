@@ -78,6 +78,18 @@ H Company sur le portail, arret avant le clic final, ou lettre) → TRACE (D1).
 | `my-app/` | Worker des comptes (`/auth/*`) et de la liste d'attente (`/waitlist`). |
 | `.claude/settings.json` | Le garde-fou des agents de code : read-only Qonto (deny > allow). |
 
+## Documentation a tenir a jour
+
+Tout changement d'architecture (nouveau service ou fournisseur externe, nouveau flux de
+donnees, module deplace ou supprime, nouvelle table D1, etape ajoutee ou retiree dans la
+methode) se reporte dans le meme commit :
+
+- dans le `README.md` (section « Architecture » et tout passage devenu faux) ;
+- dans le schema visuel du workflow (le diagramme mermaid de la section « Architecture »
+  du README) si une boite, une fleche ou un flux change ;
+- dans ce fichier (`AGENTS.md`) si la methode, une regle metier ou le tableau « Fichiers »
+  est concerne.
+
 ## Comment relancer
 
 ```bash
