@@ -17,7 +17,7 @@
       #tag { position: absolute; left: 60px; top: 66px; height: 56px; padding: 0 22px; border-radius: 28px; background: #1a1a23; border: 2px solid #2a2a36;
         font-weight: 700; font-size: 30px; line-height: 52px; white-space: nowrap; }
       #tag i { display: inline-block; width: 12px; height: 12px; margin-right: 12px; border-radius: 6px; background: #d4f53c; vertical-align: 2px; }
-      #brand { position: absolute; left: 60px; top: 80px; height: 60px; padding: 0 24px; border-radius: 30px; background: rgba(13, 13, 18, 0.9); font-family: "Fira Code", monospace; font-size: 30px; line-height: 60px; letter-spacing: 0.12em; color: #d4f53c; white-space: nowrap; }
+      #unused-brand { position: absolute; left: 60px; top: 80px; height: 60px; padding: 0 24px; border-radius: 30px; background: rgba(13, 13, 18, 0.9); font-family: "Fira Code", monospace; font-size: 30px; line-height: 60px; letter-spacing: 0.12em; color: #d4f53c; white-space: nowrap; }
       #proofcap { position: absolute; left: 0; top: 900px; width: 1080px; text-align: center; }
       #proofcap b { display: block; font-weight: 800; font-size: 66px; letter-spacing: -0.03em; line-height: 1.15; }
       #proofcap span { display: block; margin-top: 18px; font-size: 38px; color: #a9a9bb; }
@@ -34,55 +34,59 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="21.5" data-width="1080" data-height="1920">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="20.3" data-width="1080" data-height="1920">
       <!-- Built by tools/build_face.py. Kevin's iPhone take (voice kept on the video), film v4 inserts muted. -->
       <div id="facebox">
-        <video id="face" class="clip" data-layout-allow-overflow src="assets/media/face.mp4" data-start="0" data-duration="12.65" data-track-index="1" data-has-audio="true" data-volume="1" playsinline></video>
+        <video id="face" class="clip" data-layout-allow-overflow src="assets/media/face2.mp4" data-start="0" data-duration="11.5" data-track-index="1" data-has-audio="true" data-volume="1" playsinline></video>
       </div>
-      <div id="brand" class="clip" data-start="0" data-duration="5.6" data-track-index="4">KERDAXIS · YOUR AI CFO</div>
       <div id="filmbox">
-        <div id="tag" class="clip" data-start="5.6" data-duration="7.05" data-track-index="5"><i></i>Recorded H Company run · demo portal</div>
-        <video id="ins-trap" class="clip film" src="assets/media/film.mp4" data-start="5.6" data-duration="2.55" data-media-start="2.9" data-track-index="3" muted playsinline></video>
-        <video id="ins-stop" class="clip film" src="assets/media/film.mp4" data-start="8.15" data-duration="4.5" data-media-start="8.02" data-track-index="3" muted playsinline></video>
-        <video id="ins-proof" class="clip film" src="assets/media/film.mp4" data-start="12.65" data-duration="4.3" data-media-start="44.9" data-track-index="3" muted playsinline></video>
+        <div id="tag" class="clip" data-start="5.4" data-duration="6.1" data-track-index="5" style="z-index: 5"><i></i>H Company agent · recorded run, demo portal</div>
+        <div id="pn-dashv" class="clip" data-composition-id="dashv" data-composition-src="compositions/dashv.html" data-start="0.0" data-duration="4.0" data-track-index="3" data-track-kind="graphics" data-width="1080" data-height="820"></div>
+        <div id="pn-path" class="clip" data-composition-id="path" data-composition-src="compositions/path.html" data-start="4.0" data-duration="1.4" data-track-index="3" data-track-kind="graphics" data-width="1080" data-height="820"></div>
+        <video id="ins-trap" class="clip film" src="assets/media/film.mp4" data-start="5.4" data-duration="2.9" data-media-start="2.9" data-track-index="3" muted playsinline></video>
+        <video id="ins-stop" class="clip film" src="assets/media/film.mp4" data-start="8.3" data-duration="3.2" data-media-start="9.42" data-track-index="3" muted playsinline></video>
+        <video id="ins-proof" class="clip film" src="assets/media/film.mp4" data-start="11.5" data-duration="4.3" data-media-start="44.9" data-track-index="3" muted playsinline></video>
       </div>
-      <div id="proofcap" class="clip" data-start="12.65" data-duration="4.3" data-track-index="6"><b>5/5 cancellations<br />confirmed by Stripe</b><span>Stripe customer portal · test mode</span></div>
-      <div id="endcard" class="clip" data-start="16.95" data-duration="4.55" data-track-index="7">
+      <div id="proofcap" class="clip" data-start="11.5" data-duration="4.3" data-track-index="6"><b>5/5 cancellations<br />confirmed by Stripe</b><span>Stripe customer portal · test mode</span></div>
+      <div id="endcard" class="clip" data-start="15.8" data-duration="4.5" data-track-index="7">
         <div id="e-mark"><svg viewBox="0 0 24 24" aria-label="Kerdaxis"><defs><linearGradient id="kfs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fdc3c"/><stop offset="1" stop-color="#2e8b1f"/></linearGradient><linearGradient id="kfl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2e8b1f"/><stop offset="1" stop-color="#a6e33a"/></linearGradient></defs><rect x="2.5" y="1.5" width="6.5" height="21" rx="2.2" fill="url(#kfs)"/><path d="M11.2 12.6 19.4 22.5H22L13.6 11.2z" fill="url(#kfl)"/><path d="M3.5 22.5 16.2 1.5h5.8L9.4 22.5z" fill="#d4f53c"/></svg></div>
         <div id="e-word">Kerdaxis</div>
         <div id="e-line">Let <span id="e-ai"><span id="e-hl"></span>AI</span> do the work.</div>
         <div id="e-btn">See it live, no signup</div>
         <div id="e-url">kerdaxis.com</div>
       </div>
-      <div id="captions" class="clip" data-composition-id="captions" data-composition-src="compositions/captions.html" data-start="0" data-duration="12.65" data-track-index="2" data-track-kind="captions" data-width="1080" data-height="1920" style="z-index: 50"></div>
+      <div id="captions" class="clip" data-composition-id="captions" data-composition-src="compositions/captions.html" data-start="0" data-duration="11.5" data-track-index="2" data-track-kind="captions" data-width="1080" data-height="1920" style="z-index: 50"></div>
 
-      <audio id="bgm" class="clip" src="assets/music/bed2-long.mp3" data-start="0" data-media-start="0.24" data-duration="21.5" data-track-index="20" data-volume="1" data-fade-in="0.4" data-fade-out="1.4" data-automation="{&quot;version&quot;: 1, &quot;lanes&quot;: [{&quot;target&quot;: &quot;volume&quot;, &quot;points&quot;: [{&quot;t&quot;: 0, &quot;v&quot;: 0.1}, {&quot;t&quot;: 12.450000000000001, &quot;v&quot;: 0.1}, {&quot;t&quot;: 12.950000000000001, &quot;v&quot;: 0.42}]}]}"></audio>
-      <audio id="sfx-stamp-ign" class="clip" src="assets/sfx/stamp.mp3" data-start="7.2" data-duration="0.8" data-track-index="60" data-volume="0.45"></audio>
-      <audio id="sfx-click-yes" class="clip" src="assets/sfx/click.mp3" data-start="12.18" data-duration="0.37" data-track-index="61" data-volume="0.6"></audio>
-      <audio id="sfx-wh-proof" class="clip" src="assets/sfx/whoosh.mp3" data-start="12.45" data-duration="0.57" data-track-index="62" data-volume="0.25"></audio>
-      <audio id="sfx-hit-5" class="clip" src="assets/sfx/impact-bass-1.mp3" data-start="12.98" data-duration="2.12" data-track-index="63" data-volume="0.35"></audio>
-      <audio id="sfx-stamp-55" class="clip" src="assets/sfx/stamp.mp3" data-start="14.16" data-duration="0.8" data-track-index="64" data-volume="0.45"></audio>
-      <audio id="sfx-hit-end" class="clip" src="assets/sfx/impact-bass-2.mp3" data-start="17.05" data-duration="2.59" data-track-index="65" data-volume="0.35"></audio>
-      <audio id="sfx-pop-cta" class="clip" src="assets/sfx/pop.mp3" data-start="18.95" data-duration="0.72" data-track-index="66" data-volume="0.3"></audio>
+      <audio id="bgm" class="clip" src="assets/music/bed2-long.mp3" data-start="0" data-media-start="0.24" data-duration="20.3" data-track-index="20" data-volume="1" data-fade-in="0.4" data-fade-out="1.4" data-automation="{&quot;version&quot;: 1, &quot;lanes&quot;: [{&quot;target&quot;: &quot;volume&quot;, &quot;points&quot;: [{&quot;t&quot;: 0, &quot;v&quot;: 0.1}, {&quot;t&quot;: 11.3, &quot;v&quot;: 0.1}, {&quot;t&quot;: 11.8, &quot;v&quot;: 0.42}]}]}"></audio>
+      <audio id="sfx-pop-1" class="clip" src="assets/sfx/pop.mp3" data-start="1.39" data-duration="0.72" data-track-index="60" data-volume="0.3"></audio>
+      <audio id="sfx-pop-2" class="clip" src="assets/sfx/pop.mp3" data-start="1.75" data-duration="0.72" data-track-index="61" data-volume="0.3"></audio>
+      <audio id="sfx-pop-3" class="clip" src="assets/sfx/pop.mp3" data-start="2.1" data-duration="0.72" data-track-index="62" data-volume="0.3"></audio>
+      <audio id="sfx-wh-path" class="clip" src="assets/sfx/whoosh.mp3" data-start="3.95" data-duration="0.57" data-track-index="63" data-volume="0.25"></audio>
+      <audio id="sfx-wh-trap" class="clip" src="assets/sfx/whoosh.mp3" data-start="5.35" data-duration="0.57" data-track-index="64" data-volume="0.2"></audio>
+      <audio id="sfx-stamp-ign" class="clip" src="assets/sfx/stamp.mp3" data-start="7.0" data-duration="0.8" data-track-index="65" data-volume="0.45"></audio>
+      <audio id="sfx-click-yes" class="clip" src="assets/sfx/click.mp3" data-start="10.93" data-duration="0.37" data-track-index="66" data-volume="0.6"></audio>
+      <audio id="sfx-wh-proof" class="clip" src="assets/sfx/whoosh.mp3" data-start="11.3" data-duration="0.57" data-track-index="67" data-volume="0.25"></audio>
+      <audio id="sfx-hit-5" class="clip" src="assets/sfx/impact-bass-1.mp3" data-start="11.83" data-duration="2.12" data-track-index="68" data-volume="0.35"></audio>
+      <audio id="sfx-stamp-55" class="clip" src="assets/sfx/stamp.mp3" data-start="13.01" data-duration="0.8" data-track-index="69" data-volume="0.45"></audio>
+      <audio id="sfx-hit-end" class="clip" src="assets/sfx/impact-bass-2.mp3" data-start="15.9" data-duration="2.59" data-track-index="70" data-volume="0.35"></audio>
+      <audio id="sfx-pop-cta" class="clip" src="assets/sfx/pop.mp3" data-start="17.8" data-duration="0.72" data-track-index="71" data-volume="0.3"></audio>
     </div>
     <script>
       window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
-      // Split: the film slides in from the top, Kevin's frame moves down so his face sits in the lower half.
-      gsap.set("#filmbox", { yPercent: -100 });
-      tl.to("#filmbox", { yPercent: 0, duration: 0.45, ease: "power3.out" }, 5.6);
-      tl.to("#face", { y: 640, duration: 0.45, ease: "power3.out" }, 5.6);
-      // Proof: the film box takes the whole top, the face is gone (the face clip ends at 12.65).
-      tl.fromTo("#proofcap", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, 13.15);
+      // From frame 0: Kerdaxis in action in the top panel, Kevin in the lower part of the frame.
+      gsap.set("#face", { y: 560 });
+      // Proof: the film box takes the whole top, the face is gone (the face clip ends at 11.5).
+      tl.fromTo("#proofcap", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, 12.0);
       // End card.
-      tl.fromTo("#e-mark", { opacity: 0, y: -240, rotation: -24, scale: 0.6, transformOrigin: "50% 50%" }, { opacity: 1, y: 0, rotation: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 17.05);
-      tl.fromTo("#e-word", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, 17.349999999999998);
-      tl.fromTo("#e-line", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, 17.849999999999998);
+      tl.fromTo("#e-mark", { opacity: 0, y: -240, rotation: -24, scale: 0.6, transformOrigin: "50% 50%" }, { opacity: 1, y: 0, rotation: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 15.9);
+      tl.fromTo("#e-word", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, 16.2);
+      tl.fromTo("#e-line", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, 16.7);
       gsap.set("#e-hl", { scaleX: 0 });
-      tl.to("#e-hl", { scaleX: 1, duration: 0.4, ease: "power3.out" }, 18.15);
-      tl.fromTo("#e-btn", { opacity: 0, scale: 0.9, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.5)" }, 18.95);
-      tl.fromTo("#e-url", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 19.25);
-      tl.set({}, {}, 21.5);
+      tl.to("#e-hl", { scaleX: 1, duration: 0.4, ease: "power3.out" }, 17.0);
+      tl.fromTo("#e-btn", { opacity: 0, scale: 0.9, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.5)" }, 17.8);
+      tl.fromTo("#e-url", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.1);
+      tl.set({}, {}, 20.3);
       window.__timelines["main"] = tl;
     </script>
   </body>
