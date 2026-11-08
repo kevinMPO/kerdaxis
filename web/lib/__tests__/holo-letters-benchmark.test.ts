@@ -53,6 +53,8 @@ let fetchInitial: typeof fetch;
 beforeEach(() => {
   calls = [];
   routes = new Map();
+  // The scraper agent is off by default: a 403 fails fast, a thrown fetch would be retried as a network error.
+  routes.set(SCRAPER_SESSIONS_URL, () => json({ detail: "scraper agent off in tests" }, 403));
   for (const key of ENV_KEYS) {
     envInitial[key] = process.env[key];
     delete process.env[key];
