@@ -1,0 +1,52 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    #v-title { position: absolute; left: 110px; top: 80px; font-weight: 900; font-size: 110px; letter-spacing: -0.05em; color: #b4f768; white-space: nowrap; }
+    #v-src { position: absolute; left: 116px; top: 214px; font-weight: 700; font-size: 28px; color: #6f8389; white-space: nowrap; }
+    .pl { position: absolute; left: 110px; width: 640px; height: 136px; border-radius: 24px; border: 2px solid #26343d; background: #111a22; }
+    .pl .t { position: absolute; left: 28px; top: 22px; font-weight: 900; font-size: 40px; white-space: nowrap; }
+    .pl .s { position: absolute; left: 28px; top: 80px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; }
+    #p-firm { top: 300px; } #p-fde { top: 466px; } #p-sme { top: 632px; border-color: rgba(180,247,104,.5); }
+    #v-dash { position: absolute; left: 860px; top: 300px; width: 950px; height: 468px; border-radius: 28px; background: #ffffff; color: #17140f; }
+    #v-dash .bar { position: absolute; left: 0; top: 0; width: 950px; height: 76px; border-radius: 28px 28px 0 0; background: #e7f0ec; }
+    #v-dash .brand { position: absolute; left: 30px; top: 18px; font-weight: 900; font-size: 32px; white-space: nowrap; }
+    #v-dash .pw { position: absolute; right: 30px; top: 22px; font-weight: 700; font-size: 28px; color: #5b554c; white-space: nowrap; }
+    .cl { position: absolute; left: 24px; width: 902px; height: 112px; border-radius: 18px; border: 2px solid #e4e0d6; }
+    #cl0 { top: 100px; } #cl1 { top: 226px; } #cl2 { top: 352px; }
+    .cl .n { position: absolute; left: 24px; top: 16px; font-weight: 900; font-size: 34px; white-space: nowrap; }
+    .cl .d { position: absolute; left: 24px; top: 62px; font-weight: 700; font-size: 28px; color: #5b554c; white-space: nowrap; }
+    #v-road { position: absolute; left: 864px; top: 790px; font-weight: 700; font-size: 28px; color: #6f8389; white-space: nowrap; }
+    #v-title, #v-src, .pl, #v-dash, .cl, #v-road { opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="services" data-width="1920" data-height="1080">
+    <div id="v-title">SERVICES AS SOFTWARE</div>
+    <div id="v-src">Sequoia, “Generative AI's Act o1” (2024): sell the work, not the tool</div>
+    <div id="p-firm" class="pl"><div class="t">Accounting firms</div><div class="s">distribute it under their brand</div></div>
+    <div id="p-fde" class="pl"><div class="t">Forward Deployed Engineers</div><div class="s">adapt it to each workflow</div></div>
+    <div id="p-sme" class="pl"><div class="t">SMEs</div><div class="s">get the work done</div></div>
+    <div id="v-dash">
+      <div class="bar"></div><div class="brand">Your firm</div><div class="pw">white label · powered by Kerdaxis</div>
+        <div id="cl0" class="cl"><div class="n">Acme Conseil (demo)</div><div class="d">levers found · 1 action awaiting approval</div></div>
+        <div id="cl1" class="cl"><div class="n">Client B (illustrative)</div><div class="d">monthly review ready</div></div>
+        <div id="cl2" class="cl"><div class="n">Client C (illustrative)</div><div class="d">supplier cancellation in progress</div></div>
+    </div>
+    <div id="v-road">Go-to-market roadmap · illustrative dashboard</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 39.3. VO: "Services as Software" 0.1, "accounting firms" 1.8, "Forward Deployed Engineers" 3.5, "SMEs" 5.8.
+      tl.fromTo("#v-title", { opacity: 0, scale: 1.15, filter: "blur(10px)", transformOrigin: "0% 0%" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.25, ease: "expo.out" }, 0.05);
+      tl.fromTo("#v-src", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.4);
+      tl.fromTo("#v-dash", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, 0.9);
+      tl.fromTo("#v-road", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.2);
+      tl.fromTo("#p-firm", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.3, ease: "expo.out" }, 1.8);
+      tl.fromTo(".cl", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.15, ease: "expo.out" }, 2.1);
+      tl.fromTo("#p-fde", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.3, ease: "expo.out" }, 3.5);
+      tl.fromTo("#p-sme", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.3, ease: "expo.out" }, 5.8);
+      tl.to("#cl0", { borderColor: "#2f6f5b", backgroundColor: "#e7f0ec", duration: 0.3 }, 6.0);
+      tl.to("#root > *", { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, 7.38);
+      window.__timelines["services"] = tl;
+    })();
+  </script>
+</template>

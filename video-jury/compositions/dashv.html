@@ -1,0 +1,43 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; color: #0d0d12; }
+    #dv-cam { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; transform-origin: 0 0; }
+    #dv-cam img { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; }
+    .row { position: absolute; left: 392px; width: 1546px; height: 92px; border: 5px solid #0d0d12; border-radius: 14px; opacity: 0; }
+    #r1 { top: 596px; } #r2 { top: 697px; } #r3 { top: 798px; }
+    .num { position: absolute; left: 330px; width: 54px; height: 54px; border-radius: 27px; background: #d4f53c; border: 4px solid #0d0d12;
+      font-weight: 800; font-size: 30px; line-height: 46px; text-align: center; opacity: 0; }
+    #n1 { top: 615px; } #n2 { top: 716px; } #n3 { top: 817px; }
+    #dv-dup { position: absolute; left: 860px; top: 845px; width: 366px; height: 28px; border-radius: 6px; background: rgba(212, 245, 60, 0.6); mix-blend-mode: multiply; transform-origin: 0 50%; }
+    #dv-tag { position: absolute; left: 40px; top: 36px; height: 60px; padding: 0 24px; border-radius: 30px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 30px; line-height: 60px; white-space: nowrap; }
+    #dv-tag span { color: #a9a9bb; font-weight: 500; }
+  </style>
+  <div id="root" data-composition-id="dashv" data-width="1080" data-height="820">
+    <div id="dv-cam">
+      <img src="assets/media/dashboard.jpg" alt="Kerdaxis dashboard, ACME Conseil (demo data): Needs you, Cancel Nuvio CRM, Cancel Lumen Analytics, duplicate paid LLMs" />
+      <div id="dv-dup"></div>
+      <div id="r1" class="row" data-layout-allow-overflow></div><div id="r2" class="row" data-layout-allow-overflow></div><div id="r3" class="row" data-layout-allow-overflow></div>
+      <div id="n1" class="num">1</div><div id="n2" class="num">2</div><div id="n3" class="num">3</div>
+    </div>
+    <div id="dv-tag">Kerdaxis dashboard <span>· demo data</span></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local. "Kerdaxis" 0.26, "found" 0.78, "3" 1.39, "subscriptions" 1.56, "should cancel" 3.05-3.9.
+      // Full dashboard (s 0.54), then a push onto "Needs you"; the three lines are counted on "3 subscriptions".
+      gsap.set("#dv-cam", { x: 0, y: 136, scale: 0.54 });
+      gsap.set("#dv-dup", { scaleX: 0 });
+      tl.to("#dv-cam", { x: -300, y: -300, scale: 0.95, duration: 0.7, ease: "power3.inOut" }, 0.7);
+      [["#r1", "#n1", 1.39], ["#r2", "#n2", 1.75], ["#r3", "#n3", 2.1]].forEach(([r, n, t]) => {
+        tl.fromTo(r, { opacity: 0, scale: 1.03, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.22, ease: "expo.out" }, t);
+        tl.fromTo(n, { opacity: 0, scale: 0.4, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.28, ease: "back.out(1.8)" }, t);
+      });
+      tl.to("#dv-dup", { scaleX: 1, duration: 0.4, ease: "power2.out" }, 2.3);
+      tl.to("#dv-cam", { x: -320, y: -320, scale: 0.97, duration: 1.4, ease: "none" }, 2.5);
+      tl.set({}, {}, 4.0);
+      window.__timelines["dashv"] = tl;
+    })();
+  </script>
+</template>

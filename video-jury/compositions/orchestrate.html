@@ -1,0 +1,70 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    #g-title { position: absolute; left: 0; top: 70px; width: 1920px; text-align: center; font-weight: 900; font-size: 56px; letter-spacing: -0.03em; white-space: nowrap; }
+    #g-title span { display: inline-block; opacity: 0; margin: 0 10px; }
+    #g-title .lime { color: #b4f768; }
+    .node { position: absolute; width: 520px; height: 144px; border-radius: 24px; border: 2px solid #26343d; background: #111a22; opacity: 0; }
+    .node .t { position: absolute; left: 26px; top: 22px; font-weight: 900; font-size: 38px; letter-spacing: -0.02em; white-space: nowrap; }
+    .node .s { position: absolute; left: 26px; top: 80px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; }
+    .node.core { border: 4px solid #b4f768; background: #0f1a12; }
+    #n-eng .s2 { color: #b4f768; opacity: 0; }
+        svg#edges { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    #mas-note { position: absolute; left: 610px; top: 622px; width: 700px; text-align: center; font-weight: 700; font-size: 28px; color: #a3b4b9; opacity: 0; white-space: nowrap; }
+    #legend { position: absolute; left: 1250px; top: 846px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; opacity: 0; }
+    #legend b { color: #b4f768; }
+  </style>
+  <div id="root" data-composition-id="orchestrate" data-width="1920" data-height="1080">
+    <svg id="edges" viewBox="0 0 1920 1080" fill="none" data-layout-ignore>
+      <path id="e-llm" d="M700 540 C 660.0 540, 660.0 320, 620 320" stroke="#b4f768" stroke-width="4" />
+      <path id="e-eng" d="M700 540 C 660.0 540, 660.0 540, 620 540" stroke="#4a5b66" stroke-width="3" stroke-dasharray="12 12" />
+      <path id="e-lnk" d="M700 540 C 660.0 540, 660.0 760, 620 760" stroke="#b4f768" stroke-width="4" />
+      <path id="e-qto" d="M960 468 L960 392" stroke="#4a5b66" stroke-width="3" stroke-dasharray="12 12" />
+      <path id="e-hco" d="M960 612 L960 688" stroke="#4a5b66" stroke-width="3" stroke-dasharray="12 12" />
+      <path id="e-pol" d="M1220 540 C 1260.0 540, 1260.0 320, 1300 320" stroke="#4a5b66" stroke-width="3" stroke-dasharray="12 12" />
+      <path id="e-hum" d="M1220 540 C 1260.0 540, 1260.0 540, 1300 540" stroke="#4a5b66" stroke-width="3" stroke-dasharray="12 12" />
+      <path id="e-led" d="M1220 540 C 1260.0 540, 1260.0 760, 1300 760" stroke="#4a5b66" stroke-width="3" stroke-dasharray="12 12" />
+    </svg>
+    <div id="n-llm" class="node" style="left:100px; top:248px;"><div class="t">LLM · H Company Holo</div><div class="s">reasons, labels, explains</div></div>
+    <div id="n-eng" class="node" style="left:100px; top:468px;"><div class="t">Deterministic engine</div><div class="s">calculates every euro</div><div class="s s2">recurring · duplicates · FX fees</div></div>
+    <div id="n-lnk" class="node" style="left:100px; top:688px;"><div class="t">Linkup search</div><div class="s">market alternatives</div></div>
+    <div id="n-qto" class="node" style="left:700px; top:248px;"><div class="t">Qonto MCP</div><div class="s">bank data · read-only</div></div>
+    <div id="n-mas" class="node core" style="left:700px; top:468px;"><div class="t">Mastra</div><div class="s">orchestrates agents + tools</div></div>
+    <div id="n-hco" class="node" style="left:700px; top:688px;"><div class="t">H Company agent</div><div class="s">computer use · executes</div></div>
+    <div id="n-pol" class="node" style="left:1300px; top:248px;"><div class="t">Policy & permissions</div><div class="s">hash-bound approval · domain lock</div></div>
+    <div id="n-hum" class="node" style="left:1300px; top:468px;"><div class="t">Human approval</div><div class="s">before any irreversible click</div></div>
+    <div id="n-led" class="node" style="left:1300px; top:688px;"><div class="t">Execution ledger</div><div class="s">events · proof · audit trail</div></div>
+    <div id="mas-note">live in our risk agent · full router = target</div>
+    <div id="g-title"><span>The LLM reasons.</span><span class="lime">The engine calculates.</span><span>The harness controls.</span></div>
+    <div id="legend">━ <b>live in code</b> &nbsp;&nbsp; ┄ target architecture</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 12.0. VO: "Mastra orchestrates" 0.05, "agents and tools" 0.8, "deterministic engine" 2.2,
+      // "calculates every euro" 3.4, "agent harness controls" 6.1, "permissions" 7.5, "evidence" 8.3.
+      const pop = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: 0.9, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.4)" }, t);
+      const wire = (sel, t) => tl.fromTo(sel, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, t);
+      pop("#n-mas", 0.05);
+      tl.fromTo("#mas-note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.4);
+      pop("#n-qto", 0.6); wire("#e-qto", 0.7);
+      pop("#n-llm", 0.85); wire("#e-llm", 0.95);
+      pop("#n-lnk", 1.1); wire("#e-lnk", 1.2);
+      tl.fromTo("#legend", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.3);
+      tl.fromTo("#g-title span:nth-child(1)", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 1.4);
+      pop("#n-eng", 2.2); wire("#e-eng", 2.3);
+      tl.to("#n-eng", { borderColor: "#b4f768", duration: 0.25 }, 3.4);
+      tl.fromTo("#g-title span:nth-child(2)", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 3.4);
+      tl.to("#n-eng .s:not(.s2)", { opacity: 0, duration: 0.15 }, 4.0);
+      tl.fromTo("#n-eng .s2", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 4.1);
+      pop("#n-hco", 5.0); wire("#e-hco", 5.1);
+      pop("#n-pol", 6.1); wire("#e-pol", 6.2);
+      tl.fromTo("#g-title span:nth-child(3)", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 6.1);
+      pop("#n-hum", 6.7); wire("#e-hum", 6.8);
+      pop("#n-led", 7.9); wire("#e-led", 8.0);
+      // Push into the H Company node: the next scenes zoom in from it.
+      tl.to("#root > *:not(#n-hco)", { opacity: 0, filter: "blur(10px)", duration: 0.25, ease: "power3.in" }, 9.0);
+      window.__timelines["orchestrate"] = tl;
+    })();
+  </script>
+</template>

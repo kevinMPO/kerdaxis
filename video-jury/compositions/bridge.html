@@ -1,0 +1,27 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #b4f768; font-family: "Inter", sans-serif; color: #eef8f5; }
+    #b-iris { position: absolute; inset: 0; background: #080d13; clip-path: circle(0px at 206px 786px); }
+    #b-t { position: absolute; left: 0; top: 380px; width: 1920px; text-align: center; font-weight: 900; font-size: 190px; letter-spacing: -0.06em; white-space: nowrap; }
+    #b-t span { display: inline-block; opacity: 0; }
+    #b-t .lime { color: #b4f768; }
+    #b-s { position: absolute; left: 0; top: 610px; width: 1920px; text-align: center; font-weight: 700; font-size: 44px; color: #a3b4b9; white-space: nowrap; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="bridge" data-width="1920" data-height="1080">
+    <div id="b-iris">
+      <div id="b-t"><span>UNDER</span> <span>THE</span> <span class="lime">HOOD.</span></div>
+      <div id="b-s">How the approval becomes a verified action</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // The Approve click (frame 206, 786) opens the technical act.
+      tl.to("#b-iris", { clipPath: "circle(2400px at 206px 786px)", duration: 0.4, ease: "power3.in" }, 0);
+      tl.fromTo("#b-t span", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, stagger: 0.12, ease: "power4.out" }, 0.35);
+      tl.fromTo("#b-s", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.8);
+      tl.to(["#b-t", "#b-s"], { opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, 2.05);
+      window.__timelines["bridge"] = tl;
+    })();
+  </script>
+</template>

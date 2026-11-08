@@ -1,0 +1,55 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #b4f768; font-family: "Inter", sans-serif; color: #080d13; }
+    .verb { position: absolute; left: 104px; top: 80px; font-weight: 900; font-size: 280px; line-height: 0.9; letter-spacing: -0.06em; white-space: nowrap; }
+    #a-card { position: absolute; left: 110px; top: 400px; width: 1700px; height: 470px; border-radius: 32px; background: #ffffff;
+      box-shadow: 0 24px 60px rgba(8, 13, 19, 0.18); color: #17140f; }
+    #a-nm { position: absolute; left: 56px; top: 44px; font-weight: 900; font-size: 72px; letter-spacing: -0.03em; white-space: nowrap; }
+    #a-tag { position: absolute; right: 56px; top: 58px; padding: 6px 26px; border-radius: 99px; background: #f4ebdd; color: #8c5f1c;
+      font-weight: 700; font-size: 36px; white-space: nowrap; }
+    #a-l1 { position: absolute; left: 56px; top: 160px; font-weight: 700; font-size: 42px; color: #5b554c; white-space: nowrap; }
+    #a-l1 b { font-family: "JetBrains Mono", monospace; font-weight: 600; color: #17140f; }
+    #a-l2 { position: absolute; left: 56px; top: 234px; font-weight: 700; font-size: 46px; color: #2f6f5b; white-space: nowrap; }
+    .a-btn { position: absolute; top: 330px; height: 112px; border-radius: 22px; font-weight: 700; font-size: 42px; line-height: 108px;
+      text-align: center; white-space: nowrap; }
+    #a-ok { left: 56px; width: 760px; background: #2f6f5b; border: 2px solid #2f6f5b; color: #ffffff; }
+    #a-no { left: 846px; width: 320px; background: #ffffff; border: 2px solid #b8b2a5; color: #5b554c; }
+    #a-cur { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .cur-svg { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .pill { position: absolute; left: 56px; top: 56px; height: 46px; padding: 0 18px; border-radius: 23px; background: #080d13; color: #eef8f5;
+      font-weight: 700; font-size: 28px; line-height: 46px; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="approve" data-width="1920" data-height="1080">
+    <div id="a-verb" class="verb">APPROVE</div>
+    <div id="a-card">
+      <div id="a-nm">Nuvio CRM</div>
+      <div id="a-tag">cancel</div>
+      <div id="a-l1">Saving · <b>129 €/mo</b> → <b>1,548 €/yr</b></div>
+      <div id="a-l2">⚡ The agent stops before the final click.</div>
+      <div id="a-ok" class="a-btn">✓ Approve and launch the agent</div>
+      <div id="a-no" class="a-btn">✕ Refuse</div>
+    </div>
+    <div id="a-cur" data-layout-allow-occlusion><svg viewBox="0 0 26 37" class="cur-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#080D13" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="pill">You</div></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Arrives out of the zoom-through: the lime world is already there.
+      tl.fromTo("#a-verb", { opacity: 0, scale: 1.25, filter: "blur(10px)", transformOrigin: "0% 0%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 0.0);
+      tl.fromTo("#a-card", { opacity: 0, scale: 1.06, filter: "blur(12px)", transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 0.12);
+      // "You" cursor: tip = element origin + (3, 3). Clicks the left end of the Approve button, frame (206, 786).
+      gsap.set("#a-cur", { x: 1500, y: 1120 });
+      tl.to("#a-cur", { x: 200, y: 780, duration: 0.9, ease: "power2.inOut" }, 1.3);
+      // "approve" spoken at local 2.36.
+      tl.to("#a-cur", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.07, ease: "power2.out" }, 2.29);
+      tl.to("#a-cur", { scale: 1, duration: 0.16, ease: "power3.out" }, 2.36);
+      tl.to("#a-ok", { backgroundColor: "#1f4d3e", scale: 0.97, transformOrigin: "50% 50%", duration: 0.07, ease: "power2.out" }, 2.29);
+      tl.to("#a-ok", { scale: 1, duration: 0.16, ease: "power3.out" }, 2.36);
+      tl.set("#a-ok", { textContent: "✓ Approved · agent launching" }, 2.38);
+      tl.to("#a-no", { opacity: 0.35, duration: 0.25, ease: "power2.out" }, 2.38);
+      window.__timelines["approve"] = tl;
+    })();
+  </script>
+</template>
