@@ -6,7 +6,7 @@
     .ov { position: absolute; opacity: 0; }
     #o-inj { left: 313px; top: 822px; width: 568px; height: 34px; border: 4px solid #0d0d12; border-radius: 8px; background: rgba(212, 245, 60, 0.5); }
     #o-want { left: 313px; top: 670px; width: 489px; height: 85px; border: 4px dashed #0d0d12; border-radius: 12px; }
-    #o-tag { left: 313px; top: 872px; height: 52px; padding: 0 18px; border-radius: 12px; background: #0d0d12; color: #f4f4f8; font-weight: 700; font-size: 30px; line-height: 52px; white-space: nowrap; }
+    #o-tag { left: 560px; top: 960px; height: 52px; padding: 0 18px; border-radius: 12px; background: #0d0d12; color: #f4f4f8; font-weight: 700; font-size: 30px; line-height: 52px; white-space: nowrap; }
     #o-tag b { color: #d4f53c; }
     #o-stamp { left: 0; top: 300px; width: 1080px; text-align: center; }
     #o-stamp span { display: inline-block; padding: 14px 44px; border: 8px solid #0d0d12; border-radius: 20px; background: #d4f53c; color: #0d0d12;
@@ -42,7 +42,7 @@
   <script>
     (function () {
       const tl = gsap.timeline({ paused: true });
-      // abs = local + 1.94 (b4). Every click lands on a beat (0.4843 s). Camera scale 1.15, the cursor in frame coords.
+      // abs = local + 2.6. Voice 2 over the screens; voice 3 on the offer: "accept" local 4.94, "says no" local 6.34. Camera scale 1.15, the cursor in frame coords.
       const S = 1.15, TY = 240;
       const cam = (x) => ({ x, y: TY, scale: S });
       const click = (t) => { tl.to("#ag", { scale: 0.82, transformOrigin: "0% 0%", duration: 0.05 }, t); tl.to("#ag", { scale: 1, duration: 0.12, ease: "power3.out" }, t + 0.05); };
@@ -68,11 +68,11 @@
       swap("#s5", "#s6", 3.907);
       tl.fromTo("#o-inj", { opacity: 0, scale: 1.06, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.18, ease: "expo.out" }, 4.391);
       tl.fromTo("#o-tag", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.18 }, 4.41);
-      tl.fromTo("#o-want", { opacity: 0 }, { opacity: 1, duration: 0.12 }, 4.5);
-      tl.fromTo("#o-stamp", { opacity: 0, scale: 2.2, rotation: 8, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, rotation: -4, duration: 0.18, ease: "back.out(1.6)" }, 4.875);
-      tl.to("#ag", { x: 493, y: 780, duration: 0.4, ease: "power2.inOut" }, 4.62); click(5.12);
-      tl.to(["#o-want", "#o-tag"], { opacity: 0, duration: 0.12 }, 5.2);
-      tl.set({}, {}, 5.84);
+      tl.fromTo("#o-want", { opacity: 0 }, { opacity: 1, duration: 0.12 }, 4.94);
+      tl.fromTo("#o-stamp", { opacity: 0, scale: 2.2, rotation: 8, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, rotation: -4, duration: 0.18, ease: "back.out(1.6)" }, 6.34);
+      tl.to("#ag", { x: 493, y: 780, duration: 0.4, ease: "power2.inOut" }, 5.95); click(6.55);
+      tl.to(["#o-want", "#o-tag"], { opacity: 0, duration: 0.12 }, 6.6);
+      tl.set({}, {}, 7.5);
       window.__timelines["run"] = tl;
     })();
   </script>
