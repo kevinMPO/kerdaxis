@@ -110,6 +110,8 @@ function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElem
   const { copy, eur } = d;
   const agent = d.agentState(lever.id);
   const showAgent = cancelsOnline(lever);
+  // A renegotiation or a switch still needs its letter even when the supplier can be cancelled online.
+  const showLetter = !showAgent || lever.action !== "cancel";
   const canRun = showAgent && agent === "ready";
   const hasEuro = lever.basis !== "pending" && lever.basis !== "unverified";
   return (
@@ -133,9 +135,8 @@ function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElem
       <td className="kd-col-num kd-num">{hasEuro ? eur(lever.saving) : "—"}</td>
       <td className="kd-col-num kd-num kd-money">{hasEuro ? eur(lever.saving * 12) : "—"}</td>
       <td className="kd-col-act">
-        {showAgent ? (
-          <LaunchButton d={d} lever={lever} tone="quiet" />
-        ) : (
+        {showAgent && <LaunchButton d={d} lever={lever} tone="quiet" />}
+        {showLetter && (
           <button className="kd-btn kd-btn-quiet" onClick={() => void d.openLetter(lever)}>
             {copy.prepareLetter}
           </button>
@@ -146,31 +147,35 @@ function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElem
 }
 
 function ProposalCell({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElement {
-  const { copy } = d;
-  if (lever.basis === "pending") return <span>{copy.pricePending}</span>;
-  if (lever.basis === "unverified") return <span>{copy.priceUnverified[lever.unverifiedReason ?? "no_price"]}</span>;
-  if (lever.basis === "sourced" && lever.evidence) {
-    const { offer } = lever.evidence;
-    return (
-      <span>
-        {leverProposal(lever, d.lang)}{" "}
-        <a className="kd-link" href={offer.sourceUrl} target="_blank" rel="noopener">
-          {copy.priceSource(offer.checkedAt)} <Icon name="external" size={12} />
-        </a>
-      </span>
-    );
-  }
   return (
     <span>
-      {leverProposal(lever, d.lang)}
+      <Proposal lever={lever} d={d} />
       <ChannelNote lever={lever} d={d} />
     </span>
   );
 }
 
+function Proposal({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElement {
+  const { copy } = d;
+  if (lever.basis === "pending") return <>{copy.pricePending}</>;
+  if (lever.basis === "unverified") return <>{copy.priceUnverified[lever.unverifiedReason ?? "no_price"]}</>;
+  if (lever.basis === "sourced" && lever.evidence) {
+    const { offer } = lever.evidence;
+    return (
+      <>
+        {leverProposal(lever, d.lang)}{" "}
+        <a className="kd-link" href={offer.sourceUrl} target="_blank" rel="noopener">
+          {copy.priceSource(offer.checkedAt)} <Icon name="external" size={12} />
+        </a>
+      </>
+    );
+  }
+  return <>{leverProposal(lever, d.lang)}</>;
+}
+
 function ChannelNote({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElement | null {
   const check = lever.cancelChannel;
-  if (lever.action !== "cancel" || !check) return null;
+  if (!check) return null;
   return (
     <span className="kd-small">
       {" · "}

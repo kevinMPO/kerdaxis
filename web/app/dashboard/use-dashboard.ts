@@ -108,15 +108,21 @@ export function needsMarketPrice(lever: Lever): boolean {
   return lever.basis === "pending" || lever.basis === "unverified";
 }
 
-/** Cancellation whose channel Linkup has not answered yet. */
+/** The aggregated FX lever has no supplier behind it, so there is nothing to cancel. */
+const hasSupplier = (lever: Lever): boolean => lever.motif !== "fx";
+
+/** Subscription whose cancellation channel Linkup has not answered yet. */
 export function needsCancelCheck(lever: Lever): boolean {
-  if (lever.action !== "cancel" || AGENT_CATALOG.includes(lever.id)) return false;
+  if (!hasSupplier(lever) || AGENT_CATALOG.includes(lever.id)) return false;
   return (lever.cancelChannel?.channel ?? "unknown") === "unknown";
 }
 
-/** The agent cancels only what can be cancelled online; everything else is a letter. */
+/**
+ * The agent is offered on any subscription that can be cancelled online, whatever the recommended action:
+ * a renegotiation lever still lets the user cancel instead. Everything else is a letter.
+ */
 export function cancelsOnline(lever: Lever): boolean {
-  return lever.action === "cancel" && (AGENT_CATALOG.includes(lever.id) || lever.cancelChannel?.channel === "online");
+  return hasSupplier(lever) && (AGENT_CATALOG.includes(lever.id) || lever.cancelChannel?.channel === "online");
 }
 
 const unknownChannel = (): CancelChannelCheck => ({ channel: "unknown", sourceUrl: "", checkedAt: new Date().toISOString().slice(0, 10) });
@@ -530,12 +536,7 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
     const targets = levers.filter((l) => needsMarketPrice(l) || needsCancelCheck(l));
     if (targets.length === 0 || pricing.status === "running") return;
     setPricing({ status: "running", done: 0, total: targets.length });
-    await runPool(targets, PRICING_CONCURRENCY, async (lever) => {
-      if (needsCancelCheck(lever)) {
-        await checkChannel(lever);
-        setPricing((run) => ({ ...run, done: run.done + 1 }));
-        return;
-      }
+    const checkPrice = async (lever: Lever): Promise<void> => {
       let response: PricingResponse | null = null;
       try {
         const reply = await fetch("/api/benchmark", {
@@ -554,6 +555,12 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
         response = null;
       }
       setLevers((all) => all.map((l) => (l.id === lever.id ? applyPricing(l, response) : l)));
+    };
+    await runPool(targets, PRICING_CONCURRENCY, async (lever) => {
+      await Promise.all([
+        needsCancelCheck(lever) ? checkChannel(lever) : undefined,
+        needsMarketPrice(lever) ? checkPrice(lever) : undefined,
+      ]);
       setPricing((run) => ({ ...run, done: run.done + 1 }));
     });
     setPricing((run) => ({ ...run, status: "done" }));

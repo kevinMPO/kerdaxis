@@ -419,7 +419,8 @@
 .kd-table tr.is-off .kd-money { color: var(--kd-ink-3); }
 .kd-col-check { width: 44px; }
 .kd-col-num { text-align: right !important; white-space: nowrap; }
-.kd-col-act { width: 1%; text-align: right; }
+.kd-col-act { width: 1%; text-align: right; white-space: nowrap; }
+.kd-col-act .kd-btn + .kd-btn { margin-left: 6px; }
 .kd-cell-link {
   padding: 0;
   border: 0;
