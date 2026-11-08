@@ -162,7 +162,7 @@
 
   <header class="top">
     <div>
-      <div class="kicker">Schéma workflow · produit (M0 + M1)</div>
+      <div class="kicker">Schéma workflow · produit (mis à jour le 8 nov. 2026)</div>
       <div class="brand-row">
         <span class="mark">₳</span>
         <span class="brand">Kerdaxis</span>
@@ -172,7 +172,7 @@
     </div>
     <div>
       <div class="badge"><span class="dot"></span>Qonto lecture seule</div>
-      <div class="meta">Stack : <code>Next.js</code> · <code>Anthropic</code><br/>Endpoint : <code>/api/analyze</code><br/>Modèle : <code>claude-sonnet-5</code></div>
+      <div class="meta">Stack : <code>Next.js</code> · <code>H Company</code><br/>Endpoints : <code>/api/analyze</code> · <code>/api/benchmark</code><br/>Modèle : <code>holo4-27b</code> · agent <code>h/web-scraper-flash</code></div>
     </div>
   </header>
 
@@ -180,7 +180,7 @@
   <h2>Les principes du workflow</h2>
   <div class="rules">
     <div class="rule"><div class="rt">Lecture seule Qonto</div><div class="rd">Uniquement des <span class="mono">GET</span>. Aucun paiement, aucune résiliation automatique.</div></div>
-    <div class="rule claude"><div class="rt">Le LLM classe, le moteur calcule</div><div class="rd">Claude ne pose que des étiquettes ; tout euro vient de <span class="mono">engine.ts</span>.</div></div>
+    <div class="rule claude"><div class="rt">Le LLM classe, le moteur calcule</div><div class="rd">Holo ne pose que des étiquettes ; tout euro vient de <span class="mono">lib/engine</span>, lu sur le relevé ou calculé depuis un prix sourcé.</div></div>
     <div class="rule human"><div class="rt">Zéro action bancaire — tu envoies</div><div class="rd">Kerdaxis prépare les livrables ; l'envoi reste entre tes mains.</div></div>
   </div>
 
@@ -202,12 +202,12 @@
             <span class="pill ro">GET only</span>
           </div>
           <div class="node">
-            <div class="nh">🗂️ Profil</div>
-            <div class="nd">Critères, fournisseurs intouchables.</div>
+            <div class="nh">🧪 Relevé démo</div>
+            <div class="nd">Fictif, 60 j, sans compte connecté. Même pipeline.</div>
           </div>
           <div class="node">
-            <div class="nh">🌐 Claude</div>
-            <div class="nd">Nom + catégorie du marchand.</div>
+            <div class="nh">🌐 Holo · Linkup · H</div>
+            <div class="nd">Nom + catégorie du marchand, rien d'autre.</div>
             <span class="pill pii">zéro PII</span>
           </div>
         </div>
@@ -219,8 +219,8 @@
       <div class="rail"><div class="num">1</div><div class="link"></div></div>
       <div class="st-card">
         <div class="st-top"><span class="st-name">OBSERVE</span><span class="st-actor a-qonto">Qonto · lecture seule</span></div>
-        <div class="st-desc"><span class="mono">GET /organization</span> + <span class="mono">GET /transactions</span> sur 60 j → normalisation en <b>Tx[]</b>. Aucun POST.</div>
-        <div class="st-file">lib/qonto.ts</div>
+        <div class="st-desc">OAuth par visiteur, puis <span class="mono">GET /organization</span> + <span class="mono">GET /transactions</span> sur 60 j → <b>Tx[]</b>, chaque appel filtré par l'allowlist lecture seule. Sans compte connecté : le relevé fictif de la démo.</div>
+        <div class="st-file">lib/mcp/qonto-read-client.ts · lib/mcp/readonly-guard.ts · lib/demo/</div>
       </div>
     </div>
 
@@ -228,25 +228,25 @@
     <div class="station">
       <div class="rail"><div class="num" style="background:var(--amber);box-shadow:0 0 0 4px color-mix(in srgb,var(--amber) 13%,transparent)">2</div><div class="link"></div></div>
       <div class="st-card">
-        <div class="st-top"><span class="st-name">CATÉGORISE</span><span class="st-actor a-claude">Claude · étiquettes</span></div>
-        <div class="st-desc">Regroupe par marchand. Claude renvoie des <b>étiquettes</b> : nature (pilotable / structurel / ponctuel / perso), pôle, action, ratio d'économie. <b>Jamais d'euros.</b> Fallback règles si pas de clé.</div>
-        <div class="st-file">lib/categorize.ts · structured outputs</div>
+        <div class="st-top"><span class="st-name">CATÉGORISE</span><span class="st-actor a-claude">Holo · étiquettes</span></div>
+        <div class="st-desc">Regroupe par marchand. Holo renvoie des <b>étiquettes</b> : nature (pilotable / structurel / ponctuel / perso), pôle, action, drapeau de migration lourde. <b>Jamais d'euros, jamais de ratio.</b> Repli règles sans clé ou en échec.</div>
+        <div class="st-file">lib/analysis/pipeline.ts · lib/categorize.ts · schéma JSON + Zod</div>
       </div>
     </div>
 
     <div class="axis">
-      <span class="chip c-claude" style="background:color-mix(in srgb,var(--amber) 15%,transparent)">Claude → labels</span>
-      <span>→ passe au moteur, qui multiplie →</span>
-      <span class="chip c-engine">engine.ts → €</span>
+      <span class="chip c-claude" style="background:color-mix(in srgb,var(--amber) 15%,transparent)">Holo → labels</span>
+      <span>→ passe au moteur, qui calcule →</span>
+      <span class="chip c-engine">lib/engine → €</span>
     </div>
 
     <!-- 3 CALCULE -->
     <div class="station">
       <div class="rail"><div class="num">3</div><div class="link"></div></div>
       <div class="st-card">
-        <div class="st-top"><span class="st-name">CALCULE</span><span class="st-actor a-engine">engine.ts · déterministe</span></div>
-        <div class="st-desc"><b>Tous les euros</b> : run-rate mensuel normalisé, natures observées, pôles, score /100, runway, leviers (<span class="mono">saving = mensuel × ratio</span>), anomalies (nouveaux, doublons, dormants).</div>
-        <div class="st-file">lib/engine.ts → AnalyzeResult (JSON typé)</div>
+        <div class="st-top"><span class="st-name">CALCULE</span><span class="st-actor a-engine">lib/engine · déterministe</span></div>
+        <div class="st-desc"><b>Tous les euros</b> : run-rate mensuel normalisé, natures, pôles, score /100, runway, anomalies. Leviers <b>observés</b> sur le relevé (résiliation = 100 % du mensuel, doublon, hausse silencieuse, frais de change) ; switch / downgrade / renégociation sortent à <b>0 €, en attente</b> d'un prix sourcé.</div>
+        <div class="st-file">lib/engine/core.ts → AnalyzeResult (JSON typé)</div>
       </div>
     </div>
 
@@ -256,33 +256,51 @@
       <div class="st-card">
         <div class="st-top"><span class="st-name">RESTITUE</span><span class="st-actor a-front">le tableau de bord</span></div>
         <div class="st-desc">Hero <b>« X €/an récupérables »</b>, score de santé, runway, barre ledger 4 natures, pôles, simulateur, fil d'anomalies.</div>
-        <div class="st-file">app/Kerdaxis.tsx</div>
+        <div class="st-file">app/dashboard/ · app/Kerdaxis.tsx</div>
       </div>
     </div>
   </div>
 
-  <div class="lane-tag">▸ passage à l'action — M1</div>
+  <div class="lane-tag route">▸ /api/benchmark · sur ton accord</div>
+  <div class="spine">
+    <!-- 5 VÉRIFIE LES PRIX -->
+    <div class="station">
+      <div class="rail"><div class="num">5</div><div class="link"></div></div>
+      <div class="st-card">
+        <div class="st-top"><span class="st-name">VÉRIFIE LES PRIX</span><span class="st-actor a-engine">Linkup · Holo · H · engine/pricing</span></div>
+        <div class="st-desc">Cache D1 (30 j), sinon <b>Linkup</b> cherche les tarifs du fournisseur et des concurrents, <b>Holo</b> les range en données rattachées à une source. Si aucun palier du fournisseur actuel n'est chiffré, l'agent <b>H web-scraper-flash</b> lit sa page tarifs officielle. Puis le moteur déduit le nombre de postes du montant payé et calcule <span class="mono">mensuel − coût de l'offre</span>.</div>
+        <div class="deliver">
+          <div class="dl"><div class="dt">✅ sourced</div><div class="dd">économie en € avec l'URL et la date du prix.</div></div>
+          <div class="dl"><div class="dt">⚠️ unverified</div><div class="dd">pas de prix, pas de postes ou pas moins cher : la raison, aucun €.</div></div>
+        </div>
+        <div class="st-file">lib/benchmark.ts · lib/benchmark-scraper.ts · lib/benchmark-cache.ts · lib/engine/pricing.ts</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lane-tag">▸ passage à l'action</div>
   <div class="spine">
     <!-- 5 AGIR -->
     <div class="station">
-      <div class="rail"><div class="num" style="background:var(--ink);box-shadow:0 0 0 4px color-mix(in srgb,var(--ink) 10%,transparent)">5</div><div class="link"></div></div>
+      <div class="rail"><div class="num" style="background:var(--ink);box-shadow:0 0 0 4px color-mix(in srgb,var(--ink) 10%,transparent)">6</div><div class="link"></div></div>
       <div class="st-card">
         <div class="st-top"><span class="st-name">AGIR</span><span class="st-actor a-front">simulateur → livrables</span></div>
-        <div class="st-desc">Tu coches les leviers (toggles + horizon). Kerdaxis prépare trois livrables :</div>
+        <div class="st-desc">Tu coches les leviers (toggles + horizon). Kerdaxis prépare les livrables, ou envoie l'agent H résilier :</div>
         <div class="deliver">
-          <div class="dl"><div class="dt">✉️ Lettres</div><div class="dd">résiliation / renégo rédigées par Claude, éditables.</div></div>
+          <div class="dl"><div class="dt">✉️ Lettres</div><div class="dd">résiliation / renégo rédigées par Holo, éditables.</div></div>
           <div class="dl"><div class="dt">📊 Export CSV</div><div class="dd">le plan, ouvrable dans Excel.</div></div>
           <div class="dl"><div class="dt">🖨️ Rapport PDF</div><div class="dd"><span class="mono">/rapport</span> imprimable.</div></div>
+          <div class="dl"><div class="dt">🤖 Agent H</div><div class="dd">résilie sur le site du fournisseur, s'arrête devant le bouton final.</div></div>
         </div>
       </div>
     </div>
 
     <!-- 6 GATE HUMAIN -->
     <div class="station gate">
-      <div class="rail"><div class="num">6</div></div>
+      <div class="rail"><div class="num">7</div></div>
       <div class="st-card">
         <div class="st-top"><span class="st-name">GATE HUMAIN</span><span class="st-actor a-human">Toi</span></div>
-        <div class="st-desc">Tu relis, complètes les <span class="mono">[crochets]</span>, et <b>tu envoies</b>. Aucune action bancaire n'est déclenchée par l'app.</div>
+        <div class="st-desc">Tu relis, complètes les <span class="mono">[crochets]</span>, et <b>tu envoies</b>. Pour l'agent : le feu vert final ne part que d'un clic dans l'interface, et la résiliation ne compte qu'une fois confirmée par le fournisseur. Aucune action bancaire n'est déclenchée par l'app.</div>
         <span class="gate-tag">« PRÊT — À ENVOYER PAR TOI »</span>
       </div>
     </div>
@@ -292,27 +310,28 @@
   <h2>Les deux cerveaux (la règle d'or)</h2>
   <div class="brains">
     <div class="brain claude">
-      <div class="bh"><span class="c-amber">🧭</span> Claude <span class="tag c-amber">catégorise</span></div>
-      <div class="bd">Étiquette chaque marchand : nature, pôle, action, risque, <b>ratio</b> d'économie. Rédige aussi les lettres.</div>
-      <div class="brule c-amber">Renvoie des labels et un ratio — jamais un montant.</div>
+      <div class="bh"><span class="c-amber">🧭</span> Holo <span class="tag c-amber">catégorise</span></div>
+      <div class="bd">Étiquette chaque marchand : nature, pôle, action, drapeau de migration lourde. Range les prix publics en données sourcées. Rédige les lettres.</div>
+      <div class="brule c-amber">Renvoie des labels, jamais un montant ni un ratio.</div>
     </div>
     <div class="brain engine">
       <div class="bh"><span class="c-vert">⚙️</span> engine.ts <span class="tag c-vert">calcule</span></div>
-      <div class="bd">Déterministe : run-rate, natures, pôles, score, runway, économies (mensuel × ratio), anomalies.</div>
+      <div class="bd">Déterministe : run-rate, natures, pôles, score, runway, anomalies. Économies lues sur le relevé, ou calculées depuis un prix sourcé (postes × tarif).</div>
       <div class="brule c-vert">Tout euro affiché vient d'ici. Reproductible, testable.</div>
     </div>
   </div>
 
   <div class="legend">
     <span><i style="background:var(--vert)"></i>Qonto (lecture seule) &amp; engine.ts (€)</span>
-    <span><i style="background:var(--amber)"></i>Claude (étiquettes &amp; lettres)</span>
+    <span><i style="background:var(--amber)"></i>Holo (étiquettes, prix &amp; lettres)</span>
     <span><i style="background:var(--ink)"></i>Front (restitution)</span>
     <span><i style="background:var(--clay)"></i>Toi (gate &amp; envoi)</span>
   </div>
 
   <div class="foot">
-    <b>Rien n'est envoyé ni modifié sur le compte.</b> Sans clés Qonto/Anthropic, le pipeline
-    sert des données de démo (mock) pour rester démontrable ; avec les clés, il analyse le vrai compte.
+    <b>Rien n'est envoyé ni modifié sur le compte.</b> Sans compte connecté, le même pipeline analyse
+    un relevé fictif (<code>lib/demo</code>) : aucun chiffre écrit à la main. Sans clé H, les règles
+    remplacent Holo ; avec la connexion Qonto, il analyse le vrai compte.
     Le contrat <code>AnalyzeResult</code> (<code>lib/types.ts</code>) fait foi entre le back et le front.
   </div>
 

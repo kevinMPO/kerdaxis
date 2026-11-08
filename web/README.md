@@ -10,14 +10,28 @@ runway, simulateur de leviers, fil d'anomalies.
 
 ## Architecture (le principe non négociable)
 
-> **Le LLM classe, `engine.ts` calcule.** H Company Holo étiquette chaque marchand
+> **Le LLM classe, `lib/engine` calcule.** H Company Holo étiquette chaque marchand
 > (nature, pôle, action). Tout montant en euros est calculé par
 > le moteur déterministe. Le LLM ne multiplie jamais.
 
 ```
-Qonto (lecture seule)  ─▶  categorize.ts (Holo : étiquettes)    ─▶  engine.ts (€)  ─▶  /api/analyze  ─▶  front
-   lib/mcp/qonto-read-client.ts   lib/categorize.ts                lib/engine.ts     app/api/analyze    app/Kerdaxis.tsx
+Qonto (lecture seule) ─┐
+                       ├─▶ lib/analysis/pipeline.ts ─▶ categorize.ts (Holo : étiquettes) ─▶ lib/engine (€) ─▶ /api/analyze ─▶ front
+Relevé démo (fictif) ──┘     même chemin pour les deux      sinon règles                       core.ts            app/api/analyze    app/Kerdaxis.tsx
+  lib/demo/transactions.ts
+
+« Vérifier les prix » (sur accord) :
+levier en attente (0 €) ─▶ cache D1 30 j ─▶ Linkup (2 questions) ─▶ Holo (prix sourcés) ─▶ [repli] H web-scraper-flash ─▶ engine/pricing.ts (€)
+                            benchmark-cache.ts   lib/benchmark.ts                            lib/benchmark-scraper.ts       postes déduits du montant payé
 ```
+
+Un levier `switch` / `downgrade` / `renegotiate` sort du moteur à **0 €** (`pending`).
+Son économie n'existe qu'avec un prix public sourcé et daté (règle 4) : `sourced`, sinon
+`unverified` avec la raison. Le repli `h/web-scraper-flash` (agent pré-construit de H
+Company, navigateur textuel) ne tourne que si l'extraction n'a trouvé aucun palier chiffré
+du fournisseur actuel : il lit sa page tarifs officielle, garde un prix seulement si la page
+est sur le domaine du marchand, en euros, et la division d'un total annuel par 12 est faite
+par le code.
 
 ### Connexion Qonto : OAuth par visiteur
 
@@ -49,10 +63,16 @@ opaque, et `/api/auth/qonto/revoke` débranche tout.
 | `lib/db/tenant.ts` · `db/0001_init.sql` | Socle multi-locataire D1 : organisations, décisions, journal d'audit. |
 | `lib/llm/holo.ts` | Client de la Models API de H Company : le seul LLM appelé par l'app. |
 | `lib/categorize.ts` | Catégorisation H Company Holo + fallback règles. |
-| `lib/engine.ts` | Moteur déterministe : natures, run-rate, pôles, score, runway, leviers, anomalies. |
+| `lib/engine/core.ts` | Moteur déterministe : natures, run-rate, pôles, score, runway, leviers (observés ou en attente de prix), anomalies. `ENGINE_VERSION`. |
+| `lib/engine/pricing.ts` | Prix sourcés → économie : postes déduits du montant payé, puis mensuel − coût de l'offre. Sinon `unverified` + raison. |
+| `lib/engine/api.ts` | API moteur publique `/api/v1/engine` (Bearer, Zod strict). |
+| `lib/benchmark.ts` | Benchmark « vérifier les prix » : Linkup (tarifs du fournisseur + concurrents), extraction Holo, repli web-scraper. |
+| `lib/benchmark-scraper.ts` | Repli : agent H `h/web-scraper-flash` sur la page tarifs officielle (domaine du marchand, euros uniquement). |
+| `lib/benchmark-cache.ts` · `db/0003_market_benchmarks.sql` | Cache D1 30 jours des benchmarks vérifiés (web public, partagé entre organisations). |
 | `lib/letters.ts` | Lettres de résiliation / renégociation via Holo + gabarit de secours. |
 | `lib/export.ts` | Export du plan en CSV (Excel FR). |
 | `lib/demo/` | Relevé FICTIF de la démo publique (transactions seulement), analysé par le pipeline réel. |
+| `lib/demo/demo-cache.ts` · `db/0004_demo_results.sql` | Résultat Holo du jour de la démo, partagé entre isolats via D1 (un repli sur les règles n'est jamais stocké). |
 | `lib/analysis/pipeline.ts` | Pipeline unique compte réel / démo : catégorisation Holo (sinon règles) puis moteur. |
 | `app/api/analyze/route.ts` | Orchestration OBSERVE → CATÉGORISE → CALCULE (session OAuth, sinon démo — jamais le compte d'un autre). |
 | `app/api/auth/qonto/*` | Flux OAuth : `start`, `callback`, `revoke`, `status`. |
@@ -68,7 +88,8 @@ cp .env.example .env.local   # optionnel : renseigner les clés
 npm run dev                  # http://localhost:3000
 ```
 
-**Sans clés**, l'app tourne en mode démo (données mock) — démontrable en pitch.
+**Sans clés**, l'app analyse le relevé fictif de la démo par le pipeline réel, avec la
+catégorisation par règles à la place de Holo. Aucun chiffre n'est écrit à la main.
 **Avec les clés** (`.env.local`), elle analyse un vrai compte :
 
 ```env
@@ -95,7 +116,7 @@ Deux bindings y sont provisionnés, et ils ne sont pas optionnels :
 | Binding | Type | Rôle | Sans lui, en production |
 |---|---|---|---|
 | `ARGENTIER_TOKENS` | KV | Jetons OAuth chiffrés AES-GCM, TTL calé sur le refresh token | **refus** (`BindingManquantError`) |
-| `ARGENTIER_DB` | D1 (`weur`) | Socle multi-locataire : organisations, décisions, `audit_log` (cf. [`db/README.md`](db/README.md)) | **refus** (`BindingManquantError`) |
+| `ARGENTIER_DB` | D1 (`weur`) | Socle multi-locataire : organisations, décisions, `audit_log`, exécutions, et deux caches (benchmarks 30 j, démo du jour) (cf. [`db/README.md`](db/README.md)) | **refus** (`BindingManquantError`) ; les caches, eux, se taisent sans leur table |
 
 Hors production (`next dev`, tests), leur absence est tolérée : jetons en
 mémoire du process, aucun journal. En production, elle **lève**, et
@@ -107,9 +128,14 @@ exactement ce qu'un DAF nous paie pour empêcher. L'échappatoire
 `ARGENTIER_ALLOW_DEGRADED_BINDINGS=1` existe pour un build local, jamais pour
 servir du trafic.
 
+Le déploiement part de `main` : chaque push dont la CI est verte est déployé par
+`.github/workflows/deploy-web.yml` (contrôle des secrets du Worker, build OpenNext,
+`wrangler deploy`, test de fumée, préchauffage de la démo). Les migrations D1 ne font pas
+partie du déploiement : elles s'appliquent à la main (cf. [`db/README.md`](db/README.md)).
+À la main, l'équivalent est :
+
 ```bash
-npx opennextjs-cloudflare build
-npx wrangler deploy
+npm run cf:deploy
 ```
 
 ### Ce qui a été RETIRÉ, et ne doit pas revenir
@@ -178,8 +204,13 @@ Tout appel LLM de l'app passe par un modèle Holo de H Company (`holo4-27b` par 
 |---|---|---|
 | Catégorisation (`/api/analyze`) | étiquettes, schéma JSON + Zod | règles par mots-clés |
 | Lettres (`/api/letter`) | texte | gabarit FR/EN |
-| Benchmark, passe 2 (`/api/benchmark`) | prix extraits du texte Linkup, schéma JSON + Zod | résumé sourcé, sans prix structurés |
+| Benchmark, passe 2 (`/api/benchmark`) | prix extraits du texte Linkup, chacun rattaché à une source, schéma JSON + Zod | résumé sourcé, sans prix structurés |
 | Risque fournisseur (`/api/risk`) | signaux sourcés (schéma JSON + Zod) et analyse en texte | score sur identité + finances + BODACC, texte déterministe |
 
 Le LLM ne renvoie jamais un euro ni un score. La recherche web, elle, est faite par
 Linkup : sans `LINKUP_API_KEY`, le benchmark reste « non vérifié ».
+
+Hors Models API, la même clé `HAI_API_KEY` sert aussi trois agents de l'Agents API de H :
+l'agent de résiliation (navigateur visuel, `lib/execution/runner.ts`), le lecteur de captures
+d'écran des articles d'aide (`lib/execution/research/screenshots.ts`) et l'agent pré-construit
+`h/web-scraper-flash`, passe 3 du benchmark (`lib/benchmark-scraper.ts`).
