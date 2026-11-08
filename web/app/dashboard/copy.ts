@@ -8,6 +8,7 @@ export interface DashboardCopy {
   navPitch: string;
   demoData: string;
   liveData: string;
+  analyzing: string;
   connectQonto: string;
   disconnect: string;
   reconnect: string;
@@ -116,6 +117,7 @@ const fr: DashboardCopy = {
   navPitch: "Le pitch",
   demoData: "Données de démonstration",
   liveData: "Compte Qonto réel · lecture seule",
+  analyzing: "Lecture du compte et calcul par le moteur…",
   connectQonto: "Connecter Qonto",
   disconnect: "Déconnecter Qonto",
   reconnect: "Ta session Qonto a expiré : les montants affichés sont ceux de la démonstration.",
@@ -223,6 +225,7 @@ const en: DashboardCopy = {
   navPitch: "The pitch",
   demoData: "Demo data",
   liveData: "Real Qonto account · read-only",
+  analyzing: "Reading the account, the engine is computing…",
   connectQonto: "Connect Qonto",
   disconnect: "Disconnect Qonto",
   reconnect: "Your Qonto session expired: the amounts shown are demo data.",
@@ -332,6 +335,7 @@ const de: DashboardCopy = {
   navPitch: "Der Pitch",
   demoData: "Demodaten",
   liveData: "Echtes Qonto-Konto · nur Lesen",
+  analyzing: "Konto wird gelesen, die Engine rechnet…",
   connectQonto: "Qonto verbinden",
   disconnect: "Qonto trennen",
   headline: (r, c) => `Du kannst ${r} pro Jahr zurückholen. ${c ? `${c} bereits vom Anbieter bestätigt.` : "Noch nichts vom Anbieter bestätigt."}`,
@@ -368,6 +372,7 @@ const es: DashboardCopy = {
   navPitch: "El pitch",
   demoData: "Datos de demostración",
   liveData: "Cuenta Qonto real · solo lectura",
+  analyzing: "Leyendo la cuenta, el motor está calculando…",
   connectQonto: "Conectar Qonto",
   disconnect: "Desconectar Qonto",
   headline: (r, c) => `Puedes recuperar ${r} al año. ${c ? `${c} ya confirmados por los proveedores.` : "Nada confirmado aún por un proveedor."}`,
@@ -404,6 +409,7 @@ const it: DashboardCopy = {
   navPitch: "Il pitch",
   demoData: "Dati dimostrativi",
   liveData: "Conto Qonto reale · sola lettura",
+  analyzing: "Lettura del conto, il motore sta calcolando…",
   connectQonto: "Collega Qonto",
   disconnect: "Scollega Qonto",
   headline: (r, c) => `Puoi recuperare ${r} all'anno. ${c ? `${c} già confermati dai fornitori.` : "Ancora nulla confermato da un fornitore."}`,
