@@ -17,6 +17,8 @@ const PUBLIC = [
   /^\/$/,
   /^\/kerdaxis\.html$/,
   /^\/(login|try|signup|signin)$/,
+  // Documents légaux : publics par obligation (mentions légales, CGV, RGPD).
+  /^\/(mentions-legales|confidentialite|cgv|dpa|sous-traitants)$/,
   /^\/api\/(test-login|try|signup|signin|signout|me)$/,
   /^\/api\/billing\/return$/,
   /^\/media\//,
