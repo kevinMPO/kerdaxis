@@ -4,42 +4,39 @@ Instructions pour tout agent de code travaillant sur ce repo (Claude Code, Codex
 Cursor, etc.). `CLAUDE.md` se contente d'importer ce fichier.
 
 Kerdaxis analyse **en lecture seule** un compte Qonto reel, benchmarke les depenses
-via Linkup / Bright Data, et **prepare** des livrables (mails, lettres). Il n'agit
-jamais a ta place : tu declenches, tu relis, tu approuves.
+via Linkup, puis, avec ton accord, confie une resiliation a un agent H Company qui
+agit sur le portail du fournisseur et s'arrete avant le clic definitif. Le feu vert
+final reste toujours a toi.
 
 ## Les 4 regles non negociables
 
-1. **Read-only Qonto.** Seuls les tools de lecture sont autorises. Tous les tools
-   d'ecriture Qonto sont DURS-BLOQUES dans `.claude/settings.json` (`deny` > `allow`).
-   Ne jamais tenter de les appeler.
-2. **engine.py calcule, jamais le LLM.** Tout montant en euros vient de `engine.py`.
-   L'agent ne fait aucune arithmetique financiere lui-meme ; il reprend les chiffres du moteur.
-3. **Zero PII vers le web.** Vers Linkup / Bright Data : uniquement le nom du marchand
-   et la categorie. Jamais d'IBAN, de numero de compte, de `transaction_id`, ni de donnee perso.
+1. **Read-only Qonto.** Seules les lectures sont autorisees. `web/lib/mcp/readonly-guard.ts`
+   rejette toute ecriture, tout virement, toute carte. Les tools d'ecriture Qonto sont
+   aussi DURS-BLOQUES pour les agents de code dans `.claude/settings.json` (`deny` > `allow`).
+2. **Le moteur calcule, jamais le LLM.** Tout montant en euros vient de `web/lib/engine`.
+   Le LLM ne rend que des ETIQUETTES ; aucune arithmetique financiere hors du moteur.
+3. **Zero PII vers le web.** Vers Linkup : uniquement le nom du marchand et la categorie.
+   Jamais d'IBAN, de numero de compte, d'identifiant de transaction ni de donnee perso.
 4. **Chaque prix affiche = source + date.** Sinon, rejet et 1 seul retry, puis « non verifie ».
 
-## Methode (boucle /audit)
+## Methode (une execution dans l'app)
 
-OBSERVE (Qonto 90 j) → ANALYSE (engine.py) → BENCHMARK (avec ton accord, Linkup/Bright Data)
-→ RECOMMANDER (carte sourcee+datee, passe de verification) → GATE HUMAIN (livrable dans
-`drafts/`, « PRET — A ENVOYER PAR TOI ») → LEDGER (`data/decisions.json`).
+OBSERVE (Qonto, lecture seule) → ANALYSE (`web/lib/engine`) → BENCHMARK (sur accord, Linkup)
+→ RECOMMANDER (carte sourcee + datee) → GATE HUMAIN (tu approuves) → EXECUTION (agent
+H Company sur le portail, arret avant le clic final, ou lettre) → TRACE (D1).
 
-## Regles metier du moteur (engine.py)
+## Regles metier du moteur (`web/lib/engine/core.ts`)
 
-- Marchand normalise via `clean_counterparty_name`, sinon `label`.
-- **Recurrence** = marchand vu >= 2 fois sur 90 j a montant similaire. Un one-off n'est
-  JAMAIS annualise. **Annualisation = montant mensuel x 12.**
+- **Recurrence** = marchand vu >= 2 fois sur la fenetre a montant similaire. Un one-off
+  n'est JAMAIS annualise. **Annualisation = montant mensuel x 12.**
 - Detecte : abonnements SaaS recurrents, **doublons** (meme marchand 2x le meme jour, ou
-  2 abonnements paralleles chez le meme marchand), **frais de change** (`qonto_fee` +
-  reference `fx_card`) agreges en un seul levier.
-- **Compte EI** (perso + pro melanges) : classe chaque depense en **PRO / PERSO / A-CLARIFIER**.
-  En cas de doute → A-CLARIFIER. C'est la brique la plus utile : voir les listes de mots-cles
-  dans `engine.py` (`PRO_KEYWORDS`, `PERSO_KEYWORDS`), extensibles via `data/profile.json`.
+  2 abonnements paralleles chez le meme marchand), **frais de change** agreges en un seul levier,
+  **hausses silencieuses**.
+- **Compte EI** (perso + pro melanges) : classe chaque depense en **PRO / PERSO / A-CLARIFIER**
+  (`classifyEI`, listes `PRO_KEYWORDS` / `PERSO_KEYWORDS` dans `web/lib/categorize.ts`).
+  En cas de doute → A-CLARIFIER.
 
-## Moteur web (`web/lib/engine`) et taxonomie des leviers
-
-Le miroir TypeScript du moteur (`web/lib/engine/core.ts`) applique la meme regle #2 :
-le LLM ne rend que des ETIQUETTES (categories), le moteur detient les euros.
+## Taxonomie des leviers
 
 - **Nature** ∈ pilotable | structurel | ponctuel | perso.
 - **Motif** ∈ abonnement | doublon | fx | variable (orthogonal a la nature).
@@ -54,9 +51,8 @@ le LLM ne rend que des ETIQUETTES (categories), le moteur detient les euros.
     range en donnees (prix, par poste, comparable), et `web/lib/engine/pricing.ts` calcule :
     nombre de postes deduit du montant paye / tarif actuel, puis mensuel − cout de l'offre.
     Sans prix exploitable : `unverified`, avec la raison, et aucun euro affiche.
-  - Plus de pourcentage forfaitaire par action (l'ancienne table switch 0.4, downgrade 0.3,
-    renegotiate 0.2 n'etait qu'une estimation figee). L'alternative citee de memoire par
-    le modele n'est jamais affichee : seule une offre sourcee l'est.
+  - Aucun pourcentage forfaitaire par action. L'alternative citee de memoire par le
+    modele n'est jamais affichee : seule une offre sourcee l'est.
 - Le **risque** vient d'une table du moteur (`riskFor`) : renegotiate / consolidate = sans
   risque ; cancel / downgrade / switch = a revoir (le releve ne montre pas l'usage). Le
   modele ne garde qu'un drapeau `hard` (migration lourde).
@@ -67,48 +63,25 @@ le LLM ne rend que des ETIQUETTES (categories), le moteur detient les euros.
   qu'elle se fait en ligne (`Lever.cancelChannel`, source + date). Hors ligne ou non
   verifie : lettre. Nuvio et Lumen (portails de demo a nous) sont connus en ligne sans
   recherche. Cache 30 jours dans D1 (`cancel_channels`, db/0005).
-- `ENGINE_VERSION` est jointe a chaque reponse de l'API moteur.
-
-## API moteur publique (`/api/v1/engine`) et Claude Tag
-
-Le moteur est appelable en HTTP, 100 % deterministe, aucun appel LLM/reseau/ecriture cote serveur :
-
-- `POST /api/v1/engine/analyze` : audite des transactions (+ `labels` optionnels deja poses).
-- `POST /api/v1/engine/simulate` : projette l'impact de decisions (activer/desactiver des leviers).
-- `GET  /api/v1/engine/health` : sonde ouverte : `{ ok, engineVersion, ts }`.
-
-Auth Bearer (`ENGINE_API_TOKENS`, sinon 503), validation Zod `.strict()`, debit 60/min
-par jeton (best-effort en memoire sur Vercel). `claude-tag/` rend Kerdaxis utilisable
-depuis Slack (@Claude) : la skill ETIQUETTE, `scripts/call_engine.py` fait CALCULER
-l'API moteur, Claude reprend les chiffres verbatim.
 
 ## Fichiers
 
 | Fichier | Role |
 |---|---|
-| `engine.py` | Moteur de calcul deterministe (le cerveau chiffre, cote CLI). |
-| `tests/test_engine.py` | Tests des regles (recurrence, annualisation, doublons, FX, classification). |
-| `web/lib/engine/core.ts` | Miroir web du moteur : leviers, motif, risque, `ENGINE_VERSION`. |
+| `web/lib/engine/core.ts` | Le moteur deterministe : leviers, motif, risque, chaque euro. |
 | `web/lib/engine/pricing.ts` | Prix sources → economie (postes deduits, switch / downgrade / renego). |
+| `web/lib/categorize.ts` | Classifieur par mots-cles et classification EI. |
 | `web/lib/benchmark.ts` | Linkup (tarifs publics) + extraction Holo, cache D1 (`lib/benchmark-cache.ts`). |
-| `web/lib/engine/api.ts` | Frontiere HTTP de l'API moteur (Zod strict, auth Bearer, analyze/simulate). |
-| `web/app/api/v1/engine/` | Routes publiques `analyze` / `simulate` / `health`. |
-| `claude-tag/` | Skill Slack (Claude Tag) : `SKILL.md`, `standing-instructions.md`, `ADMIN-SETUP.md`, `scripts/call_engine.py`. |
-| `.claude/settings.json` | Le garde-fou : read-only Qonto (deny > allow). |
-| `.claude/commands/audit.md` | La commande `/audit`. |
-| `.claude/commands/verify.md` | La commande `/verify` (preuve J+30). |
-| `data/profile.json` | Ton identite : criteres, fournisseurs intouchables, refus passes. |
-| `data/decisions.json` | Le ledger : decisions + economies prouvees / en attente. |
-| `data/flows-*.json` | Flux Qonto bruts (gitignores, jamais commites). |
-| `drafts/` | Livrables prets a envoyer (par toi). |
+| `web/lib/mcp/readonly-guard.ts` | La frontiere read-only Qonto (regle #1). |
+| `web/lib/execution/` | Gate humain, runner de l'agent H Company, replay. |
+| `portal/` | Portail fournisseur de demo (Nuvio) pilote par l'agent. |
+| `my-app/` | Worker des comptes (`/auth/*`) et de la liste d'attente (`/waitlist`). |
+| `.claude/settings.json` | Le garde-fou des agents de code : read-only Qonto (deny > allow). |
 
 ## Comment relancer
 
 ```bash
-python3 -m unittest discover -s tests    # verifier que le moteur est sain
-python3 engine.py tests/fixtures/exemple-demo.json  # voir le rendu sur l'echantillon
+cd web && npx tsc --noEmit && npx vitest run   # moteur et app
+cd my-app && npx vitest run                    # Worker des comptes
+bash scripts/check-secrets.sh                  # aucun secret ni donnee bancaire commite
 ```
-
-Dans une session Claude Code : `/audit` (analyse + reco) puis, ~30 jours apres une
-action, `/verify` (preuve). Les cles MCP sont en scope `local` (`~/.claude.json`),
-hors du repo.

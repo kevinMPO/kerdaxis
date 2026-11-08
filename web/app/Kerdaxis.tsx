@@ -1398,11 +1398,11 @@ export default function Kerdaxis() {
                 <p className="arg-arch-lede">
                   {emph(
                     L({
-                      fr: "Kerdaxis est un **Skill Claude Code** branché sur des **serveurs MCP** en direct. Le LLM orchestre et met en mots ; un moteur déterministe fait chaque euro. Le modèle ne touche jamais au calcul — c'est ce qui rend chaque chiffre auditable.",
-                      en: "Kerdaxis is a **Claude Code Skill** wired to live **MCP servers**. The LLM orchestrates and explains; a deterministic engine does every euro. The model never touches the math — that's what makes every figure auditable.",
-                      de: "Kerdaxis ist ein **Claude Code Skill**, der live an **MCP-Server** angebunden ist. Das LLM orchestriert und formuliert; eine deterministische Engine macht jeden Euro. Das Modell rührt die Berechnung nie an — das macht jede Zahl prüfbar.",
-                      es: "Kerdaxis es un **Skill de Claude Code** conectado en directo a **servidores MCP**. El LLM orquesta y pone en palabras; un motor determinista hace cada euro. El modelo nunca toca el cálculo — eso es lo que hace auditable cada cifra.",
-                      it: "Kerdaxis è uno **Skill di Claude Code** collegato in diretta a **server MCP**. L'LLM orchestra e mette in parole; un motore deterministico fa ogni euro. Il modello non tocca mai il calcolo — è ciò che rende verificabile ogni cifra.",
+                      fr: "Kerdaxis lit le compte en direct via des **connecteurs en lecture seule**. Le LLM étiquette et met en mots ; un moteur déterministe fait chaque euro. Le modèle ne touche jamais au calcul — c'est ce qui rend chaque chiffre auditable.",
+                      en: "Kerdaxis reads the account live through **read-only connectors**. The LLM labels and explains; a deterministic engine does every euro. The model never touches the math — that's what makes every figure auditable.",
+                      de: "Kerdaxis liest das Konto live über **schreibgeschützte Konnektoren**. Das LLM etikettiert und formuliert; eine deterministische Engine macht jeden Euro. Das Modell rührt die Berechnung nie an — das macht jede Zahl prüfbar.",
+                      es: "Kerdaxis lee la cuenta en directo mediante **conectores de solo lectura**. El LLM etiqueta y pone en palabras; un motor determinista hace cada euro. El modelo nunca toca el cálculo — eso es lo que hace auditable cada cifra.",
+                      it: "Kerdaxis legge il conto in diretta tramite **connettori in sola lettura**. L'LLM etichetta e mette in parole; un motore deterministico fa ogni euro. Il modello non tocca mai il calcolo — è ciò che rende verificabile ogni cifra.",
                     }),
                     "arch-lede",
                   )}
@@ -1455,11 +1455,11 @@ export default function Kerdaxis() {
                     <p className="arg-arch-foot">
                       {emph(
                         L({
-                          fr: "Mêmes règles portées dans **engine.ts** pour le dashboard web.",
-                          en: "Same rules ported to **engine.ts** for the web dashboard.",
-                          de: "Dieselben Regeln in **engine.ts** für das Web-Dashboard portiert.",
-                          es: "Las mismas reglas portadas a **engine.ts** para el panel web.",
-                          it: "Le stesse regole portate in **engine.ts** per la dashboard web.",
+                          fr: "Règles dans **lib/engine**, couvertes par des tests unitaires.",
+                          en: "Rules live in **lib/engine**, covered by unit tests.",
+                          de: "Regeln in **lib/engine**, durch Unit-Tests abgedeckt.",
+                          es: "Reglas en **lib/engine**, cubiertas por pruebas unitarias.",
+                          it: "Regole in **lib/engine**, coperte da test unitari.",
                         }),
                         "arch-foot-2",
                       )}
@@ -1536,11 +1536,11 @@ export default function Kerdaxis() {
           <div className="arg-ap-body">
             <ol className="arg-ap-steps">
               {pick(lang, {
-                fr: ["Observe (Qonto 90 j)", "Analyse (engine.py)", "Benchmark (Linkup)", "Décision — ton accord", "Prépare le livrable", "Ledger", "Preuve J+30"],
-                en: ["Observe (Qonto 90d)", "Analyse (engine.py)", "Benchmark (Linkup)", "Decision — your call", "Prepare deliverable", "Ledger", "Proof D+30"],
-                de: ["Beobachten (Qonto 90 T)", "Analyse (engine.py)", "Benchmark (Linkup)", "Entscheidung — deine Freigabe", "Unterlage vorbereiten", "Ledger", "Nachweis T+30"],
-                es: ["Observar (Qonto 90 d)", "Análisis (engine.py)", "Benchmark (Linkup)", "Decisión — tu aprobación", "Preparar el documento", "Ledger", "Prueba D+30"],
-                it: ["Osservare (Qonto 90 g)", "Analisi (engine.py)", "Benchmark (Linkup)", "Decisione — il tuo ok", "Prepara il documento", "Ledger", "Prova G+30"],
+                fr: ["Observe (Qonto 90 j)", "Analyse (moteur)", "Benchmark (Linkup)", "Décision — ton accord", "Prépare le livrable", "Ledger", "Preuve J+30"],
+                en: ["Observe (Qonto 90d)", "Analyse (engine)", "Benchmark (Linkup)", "Decision — your call", "Prepare deliverable", "Ledger", "Proof D+30"],
+                de: ["Beobachten (Qonto 90 T)", "Analyse (Engine)", "Benchmark (Linkup)", "Entscheidung — deine Freigabe", "Unterlage vorbereiten", "Ledger", "Nachweis T+30"],
+                es: ["Observar (Qonto 90 d)", "Análisis (motor)", "Benchmark (Linkup)", "Decisión — tu aprobación", "Preparar el documento", "Ledger", "Prueba D+30"],
+                it: ["Osservare (Qonto 90 g)", "Analisi (motore)", "Benchmark (Linkup)", "Decisione — il tuo ok", "Prepara il documento", "Ledger", "Prova G+30"],
               }).map((label, i) => {
                 const state = i < apStep ? "done" : i === apStep ? "cur" : "todo";
                 return (
@@ -1563,7 +1563,7 @@ export default function Kerdaxis() {
                   </p>
                   <code className="arg-ap-tool" key={apStep}>
                     {apStep === 0 && "mcp__qonto__list_transactions · settled_at_from=−90d"}
-                    {apStep === 1 && "python3 engine.py data/flows-*.json --json"}
+                    {apStep === 1 && "lib/engine · build(transactions, labels)"}
                     {apStep === 2 && `mcp__linkup__linkup-search · "${apLever.label}"`}
                   </code>
                 </div>
@@ -1597,7 +1597,7 @@ export default function Kerdaxis() {
                     )}
                     {execErr && <p className="arg-ap-card-line" style={{ color: "var(--c-clay)" }}>{execErr}</p>}
                     <p className="arg-ap-card-src">
-                      {L({ fr: "Économie calculée par engine.py · prix sourcé + daté (Linkup)", en: "Saving computed by engine.py · price sourced + dated (Linkup)", de: "Einsparung von engine.py berechnet · Preis belegt + datiert (Linkup)", es: "Ahorro calculado por engine.py · precio con fuente y fecha (Linkup)", it: "Risparmio calcolato da engine.py · prezzo con fonte e data (Linkup)" })}
+                      {L({ fr: "Économie calculée par le moteur · prix sourcé + daté (Linkup)", en: "Saving computed by the engine · price sourced + dated (Linkup)", de: "Einsparung von der Engine berechnet · Preis belegt + datiert (Linkup)", es: "Ahorro calculado por el motor · precio con fuente y fecha (Linkup)", it: "Risparmio calcolato dal motore · prezzo con fonte e data (Linkup)" })}
                     </p>
                   </div>
                   <div className="arg-ap-actions">

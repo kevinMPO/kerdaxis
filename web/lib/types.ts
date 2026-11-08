@@ -230,10 +230,10 @@ export interface Tx {
 
 // --- Sortie du classifieur LLM (par marchand) -------------------------------
 /**
- * Qui a posé les étiquettes : un modèle H Company Holo (/api/analyze), Claude
- * (étiquettes fournies à l'API moteur, ex. Claude Tag) ou les règles par mots-clés.
+ * Qui a posé les étiquettes : un modèle H Company Holo (/api/analyze) ou les
+ * règles par mots-clés.
  */
-export type Categorizer = "hcompany" | "claude" | "rules";
+export type Categorizer = "hcompany" | "rules";
 
 export interface MerchantVerdict {
   name: string;

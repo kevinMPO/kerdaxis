@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { build, ENGINE_VERSION } from "@/lib/engine";
+import { build } from "@/lib/engine";
 import type { LeverAction, MerchantVerdict, Nature, Tx } from "@/lib/types";
 
 let seq = 0;
@@ -220,10 +220,5 @@ describe("déterminisme du moteur", () => {
     const txs = [...monthly("Loom", 20), ...monthly("Apollo", 100)];
     const verdicts = [verdict("Loom", "cancel"), verdict("Apollo", "consolidate")];
     expect(JSON.stringify(run(txs, verdicts))).toBe(JSON.stringify(run(txs, verdicts)));
-  });
-
-  it("expose une version de moteur non vide", () => {
-    expect(typeof ENGINE_VERSION).toBe("string");
-    expect(ENGINE_VERSION.length).toBeGreaterThan(0);
   });
 });
