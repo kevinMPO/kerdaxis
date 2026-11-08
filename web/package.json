@@ -1,8 +1,8 @@
 {
-  "name": "argentier",
+  "name": "kerdaxis",
   "version": "0.1.0",
   "private": true,
-  "description": "Argentier — agent d'optimisation bancaire et fiscale pour TPE/EI, branché sur Qonto.",
+  "description": "Kerdaxis — agent d'optimisation bancaire et fiscale pour TPE/EI, branché sur Qonto.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

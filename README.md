@@ -10,8 +10,7 @@ supplier's portal shows the confirmation number.
 [**kerdaxis.com**](https://kerdaxis.com) (site and 69 s film) · [**Try it free**](https://app.kerdaxis.com/try) (email only) ·
 [Demo supplier portal](https://portal.kerdaxis.com) (fictional "Nuvio CRM")
 
-> Built for a hackathon on top of [Argentier](#heritage-argentier), our read-only CFO agent for Qonto.
-> The supplier is fictional. The agent and its run are real.
+> Built for a hackathon. The supplier is fictional. The agent and its run are real.
 
 ---
 
@@ -27,7 +26,7 @@ supplier's portal shows the confirmation number.
 - [Repository layout](#repository-layout)
 - [Tests and CI](#tests-and-ci)
 - [Known limits](#known-limits)
-- [Heritage: Argentier](#heritage-argentier)
+- [Ground rules](#ground-rules)
 
 ---
 
@@ -189,7 +188,7 @@ cloudflared tunnel --config ~/.cloudflared/kerdaxis-app.yml run   # app.kerdaxis
 ```
 site/                 kerdaxis.com: landing (EN/FR), film, posters, loops
 web/                  the Kerdaxis app (Next.js)
-  app/                dashboard (Argentier.tsx), ExecutionPanel, VoiceCommand,
+  app/                dashboard (Kerdaxis.tsx), ExecutionPanel, VoiceCommand,
                       access pages (try, signup, signin, login)
   app/api/execution/  approve · start · status · [id] · final · stop · screenshot · reset
   app/api/            try · signup · signin · signout · me · billing/{return,portal} · voice/gladia
@@ -200,10 +199,10 @@ web/                  the Kerdaxis app (Next.js)
   middleware.ts       access levels and internal headers
   public/replay/      the 10 captures of the recorded run
 portal/               fictional supplier portal (Cloudflare Worker + Durable Object)
-my-app/               Argentier engine as a remote MCP server (Cloudflare Workers)
+my-app/               Kerdaxis engine as a remote MCP server (Cloudflare Workers)
 video/                the 69 s film as code (HyperFrames): SPEC.md, compositions/, recorded
                       H session captures, voiceover script (VOICEOVER.md) and voice lines
-engine.py, tests/     Argentier deterministic engine (Python) and its tests
+engine.py, tests/     Kerdaxis deterministic engine (Python) and its tests
 docs/, PRD + Claude Code/   product docs, the Kerdaxis PRD
 ```
 
@@ -282,10 +281,9 @@ This is a hackathon build. Here is what that means today:
 - **Only Qonto is connected.** Sage, Pennylane and SaaS/CRM tools are shown as "coming", not live.
 - **Stripe is in test mode.** No real money moves.
 
-## Heritage: Argentier
+## Ground rules
 
-Kerdaxis started as a duplicate of **Argentier**, a read-only CFO agent for Qonto built for the
-Qonto × Anthropic MCP hackathon. The rules it inherits still apply:
+Four rules apply everywhere in the codebase:
 
 1. **Read-only Qonto.** Every write, transfer and card tool is hard-denied (`.claude/settings.json`).
 2. **The engine computes, never the LLM.** Every euro comes from `engine.py` / `web/lib/engine`.

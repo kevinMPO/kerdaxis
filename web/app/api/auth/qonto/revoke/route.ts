@@ -42,11 +42,11 @@ import {
   NOM_COOKIE_SESSION,
   lireSessionSignee,
   optionsEffacement,
-  type SessionArgentier,
+  type SessionKerdaxis,
 } from "@/lib/auth/session";
 import { getTokenStore } from "@/lib/auth/token-store";
 import { appendAudit, avecSchema, revokeOrganization } from "@/lib/db/tenant";
-import { baseD1SiPresente, bindingsArgentier } from "@/lib/runtime/bindings";
+import { baseD1SiPresente, bindingsKerdaxis } from "@/lib/runtime/bindings";
 import type { Localized } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -68,13 +68,13 @@ function echec(statut: number, code: string, message: Localized): NextResponse {
 }
 
 export async function POST(requete: Request): Promise<Response> {
-  let session: SessionArgentier | null;
+  let session: SessionKerdaxis | null;
   try {
     session = await lireSessionSignee(requete);
   } catch (erreur) {
     // On ne sait pas QUI débranche : rien n'a pu être supprimé.
     console.error(
-      "[argentier][oauth] Révocation impossible : session illisible (erreur de " +
+      "[kerdaxis][oauth] Révocation impossible : session illisible (erreur de " +
         "configuration ?) :",
       erreur instanceof Error ? `${erreur.name} — ${erreur.message}` : "erreur inconnue",
     );
@@ -91,7 +91,7 @@ export async function POST(requete: Request): Promise<Response> {
   }
 
   if (session) {
-    const bindings = bindingsArgentier();
+    const bindings = bindingsKerdaxis();
     const maintenant = Date.now();
 
     // 1. Les secrets d'abord. Un échec ici est un échec de la révocation :
@@ -100,7 +100,7 @@ export async function POST(requete: Request): Promise<Response> {
       await getTokenStore(bindings).delete(session.orgId);
     } catch (erreur) {
       console.error(
-        "[argentier][oauth] Suppression du jeton Qonto échouée :",
+        "[kerdaxis][oauth] Suppression du jeton Qonto échouée :",
         erreur instanceof Error ? `${erreur.name} — ${erreur.message}` : "erreur inconnue",
       );
       return echec(503, "revocation_incomplete", {
@@ -133,7 +133,7 @@ export async function POST(requete: Request): Promise<Response> {
           // écrit, donc les cookies antérieurs ne seront pas refusés par
           // `lireSession`. Ça ne se tait pas.
           console.error(
-            "[argentier][oauth] ALERTE : révocation non horodatée — aucune " +
+            "[kerdaxis][oauth] ALERTE : révocation non horodatée — aucune " +
               "organisation ne porte l'identifiant de cette session. Clés de " +
               "locataire divergentes ? (cf. callback/route.ts)",
           );
@@ -147,7 +147,7 @@ export async function POST(requete: Request): Promise<Response> {
           }),
         );
       } catch (erreur) {
-        console.error("[argentier][oauth] Journalisation de la révocation échouée :", erreur);
+        console.error("[kerdaxis][oauth] Journalisation de la révocation échouée :", erreur);
       }
     }
   }

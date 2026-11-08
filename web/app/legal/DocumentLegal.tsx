@@ -3,7 +3,7 @@
 // sous-traitants).
 //
 // Composant SERVEUR : ces pages sont du texte statique, elles n'ont besoin
-// d'aucun état client. Elles n'importent donc ni Landing.tsx ni Argentier.tsx,
+// d'aucun état client. Elles n'importent donc ni Landing.tsx ni Kerdaxis.tsx,
 // et n'embarquent aucun script — un document légal doit rester lisible même
 // si tout le reste du site tombe.
 //
@@ -27,8 +27,8 @@ export const EDITEUR = {
   siren: "902 427 145",
   email: "bonjour@mamforma.fr",
   telephone: "01 84 80 24 02",
-  service: "Argentier",
-  domaine: "getargentier.com",
+  service: "Kerdaxis",
+  domaine: "kerdaxis.com",
 } as const;
 
 /**
@@ -114,7 +114,7 @@ export default function DocumentLegal({
 
       <nav className="dl-nav">
         <Link href="/" className="dl-brand">
-          Argentier<span>.</span>
+          Kerdaxis<span>.</span>
         </Link>
         <div className="dl-nav-links">
           {DOCUMENTS.map((d) => (

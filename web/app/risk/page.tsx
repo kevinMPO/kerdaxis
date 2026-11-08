@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 // ---------------------------------------------------------------------------
-// /risk — carte ARGENTIER RISK (PRD §15). Une entrée SIREN → une carte lisible.
+// /risk — carte KERDAXIS RISK (PRD §15). Une entrée SIREN → une carte lisible.
 // Le LLM n'a rien calculé : tous les /20 viennent du moteur déterministe.
 // ---------------------------------------------------------------------------
 
@@ -115,7 +115,7 @@ export default function RiskPage() {
     <>
       <style>{CSS}</style>
       <div className="rk-wrap">
-        <div className="rk-h">Argentier Risk</div>
+        <div className="rk-h">Kerdaxis Risk</div>
         <div className="rk-sub">Analyse de risque d’une entreprise française à partir de son SIREN. Le moteur calcule, l’agent explique.</div>
 
         <div className="rk-form">
@@ -201,7 +201,7 @@ export default function RiskPage() {
 
             {res.explanation.analysis && (
               <>
-                <div className="rk-sec">Analyse Argentier</div>
+                <div className="rk-sec">Analyse Kerdaxis</div>
                 <div className="rk-analysis">{res.explanation.analysis}</div>
               </>
             )}

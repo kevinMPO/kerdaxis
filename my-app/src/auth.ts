@@ -16,7 +16,7 @@ interface Env {
   WAITLIST: KVNamespace;
   /** Clé API Resend (secret). Absente ⇒ pas d'email envoyé, l'inscription marche quand même. */
   RESEND_API_KEY?: string;
-  /** Expéditeur, ex. « Argentier <noreply@getargentier.com> ». Défaut : bac à sable Resend. */
+  /** Expéditeur, ex. « Kerdaxis <noreply@kerdaxis.com> ». Défaut : bac à sable Resend. */
   RESEND_FROM?: string;
   /** Base publique pour le lien de confirmation. Défaut : www.getargentier.com. */
   APP_BASE_URL?: string;
@@ -148,12 +148,12 @@ async function sendVerificationEmail(
   if (!env.RESEND_API_KEY) return false;
   const base = (env.APP_BASE_URL || "https://www.getargentier.com").replace(/\/$/, "");
   const link = `${base}/verify?token=${token}`;
-  const from = env.RESEND_FROM || "Argentier <onboarding@resend.dev>";
+  const from = env.RESEND_FROM || "Kerdaxis <onboarding@resend.dev>";
   const nom = escapeHtml(prenom || "");
   const html = `<!doctype html><html><body style="margin:0;background:#111110;font-family:Inter,Arial,sans-serif;color:#fff;padding:32px">
     <div style="max-width:480px;margin:0 auto;background:#1b1b19;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:32px">
       <h1 style="font-size:20px;margin:0 0 12px">Confirme ton email</h1>
-      <p style="color:#B4B2AC;font-size:15px;line-height:1.6;margin:0 0 24px">Bonjour ${nom}, confirme ton adresse pour activer ton compte Argentier et connecter Qonto en lecture seule.</p>
+      <p style="color:#B4B2AC;font-size:15px;line-height:1.6;margin:0 0 24px">Bonjour ${nom}, confirme ton adresse pour activer ton compte Kerdaxis et connecter Qonto en lecture seule.</p>
       <a href="${link}" style="display:inline-block;background:#F5D312;color:#111110;font-weight:700;text-decoration:none;padding:14px 26px;border-radius:99px">Confirmer mon email →</a>
       <p style="color:#7d7b76;font-size:12px;line-height:1.6;margin:24px 0 0">Ou copie ce lien : ${link}<br/>Ce lien expire dans 24 h. Si tu n'es pas à l'origine de cette inscription, ignore cet email.</p>
     </div></body></html>`;
@@ -167,7 +167,7 @@ async function sendVerificationEmail(
       body: JSON.stringify({
         from,
         to,
-        subject: "Confirme ton email · Argentier",
+        subject: "Confirme ton email · Kerdaxis",
         html,
       }),
     });

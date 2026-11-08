@@ -104,7 +104,7 @@ export async function handleEngine<S extends z.ZodTypeAny>(
   try {
     return noStore(NextResponse.json(compute(parsed.data), { status: 200 }));
   } catch (err) {
-    console.error("[argentier][engine-api] calcul impossible :", err);
+    console.error("[kerdaxis][engine-api] calcul impossible :", err);
     return noStore(NextResponse.json({ error: "engine_error" }, { status: 500 }));
   }
 }

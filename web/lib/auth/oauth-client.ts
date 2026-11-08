@@ -11,7 +11,7 @@
 //  - client PUBLIC : aucun `client_secret` n'est envoyé, jamais. PKCE S256 tient
 //    lieu de preuve de possession.
 //  - `resource` (RFC 8707), exigé par la spec MCP 2025-06-18 : il lie le jeton à
-//    UNE ressource protégée, ce qui empêche qu'un jeton émis pour Argentier soit
+//    UNE ressource protégée, ce qui empêche qu'un jeton émis pour Kerdaxis soit
 //    rejoué contre un autre serveur.
 //
 // Hygiène : ni jeton, ni code, ni verifier ne doit finir dans un log. Les

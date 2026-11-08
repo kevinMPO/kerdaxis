@@ -69,7 +69,7 @@ import {
 import { getTokenStore } from "@/lib/auth/token-store";
 import { appendAudit, avecSchema, upsertOrganization } from "@/lib/db/tenant";
 import { getOrganizationIdentity } from "@/lib/mcp/qonto-read-client";
-import { baseD1, bindingsArgentier } from "@/lib/runtime/bindings";
+import { baseD1, bindingsKerdaxis } from "@/lib/runtime/bindings";
 
 export const dynamic = "force-dynamic";
 
@@ -100,7 +100,7 @@ export async function GET(requete: Request): Promise<Response> {
   if (erreurOAuth) {
     // `access_denied` = refus explicite ; tout le reste est une erreur serveur.
     const statut = erreurOAuth === "access_denied" ? "refus" : "erreur";
-    console.warn(`[argentier][oauth] Consentement non accordé : ${erreurOAuth}.`);
+    console.warn(`[kerdaxis][oauth] Consentement non accordé : ${erreurOAuth}.`);
     return nettoyerCookiesTemporaires(
       NextResponse.redirect(urlRetour(requete, statut), 302),
     );
@@ -111,7 +111,7 @@ export async function GET(requete: Request): Promise<Response> {
   const stateAttendu = lireCookie(entete, NOM_COOKIE_STATE) ?? "";
   if (!stateRecu || !stateAttendu || !egalTempsConstant(stateRecu, stateAttendu)) {
     console.error(
-      "[argentier][oauth] REFUS du callback : state absent ou non concordant " +
+      "[kerdaxis][oauth] REFUS du callback : state absent ou non concordant " +
         "(protection CSRF).",
     );
     return nettoyerCookiesTemporaires(
@@ -120,7 +120,7 @@ export async function GET(requete: Request): Promise<Response> {
           error: "state_invalide",
           message:
             "Retour de connexion refusé : le jeton anti-CSRF est absent ou ne " +
-            "correspond pas. Relance la connexion depuis Argentier.",
+            "correspond pas. Relance la connexion depuis Kerdaxis.",
         },
         { status: 400 },
       ),
@@ -136,7 +136,7 @@ export async function GET(requete: Request): Promise<Response> {
           error: "callback_incomplet",
           message:
             "Retour de connexion incomplet (code d'autorisation ou preuve PKCE " +
-            "manquants). Relance la connexion depuis Argentier.",
+            "manquants). Relance la connexion depuis Kerdaxis.",
         },
         { status: 400 },
       ),
@@ -156,7 +156,7 @@ export async function GET(requete: Request): Promise<Response> {
 
     // --- 5. Persistance -----------------------------------------------------
     const maintenant = Date.now();
-    const bindings = bindingsArgentier();
+    const bindings = bindingsKerdaxis();
     const db = baseD1(bindings);
 
     // Clé de locataire retenue pour TOUTE la suite. L'identifiant dérivé n'est
@@ -183,7 +183,7 @@ export async function GET(requete: Request): Promise<Response> {
         // Repli sur le dérivé : la connexion aboutit, la traçabilité manque, et
         // ça se voit dans le journal du Worker.
         console.error(
-          "[argentier][oauth] Organisation non persistée (base indisponible) : la " +
+          "[kerdaxis][oauth] Organisation non persistée (base indisponible) : la " +
             "connexion se poursuit sous l'identifiant dérivé. Cause :",
           erreur instanceof Error ? `${erreur.name} — ${erreur.message}` : "erreur inconnue",
         );
@@ -200,7 +200,7 @@ export async function GET(requete: Request): Promise<Response> {
         );
       } catch (erreur) {
         console.error(
-          "[argentier][oauth] Journalisation de la connexion échouée :",
+          "[kerdaxis][oauth] Journalisation de la connexion échouée :",
           erreur instanceof Error ? `${erreur.name} — ${erreur.message}` : "erreur inconnue",
         );
       }
@@ -225,7 +225,7 @@ export async function GET(requete: Request): Promise<Response> {
   } catch (erreur) {
     // Ni le code, ni le jeton, ni le verifier ne doivent apparaître ici.
     console.error(
-      "[argentier][oauth] Échec du callback :",
+      "[kerdaxis][oauth] Échec du callback :",
       erreur instanceof Error ? `${erreur.name} — ${erreur.message}` : "erreur inconnue",
     );
     return nettoyerCookiesTemporaires(

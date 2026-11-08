@@ -3,7 +3,7 @@
 // analyse.
 //
 // Le bug que ce test interdit était réel et il a été observé en conditions
-// réelles. `Argentier.tsx` faisait :
+// réelles. `Kerdaxis.tsx` faisait :
 //
 //     fetch("/api/analyze").then((r) => r.json()).then(setData)
 //
@@ -32,7 +32,7 @@ function source(chemin: string): string {
 }
 
 /** Écrans qui consomment /api/analyze et doivent donc traiter les refus. */
-const ECRANS = ["app/Argentier.tsx"];
+const ECRANS = ["app/Kerdaxis.tsx"];
 
 describe("invariant de dépôt : un refus HTTP n'est pas une analyse", () => {
   it("trouve bien l'appel à /api/analyze (sinon le test ne garde rien)", () => {

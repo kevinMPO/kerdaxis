@@ -45,17 +45,17 @@ const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 (async () => {
   console.log("1) Environnement (cloud)…");
   const env = await api("POST", "/v1/environments", {
-    name: `argentier-${Date.now()}`,
+    name: `kerdaxis-${Date.now()}`,
     config: { type: "cloud", networking: { type: "unrestricted" } },
   });
   console.log("   ✓ env:", env.id);
 
-  console.log("2) Agent Argentier…");
+  console.log("2) Agent Kerdaxis…");
   const agent = await api("POST", "/v1/agents", {
-    name: "Argentier Autopilote",
+    name: "Kerdaxis Autopilote",
     model: "claude-sonnet-5",
     system:
-      "Tu es Argentier, un agent DAF en LECTURE SEULE. Règles non négociables : " +
+      "Tu es Kerdaxis, un agent DAF en LECTURE SEULE. Règles non négociables : " +
       "le moteur (code déterministe) calcule chaque euro, jamais toi ; tu ne bouges jamais d'argent ni ne fais d'action bancaire ; " +
       "zéro donnée personnelle ne part vers le web. Tu prépares, l'humain décide et envoie.",
     tools: [{ type: "agent_toolset_20260401" }],
@@ -66,7 +66,7 @@ const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
   const session = await api("POST", "/v1/sessions", {
     agent: agent.id,
     environment_id: env.id,
-    title: "Preuve CMA — Argentier",
+    title: "Preuve CMA — Kerdaxis",
   });
   console.log("   ✓ session:", session.id);
   console.log("   🔗 Console:", `https://platform.claude.com/workspaces/default/sessions/${session.id}`);

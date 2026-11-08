@@ -12,9 +12,9 @@ import type { Metadata } from "next";
 import DocumentLegal, { EDITEUR } from "../legal/DocumentLegal";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité — Argentier",
+  title: "Politique de confidentialité — Kerdaxis",
   description:
-    "Quelles données Argentier traite, pourquoi, combien de temps, avec qui, " +
+    "Quelles données Kerdaxis traite, pourquoi, combien de temps, avec qui, " +
     "et quels sont vos droits.",
 };
 
@@ -25,7 +25,7 @@ export default function Confidentialite() {
       titre="Politique de confidentialité"
       chapo={
         <>
-          Argentier lit des données bancaires. Cette page dit exactement
+          Kerdaxis lit des données bancaires. Cette page dit exactement
           lesquelles, pourquoi, pendant combien de temps et qui d’autre les voit.
           Sans détour.
         </>
@@ -35,7 +35,7 @@ export default function Confidentialite() {
       <p>
         Le responsable du traitement est <strong>{EDITEUR.denomination}</strong>{" "}
         ({EDITEUR.forme}), {EDITEUR.adresse}, SIRET {EDITEUR.siret}, exploitant
-        le service Argentier sur {EDITEUR.domaine}.
+        le service Kerdaxis sur {EDITEUR.domaine}.
       </p>
       <p>
         Contact pour toute question relative aux données personnelles :{" "}
@@ -116,7 +116,7 @@ export default function Confidentialite() {
       </div>
       <p>
         <strong>Aucun profilage, aucune décision automatisée</strong> produisant
-        des effets juridiques à votre égard n’est mis en œuvre. Argentier
+        des effets juridiques à votre égard n’est mis en œuvre. Kerdaxis
         propose ; vous décidez. Vos données ne sont{" "}
         <strong>jamais vendues, louées ni cédées</strong>, et ne servent{" "}
         <strong>pas à entraîner de modèle d’intelligence artificielle</strong>.
@@ -125,7 +125,7 @@ export default function Confidentialite() {
       <h2>3. Vos identifiants bancaires ne nous sont jamais transmis</h2>
       <p>
         La connexion à Qonto se fait par <strong>OAuth 2.1 avec PKCE</strong> :
-        vous vous authentifiez chez Qonto, sur son domaine, et Argentier ne
+        vous vous authentifiez chez Qonto, sur son domaine, et Kerdaxis ne
         reçoit qu’un jeton d’accès révocable. Nous ne voyons ni votre mot de
         passe, ni votre second facteur.
       </p>
@@ -137,7 +137,7 @@ export default function Confidentialite() {
       </p>
       <div className="dl-note">
         <p>
-          <strong>Le jeton demandé ne permet que de lire.</strong> Argentier
+          <strong>Le jeton demandé ne permet que de lire.</strong> Kerdaxis
           sollicite explicitement des autorisations en lecture seule —
           consultation de l’organisation, des comptes, des opérations, des
           justificatifs — et aucune autorisation d’écriture. Vous pouvez le
@@ -278,7 +278,7 @@ export default function Confidentialite() {
 
       <h2>6. Cookies</h2>
       <p>
-        Argentier <strong>ne dépose aucun cookie publicitaire</strong>, aucun
+        Kerdaxis <strong>ne dépose aucun cookie publicitaire</strong>, aucun
         traceur, aucun outil de mesure d’audience. Aucun bandeau de consentement
         n’est donc affiché : ce serait vous demander une autorisation dont nous
         n’avons pas besoin.

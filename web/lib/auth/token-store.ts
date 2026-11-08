@@ -181,7 +181,7 @@ export class MemoryTokenStore implements TokenStore {
  * Sans effet en production : le binding KV y est présent, donc ce repli n'est
  * jamais atteint (`getTokenStore` lève avant).
  */
-const CLE_MEMOIRE = Symbol.for("argentier.tokenStore.memoire");
+const CLE_MEMOIRE = Symbol.for("kerdaxis.tokenStore.memoire");
 
 type PorteurMemoire = { [CLE_MEMOIRE]?: MemoryTokenStore | null };
 
@@ -208,7 +208,7 @@ function poserMemoireGlobale(store: MemoryTokenStore | null): void {
  * `wrangler.jsonc` doit produire le MÊME refus qu'un binding absent, et non un
  * repli silencieux en clair.
  *
- * `env` vient typiquement de `bindingsArgentier()`.
+ * `env` vient typiquement de `bindingsKerdaxis()`.
  */
 export function getTokenStore(env?: TokenStoreEnv): TokenStore {
   const binding =
@@ -230,7 +230,7 @@ export function getTokenStore(env?: TokenStoreEnv): TokenStore {
     memoire = new MemoryTokenStore();
     poserMemoireGlobale(memoire);
     console.warn(
-      "[argentier] Binding KV ARGENTIER_TOKENS absent : les tokens OAuth sont " +
+      "[kerdaxis] Binding KV ARGENTIER_TOKENS absent : les tokens OAuth sont " +
         "gardés en MÉMOIRE, en clair, et perdus au redémarrage. Acceptable en " +
         "dev local uniquement — configure le binding avant tout déploiement.",
     );

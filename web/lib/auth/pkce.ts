@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// PKCE (RFC 7636) et anti-CSRF pour le flux OAuth 2.1 d'Argentier.
+// PKCE (RFC 7636) et anti-CSRF pour le flux OAuth 2.1 de Kerdaxis.
 //
 // Rôle : fabriquer le `code_verifier`, son `code_challenge` en S256, et le
 // `state`. Le serveur d'autorisation de Qonto n'accepte QUE `S256` et n'a pas

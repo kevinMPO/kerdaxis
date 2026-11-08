@@ -1,7 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 // ---------------------------------------------------------------------------
-// Argentier MCP — serveur MCP sur Cloudflare (McpAgent).
-// Expose le MOTEUR DÉTERMINISTE d'Argentier comme outils MCP : n'importe quel
+// Kerdaxis MCP — serveur MCP sur Cloudflare (McpAgent).
+// Expose le MOTEUR DÉTERMINISTE de Kerdaxis comme outils MCP : n'importe quel
 // client MCP (Claude, un agent CMA, l'agent vocal) peut auditer des flux, sans
 // que le LLM ne calcule un seul euro (règle #2). 100 % déterministe.
 // ---------------------------------------------------------------------------
@@ -44,7 +44,7 @@ export class ArgentierMCP extends McpAgent<Env, Record<string, never>, Record<st
     // 1) Les 4 règles non négociables (contexte pour l'agent appelant).
     this.server.registerTool(
       "argentier_rules",
-      { description: "Renvoie les 4 règles non négociables d'Argentier.", inputSchema: {} },
+      { description: "Renvoie les 4 règles non négociables de Kerdaxis.", inputSchema: {} },
       async () => ({ content: [{ type: "text", text: RULES.join("\n") }] }),
     );
 
@@ -329,7 +329,7 @@ export default {
     }
 
     if (url.pathname === "/" || url.pathname === "/health") {
-      return new Response("Argentier MCP — Streamable HTTP sur POST /mcp · POST /waitlist");
+      return new Response("Kerdaxis MCP — Streamable HTTP sur POST /mcp · POST /waitlist");
     }
     if (url.pathname.startsWith("/mcp")) {
       // Anti-flood : 120 requêtes max par IP et par minute (généreux pour un

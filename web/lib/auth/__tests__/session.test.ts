@@ -194,7 +194,7 @@ interface LigneOrg extends Record<string, unknown> {
   revoked_at: number | null;
 }
 
-/** Faux D1 posé sur `globalThis`, exactement là où `bindingsArgentier()` regarde. */
+/** Faux D1 posé sur `globalThis`, exactement là où `bindingsKerdaxis()` regarde. */
 class FauxD1 {
   readonly lignes = new Map<string, LigneOrg>();
   /** Erreur à lever au lieu de répondre (panne, schéma absent). */
@@ -411,7 +411,7 @@ describe("options de cookie", () => {
     process.env.ARGENTIER_BASE_URL = "http://localhost:3000";
     expect(optionsCookieSession().secure).toBe(false);
 
-    process.env.ARGENTIER_BASE_URL = "https://getargentier.com";
+    process.env.ARGENTIER_BASE_URL = "https://kerdaxis.com";
     expect(optionsCookieSession().secure).toBe(true);
   });
 });

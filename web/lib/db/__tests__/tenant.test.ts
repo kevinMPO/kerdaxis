@@ -409,7 +409,7 @@ class FauxStatement implements D1PreparedStatement {
 
 // --- Jeu d'essai ------------------------------------------------------------
 
-const ORG_A = "org_argentier_a";
+const ORG_A = "org_kerdaxis_a";
 const ORG_B = "org_voisin_b";
 const T0 = 1_760_000_000_000;
 const JOUR = 86_400_000;
@@ -421,7 +421,7 @@ async function baseAmorcee(): Promise<FauxD1> {
 
   await upsertOrganization(db, ORG_A, {
     qontoOrgId: "qonto_a",
-    legalName: "Argentier SAS",
+    legalName: "Kerdaxis SAS",
     createdAt: T0,
     connectedAt: T0,
   });
@@ -700,7 +700,7 @@ describe("isolation des locataires — resultats", () => {
 
   it("renvoie une liste vide pour un orgId inconnu ou force", async () => {
     expect(await listDecisions(db, "org_inexistant")).toEqual([]);
-    expect(await listDecisions(db, "org_argentier_a ")).toEqual([]); // pas de correspondance floue
+    expect(await listDecisions(db, "org_kerdaxis_a ")).toEqual([]); // pas de correspondance floue
     expect(await listDecisions(db, "' OR 1=1 --")).toEqual([]);
     expect(await listAudit(db, "org_inexistant", 0)).toEqual([]);
   });
@@ -788,7 +788,7 @@ describe("organizations", () => {
 
     const premiere = await upsertOrganization(db, ORG_A, {
       qontoOrgId: "qonto_a",
-      legalName: "Argentier SAS",
+      legalName: "Kerdaxis SAS",
       createdAt: T0,
       connectedAt: T0,
     });
@@ -798,12 +798,12 @@ describe("organizations", () => {
     // l'ancien — sinon les décisions déjà liées deviendraient orphelines.
     const seconde = await upsertOrganization(db, "org_nouvel_id", {
       qontoOrgId: "qonto_a",
-      legalName: "Argentier SAS (renomme)",
+      legalName: "Kerdaxis SAS (renomme)",
       createdAt: T0 + JOUR,
       connectedAt: T0 + JOUR,
     });
     expect(seconde.id).toBe(ORG_A);
-    expect(seconde.legalName).toBe("Argentier SAS (renomme)");
+    expect(seconde.legalName).toBe("Kerdaxis SAS (renomme)");
     expect(seconde.connectedAt).toBe(T0 + JOUR);
     expect(seconde.createdAt).toBe(T0); // jamais ecrase
     expect(db.lignes("organizations")).toHaveLength(1);

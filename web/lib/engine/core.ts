@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// engine/core.ts — le moteur de calcul DÉTERMINISTE d'Argentier.
+// engine/core.ts — le moteur de calcul DÉTERMINISTE de Kerdaxis.
 //
 // RÈGLE D'OR (règle #2 du projet) : tout montant en euros est calculé ICI, par
 // du code. Le LLM ne fait que CLASSER (nature, pôle, action, motif) ; il ne

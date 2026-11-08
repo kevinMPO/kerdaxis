@@ -1,4 +1,4 @@
-# Spec technique — Argentier en Autopilote (Claude Managed Agents)
+# Spec technique — Kerdaxis en Autopilote (Claude Managed Agents)
 
 > Implémentation de la feature du [PRD](./autopilote-PRD.md). Cible : **CMA (beta)**.
 > Anthropic héberge la boucle + le sandbox ; toi tu ne gères ni scheduler, ni state.
@@ -23,9 +23,9 @@
       via vault        via vault             ledger decisions.json + profile.json
 ```
 
-| Objet CMA | Rôle Argentier |
+| Objet CMA | Rôle Kerdaxis |
 |---|---|
-| **Agent** (versionné) | Le persona « DAF read-only » : model, system, tools, mcp_servers, skill `argentier-audit`. Créé 1×. |
+| **Agent** (versionné) | Le persona « DAF read-only » : model, system, tools, mcp_servers, skill `kerdaxis-audit`. Créé 1×. |
 | **Environment** | Sandbox cloud où tourne `engine.py`. |
 | **Deployment** (cron) | Déclenche les sessions : 1 audit mensuel + 1 verify quotidien. |
 | **Vault** (par client) | Creds MCP Qonto + Linkup (OAuth auto-refresh, jamais dans le sandbox). |
@@ -34,13 +34,13 @@
 
 ---
 
-## 2. Agent — `argentier.agent.yaml`
+## 2. Agent — `kerdaxis.agent.yaml`
 
 ```yaml
-name: Argentier Autopilote
+name: Kerdaxis Autopilote
 model: claude-opus-4-8
 system: |
-  Tu es Argentier, un agent DAF en LECTURE SEULE sur Qonto.
+  Tu es Kerdaxis, un agent DAF en LECTURE SEULE sur Qonto.
   Les 4 règles non négociables :
   1. Read-only Qonto : seuls les tools de lecture sont activés. Ne tente jamais d'écrire.
   2. engine.py calcule, jamais toi. Tu lances le moteur (bash) et tu reprends ses chiffres.
@@ -53,7 +53,7 @@ system: |
   monté (memory store) → sinon inscris le refus dans profile.json (refus_passes) et
   ne le re-propose jamais.
 skills:
-  - { type: custom, skill_id: argentier-audit, version: latest }   # engine.py + runbook
+  - { type: custom, skill_id: kerdaxis-audit, version: latest }   # engine.py + runbook
 tools:
   # Sandbox : bash pour lancer engine.py, read/write pour le livrable
   - type: agent_toolset_20260401
@@ -102,10 +102,10 @@ mcp_servers:
 > Aucun tool d'écriture Qonto n'est activé. Et Qonto exige de toute façon la SCA du
 > membre pour tout mouvement d'argent.
 
-## 3. Environment — `argentier.environment.yaml`
+## 3. Environment — `kerdaxis.environment.yaml`
 
 ```yaml
-name: argentier-sandbox
+name: kerdaxis-sandbox
 config:
   type: cloud
   networking:
@@ -118,7 +118,7 @@ config:
 
 ```python
 # Vault : creds MCP du client (jamais dans le sandbox — substitués à l'egress)
-vault = client.beta.vaults.create(display_name=f"argentier-{tenant_id}")
+vault = client.beta.vaults.create(display_name=f"kerdaxis-{tenant_id}")
 client.beta.vaults.credentials.create(vault.id, auth={
     "type": "mcp_oauth", "mcp_server_url": "https://<endpoint-mcp-qonto>",
     "access_token": "...", "refresh": { ... },   # OAuth Qonto du client
@@ -130,7 +130,7 @@ client.beta.vaults.credentials.create(vault.id, auth={
 
 # Memory store : le ledger + le profil, persistants entre sessions
 store = client.beta.memory_stores.create(
-    name=f"argentier-ledger-{tenant_id}",
+    name=f"kerdaxis-ledger-{tenant_id}",
     description="Ledger des décisions (proven/pending) + profil (refus, intouchables).",
 )
 ```
@@ -140,7 +140,7 @@ store = client.beta.memory_stores.create(
 ```python
 # (1) AUDIT — mensuel : trouve → gate → prépare
 client.beta.deployments.create(
-    name=f"argentier-audit-{tenant_id}",
+    name=f"kerdaxis-audit-{tenant_id}",
     agent=agent.id, environment_id=env.id,
     initial_events=[{ "type": "user.message", "content": [{ "type": "text",
         "text": "Lance l'audit mensuel : OBSERVE 90j → engine → benchmark → gate." }]}],
@@ -151,7 +151,7 @@ client.beta.deployments.create(
 
 # (2) VERIFY — quotidien : sweep de toute décision dont la preuve est due
 client.beta.deployments.create(
-    name=f"argentier-verify-{tenant_id}",
+    name=f"kerdaxis-verify-{tenant_id}",
     agent=agent.id, environment_id=env.id,
     initial_events=[{ "type": "user.message", "content": [{ "type": "text",
         "text": "Sweep verify : pour chaque décision du ledger dont preuve_attendue_le <= aujourd'hui, "

@@ -51,5 +51,5 @@ export function buildPlanCsv(data: AnalyzeResult, levers: Lever[]): string {
 
 export function planFilename(data: AnalyzeResult): string {
   const slug = data.account.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-  return `plan-argentier-${slug || "compte"}.csv`;
+  return `plan-kerdaxis-${slug || "compte"}.csv`;
 }

@@ -15,7 +15,7 @@ import {
   NOM_ECHAPPATOIRE,
   baseD1,
   baseD1SiPresente,
-  bindingsArgentier,
+  bindingsKerdaxis,
   estBaseD1,
   estKvNamespace,
   modeDegradeAutorise,
@@ -78,9 +78,9 @@ describe("contrôles de forme", () => {
   });
 });
 
-describe("bindingsArgentier", () => {
+describe("bindingsKerdaxis", () => {
   it("rend un objet même hors Cloudflare, jamais undefined", () => {
-    expect(bindingsArgentier()).toEqual({
+    expect(bindingsKerdaxis()).toEqual({
       ARGENTIER_TOKENS: undefined,
       ARGENTIER_DB: undefined,
     });
@@ -91,7 +91,7 @@ describe("bindingsArgentier", () => {
       env: { ARGENTIER_DB: FAUSSE_D1, ARGENTIER_TOKENS: FAUX_KV },
     };
 
-    const bindings = bindingsArgentier();
+    const bindings = bindingsKerdaxis();
     expect(bindings.ARGENTIER_DB).toBe(FAUSSE_D1);
     expect(bindings.ARGENTIER_TOKENS).toBe(FAUX_KV);
   });

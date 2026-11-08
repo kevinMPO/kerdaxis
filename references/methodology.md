@@ -1,4 +1,4 @@
-# Argentier — methodology & architecture
+# Kerdaxis — methodology & architecture
 
 Two diagrams (open in a browser; no real data, safe to share):
 
@@ -36,6 +36,6 @@ Two diagrams (open in a browser; no real data, safe to share):
 
 ## Why this wins trust
 
-A bank cannot ship an agent that hallucinates numbers or moves money. Argentier
+A bank cannot ship an agent that hallucinates numbers or moves money. Kerdaxis
 answers both: the numbers are deterministic and reproducible, and the agent is
 read-only and never sends. It prepares; you decide; `/verify` proves the result.

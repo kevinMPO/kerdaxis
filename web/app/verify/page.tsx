@@ -62,7 +62,7 @@ export default function VerifyPage() {
               })}
             </p>
             <a className="vf-btn" href="/">
-              {L(lang, { fr: "Aller sur Argentier →", en: "Go to Argentier →", de: "Zu Argentier →", es: "Ir a Argentier →", it: "Vai su Argentier →" })}
+              {L(lang, { fr: "Aller sur Kerdaxis →", en: "Go to Kerdaxis →", de: "Zu Kerdaxis →", es: "Ir a Kerdaxis →", it: "Vai su Kerdaxis →" })}
             </a>
           </>
         )}
@@ -74,15 +74,15 @@ export default function VerifyPage() {
             </p>
             <p className="vf-sub">
               {L(lang, {
-                fr: "Reconnecte-toi et demande un nouvel email de confirmation depuis Argentier.",
-                en: "Log back in and request a new confirmation email from Argentier.",
+                fr: "Reconnecte-toi et demande un nouvel email de confirmation depuis Kerdaxis.",
+                en: "Log back in and request a new confirmation email from Kerdaxis.",
                 de: "Melde dich erneut an und fordere eine neue Bestätigungs-E-Mail an.",
                 es: "Vuelve a iniciar sesión y solicita un nuevo email de confirmación.",
                 it: "Accedi di nuovo e richiedi una nuova email di conferma.",
               })}
             </p>
             <a className="vf-btn" href="/">
-              {L(lang, { fr: "Retour à Argentier", en: "Back to Argentier", de: "Zurück zu Argentier", es: "Volver a Argentier", it: "Torna su Argentier" })}
+              {L(lang, { fr: "Retour à Kerdaxis", en: "Back to Kerdaxis", de: "Zurück zu Kerdaxis", es: "Volver a Kerdaxis", it: "Torna su Kerdaxis" })}
             </a>
           </>
         )}
