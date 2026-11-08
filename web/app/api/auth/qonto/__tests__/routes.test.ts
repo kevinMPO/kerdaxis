@@ -443,12 +443,22 @@ describe("GET /api/auth/qonto/status", () => {
 
     await expect(reponse.json()).resolves.toEqual({
       connected: false,
+      // Domaine hébergé + proxy MCP : Qonto refusera la redirect_uri.
+      connectable: false,
       readOnly: true,
       // Les scopes demandés sont tous en `.read` et Qonto les honore : le
       // jeton lui-même est incapable d'écrire.
       scopesAreWriteCapable: false,
     });
     expect(reponse.headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("annonce la connexion possible en loopback, là où le proxy MCP l'accepte", async () => {
+    process.env.ARGENTIER_BASE_URL = BASE_LOOPBACK;
+    const reponse = await status(new Request(`${BASE_LOOPBACK}/api/auth/qonto/status`));
+
+    const charge = (await reponse.json()) as { connectable: boolean };
+    expect(charge.connectable).toBe(true);
   });
 
   it("ne renvoie jamais de jeton, même avec une session CONNECTÉE", async () => {

@@ -13,6 +13,8 @@ export interface DashboardCopy {
   disconnect: string;
   reconnect: string;
   unavailable: string;
+  connectClosed: string;
+  connectClosedHint: string;
   headline: (recoverable: string, confirmed: string | null) => string;
   headlineSub: (monthly: string, count: number) => string;
   ledgerSteps: [string, string, string, string, string];
@@ -129,6 +131,8 @@ const fr: DashboardCopy = {
   disconnect: "Déconnecter Qonto",
   reconnect: "Ta session Qonto a expiré : les montants affichés sont ceux de la démonstration.",
   unavailable: "Analyse indisponible : les montants affichés sont ceux de la démonstration.",
+  connectClosed: "La connexion d'un vrai compte Qonto n'est pas encore ouverte sur ce domaine : Qonto doit d'abord autoriser l'adresse de retour de Kerdaxis. En attendant, la démo tourne sur des données d'exemple.",
+  connectClosedHint: "Bientôt : Qonto doit d'abord autoriser l'adresse de retour de Kerdaxis.",
   headline: (r, c) => `Tu peux récupérer ${r} par an. ${c ? `${c} déjà confirmés par les fournisseurs.` : "Rien n'est encore confirmé par un fournisseur."}`,
   headlineSub: (m, n) => `${m} par mois sur ${n} leviers retenus. Chaque euro vient du moteur, jamais du modèle.`,
   ledgerSteps: ["Potentiel", "Approuvé", "Exécuté", "Confirmé fournisseur", "Vérifié sur relevé"],
@@ -253,6 +257,8 @@ const en: DashboardCopy = {
   disconnect: "Disconnect Qonto",
   reconnect: "Your Qonto session expired: the amounts shown are demo data.",
   unavailable: "Analysis unavailable: the amounts shown are demo data.",
+  connectClosed: "Connecting a real Qonto account isn't open on this domain yet: Qonto must first approve Kerdaxis's callback address. Meanwhile, the demo runs on sample data.",
+  connectClosedHint: "Coming soon: Qonto must first approve Kerdaxis's callback address.",
   headline: (r, c) => `You can recover ${r} a year. ${c ? `${c} already confirmed by suppliers.` : "Nothing confirmed by a supplier yet."}`,
   headlineSub: (m, n) => `${m} a month across ${n} selected levers. Every euro comes from the engine, never the model.`,
   ledgerSteps: ["Potential", "Approved", "Executed", "Supplier confirmed", "Verified on statement"],
@@ -381,6 +387,8 @@ const de: DashboardCopy = {
   analyzing: "Konto wird gelesen, die Engine rechnet…",
   connectQonto: "Qonto verbinden",
   disconnect: "Qonto trennen",
+  connectClosed: "Die Verbindung eines echten Qonto-Kontos ist auf dieser Domain noch nicht freigeschaltet: Qonto muss zuerst die Rückruf-Adresse von Kerdaxis zulassen. Bis dahin läuft die Demo mit Beispieldaten.",
+  connectClosedHint: "Demnächst: Qonto muss zuerst die Rückruf-Adresse von Kerdaxis zulassen.",
   headline: (r, c) => `Du kannst ${r} pro Jahr zurückholen. ${c ? `${c} bereits vom Anbieter bestätigt.` : "Noch nichts vom Anbieter bestätigt."}`,
   headlineSub: (m, n) => `${m} pro Monat über ${n} gewählte Hebel. Jeder Euro kommt aus der Engine, nie vom Modell.`,
   ledgerSteps: ["Potenzial", "Freigegeben", "Ausgeführt", "Vom Anbieter bestätigt", "Auf Auszug geprüft"],
@@ -422,6 +430,8 @@ const es: DashboardCopy = {
   analyzing: "Leyendo la cuenta, el motor está calculando…",
   connectQonto: "Conectar Qonto",
   disconnect: "Desconectar Qonto",
+  connectClosed: "La conexión de una cuenta Qonto real aún no está abierta en este dominio: Qonto debe autorizar primero la dirección de retorno de Kerdaxis. Mientras tanto, la demo funciona con datos de ejemplo.",
+  connectClosedHint: "Próximamente: Qonto debe autorizar primero la dirección de retorno de Kerdaxis.",
   headline: (r, c) => `Puedes recuperar ${r} al año. ${c ? `${c} ya confirmados por los proveedores.` : "Nada confirmado aún por un proveedor."}`,
   headlineSub: (m, n) => `${m} al mes en ${n} palancas elegidas. Cada euro viene del motor, nunca del modelo.`,
   ledgerSteps: ["Potencial", "Aprobado", "Ejecutado", "Confirmado por proveedor", "Verificado en extracto"],
@@ -463,6 +473,8 @@ const it: DashboardCopy = {
   analyzing: "Lettura del conto, il motore sta calcolando…",
   connectQonto: "Collega Qonto",
   disconnect: "Scollega Qonto",
+  connectClosed: "Il collegamento di un vero conto Qonto non è ancora aperto su questo dominio: Qonto deve prima autorizzare l'indirizzo di ritorno di Kerdaxis. Nel frattempo, la demo usa dati di esempio.",
+  connectClosedHint: "Presto disponibile: Qonto deve prima autorizzare l'indirizzo di ritorno di Kerdaxis.",
   headline: (r, c) => `Puoi recuperare ${r} all'anno. ${c ? `${c} già confermati dai fornitori.` : "Ancora nulla confermato da un fornitore."}`,
   headlineSub: (m, n) => `${m} al mese su ${n} leve scelte. Ogni euro viene dal motore, mai dal modello.`,
   ledgerSteps: ["Potenziale", "Approvato", "Eseguito", "Confermato dal fornitore", "Verificato sull'estratto"],

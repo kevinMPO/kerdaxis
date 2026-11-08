@@ -17,7 +17,7 @@
 import { NextResponse } from "next/server";
 import { buildAuthorizationUrl } from "@/lib/auth/oauth-client";
 import { createPkcePair, generateState } from "@/lib/auth/pkce";
-import { activeProvider } from "@/lib/auth/providers";
+import { activeProvider, connexionQontoOuverte } from "@/lib/auth/providers";
 import {
   NOM_COOKIE_STATE,
   NOM_COOKIE_VERIFIER,
@@ -26,28 +26,10 @@ import {
 
 export const dynamic = "force-dynamic";
 
-/**
- * Le proxy MCP de Qonto n'accepte comme `redirect_uri` que du LOOPBACK
- * (`http://localhost:*`, `http://127.0.0.1:*`) ou une URI inscrite dans sa
- * liste blanche codée en dur. Mesuré : toute autre origine reçoit un
- * `400 invalid redirect_uri`.
- *
- * Conséquence, tant que Qonto n'a pas inscrit notre URI : sur un domaine
- * hébergé, ce flux ne PEUT pas aboutir. On refuse donc de partir plutôt que
- * d'envoyer l'utilisateur se heurter à une page d'erreur OAuth brute chez un
- * tiers — c'est illisible, et ça donne l'impression que le produit est cassé
- * alors que c'est une restriction de la plateforme d'en face.
- */
-function origineAcceptableParQonto(redirectUri: string): boolean {
-  let hote: string;
-  try {
-    hote = new URL(redirectUri).hostname;
-  } catch {
-    return false;
-  }
-  return hote === "localhost" || hote === "127.0.0.1" || hote === "[::1]";
-}
-
+// Le proxy MCP de Qonto n'accepte comme `redirect_uri` que du loopback ou sa
+// liste blanche codée en dur (`connexionQontoOuverte`). Sur un domaine hébergé,
+// le flux ne PEUT pas aboutir : on refuse de partir plutôt que d'envoyer
+// l'utilisateur sur une page d'erreur OAuth brute chez un tiers.
 export async function GET(requete: Request): Promise<Response> {
   let urlAutorisation: string;
   let codeVerifier: string;
@@ -60,7 +42,7 @@ export async function GET(requete: Request): Promise<Response> {
     const provider = activeProvider();
 
     // Garde-fou : sur une origine que Qonto refusera, on s'arrête ici.
-    if (provider.id === "mcp-proxy" && !origineAcceptableParQonto(provider.redirectUri)) {
+    if (!connexionQontoOuverte(provider)) {
       console.warn(
         `[kerdaxis][oauth] Départ refusé : le proxy MCP de Qonto n'accepte ` +
           `pas la redirect_uri « ${provider.redirectUri} » (loopback ou liste ` +
