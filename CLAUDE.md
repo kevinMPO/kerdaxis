@@ -84,7 +84,7 @@ l'API moteur, Claude reprend les chiffres verbatim.
 
 ```bash
 python3 -m unittest discover -s tests    # verifier que le moteur est sain
-python3 engine.py data/exemple-demo.json  # voir le rendu sur l'echantillon
+python3 engine.py tests/fixtures/exemple-demo.json  # voir le rendu sur l'echantillon
 ```
 
 Dans une session Claude Code : `/audit` (analyse + reco) puis, ~30 jours apres une
