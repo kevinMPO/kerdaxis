@@ -4,7 +4,7 @@
 // sont publiques ; le reste exige une session signée :
 //   - kx_test (mot de passe de test) ou kx_session « member » (abonné Stripe)
 //     → en-tête interne x-kx-test-auth=1 : agent H Company réel autorisé ;
-//   - kx_session « trial » (e-mail seul) → x-kx-role=trial : l'agent est REJOUÉ.
+//   - kx_session « trial » (e-mail seul) → x-kx-role=trial : Nuvio est REJOUÉ, le reste tourne en vrai.
 // Les deux en-têtes internes sont TOUJOURS effacés puis reposés ici : une
 // valeur envoyée par le client n'est jamais prise telle quelle.
 // ---------------------------------------------------------------------------

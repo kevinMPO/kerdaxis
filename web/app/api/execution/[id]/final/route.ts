@@ -3,7 +3,7 @@ import { z } from "zod";
 import { decideFinal } from "@/lib/execution/runner";
 import { decideReplay } from "@/lib/execution/replay";
 import { getExecution, publicView, withExecution } from "@/lib/execution/store";
-import { noStore, execGuard } from "@/lib/execution/http";
+import { noStore, execGuard, trialMayAccess } from "@/lib/execution/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,8 +21,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const exec = await getExecution(id);
   if (!exec) return noStore(NextResponse.json({ error: "not_found" }, { status: 404 }));
-  // Un compte d'essai ne voit que ses rediffusions, jamais une exécution réelle.
-  if (g.mode === "replay" && !exec.replay) return noStore(NextResponse.json({ error: "forbidden" }, { status: 403 }));
+  // Un compte d'essai ne voit que ce qu'un essai a lancé, jamais un run d'opérateur.
+  if (g.mode === "trial" && !trialMayAccess(exec)) return noStore(NextResponse.json({ error: "forbidden" }, { status: 403 }));
   const parsed = Body.safeParse(await req.json().catch(() => null));
   // NB : `decideFinal` exige l'état awaiting_final_approval, atteint seulement
   // quand l'agent est arrêté devant la confirmation finale (pause Kerdaxis ou fin de tour 1).

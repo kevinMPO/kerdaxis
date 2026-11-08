@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { startExecution } from "@/lib/execution/runner";
-import { startReplay } from "@/lib/execution/replay";
+import { startReplay, trialRunsReplay } from "@/lib/execution/replay";
 import { checkApproval } from "@/lib/execution/policy";
 import { getApproval, publicView, putApproval, putExecution } from "@/lib/execution/store";
 import { DEMO_ORG, noStore, execGuard } from "@/lib/execution/http";
@@ -23,13 +23,14 @@ export async function POST(req: Request): Promise<Response> {
 
   try {
     let exec;
-    if (g.mode === "replay") {
-      // Essai gratuit : mêmes contrôles d'accord (usage unique, TTL), puis rediffusion.
+    const trial = g.mode === "trial";
+    if (trial && trialRunsReplay(approval.params.supplierId)) {
+      // Essai gratuit sur le fournisseur de démo : mêmes contrôles d'accord (usage unique, TTL), puis rediffusion.
       const check = await checkApproval(approval, DEMO_ORG);
       if (!check.ok) throw new Error(`accord_invalide:${check.reason}`);
       exec = startReplay(approval);
     } else {
-      exec = await startExecution(approval, DEMO_ORG);
+      exec = await startExecution(approval, DEMO_ORG, { startedByTrial: trial });
     }
     // Usage unique : l'accord consommé (usedAt) est réécrit avant toute réponse.
     await putApproval(approval);
