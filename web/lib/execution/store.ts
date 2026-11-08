@@ -17,6 +17,7 @@
 import type { Approval, ActionParams } from "./policy";
 import type { ToolCall } from "./hcompany";
 import type { SupplierState, SupplierTarget } from "./suppliers";
+import type { RunLang } from "./run-copy";
 import { baseD1SiPresente } from "@/lib/runtime/bindings";
 
 /** Statuts du PRD Kerdaxis (§4.5), + `running` et `stopped_by_user` pour l'affichage. */
@@ -89,6 +90,8 @@ export interface Execution {
   createdAt: string;
   updatedAt: string;
   events: ExecutionEvent[];
+  /** Language of the run log and of the agent's notes; absent on runs saved before it was recorded. */
+  lang?: RunLang;
   /** Essai gratuit : rediffusion d'une session réelle enregistrée (aucun appel H Company). */
   replay?: { startedMs: number; goMs: number | null; shown: number };
   playbook?: PlaybookView | null;

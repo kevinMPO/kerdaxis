@@ -274,7 +274,7 @@ export default function Kerdaxis() {
     setExecBusy(true);
     setExecErr(null);
     try {
-      const id = await launchCancellation(supplierId);
+      const id = await launchCancellation(supplierId, lang);
       setApOpen(false);
       setExecId(id);
     } catch (e) {

@@ -12,6 +12,7 @@
 // ---------------------------------------------------------------------------
 
 import React, { useEffect, useRef, useState } from "react";
+import type { Lang } from "@/lib/types";
 
 type Status =
   | "prepared"
@@ -166,7 +167,7 @@ const eur = (cents: number) =>
   new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(cents / 100);
 
 /** Accord + lancement : renvoie l'id d'exécution. Les montants viennent du serveur. */
-export async function launchCancellation(supplierId: string): Promise<string> {
+export async function launchCancellation(supplierId: string, lang: Lang): Promise<string> {
   const a = await fetch("/api/execution/approve", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -177,7 +178,7 @@ export async function launchCancellation(supplierId: string): Promise<string> {
   const s = await fetch("/api/execution/start", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ approvalId: approval.approvalId }),
+    body: JSON.stringify({ approvalId: approval.approvalId, lang }),
   });
   const exec = await s.json();
   if (!s.ok) throw new Error(exec.message ?? exec.error ?? "lancement refusé");
