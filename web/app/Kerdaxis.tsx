@@ -16,9 +16,22 @@ import { EUROPE_PATHS, EUROPE_VIEWBOX, EU_CITY_XY } from "@/lib/europeMap";
 import ExecutionPanel, { launchCancellation } from "./ExecutionPanel";
 import VoiceCommand from "./VoiceCommand";
 import { parseIntent } from "@/lib/voice/intents";
+import { dashboardCopy } from "./dashboard/copy";
+import { useAccessLog, type AccessEntryView } from "./dashboard/use-access-log";
 
 // Agent conversationnel ElevenLabs (Q&A vocal). Vide = widget Q&A désactivé.
 const CONVAI_AGENT_ID = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID;
+
+const MAX_AUDIT_ROWS = 8;
+
+const ACCESS_SERVICE_LABEL: Record<AccessEntryView["service"], string> = {
+  qonto: "Qonto",
+  anthropic: "Anthropic",
+  linkup: "Linkup",
+  hcompany: "H Company",
+  gladia: "Gladia",
+  elevenlabs: "ElevenLabs",
+};
 
 // Rend un texte avec emphase **...** → <strong>.
 function emph(text: string, keyBase: string): React.ReactNode[] {
@@ -129,6 +142,8 @@ export default function Kerdaxis() {
   // Résout un texte 5-langues (repli anglais) ; loc() résout un Localized (fr/en only).
   const L = (m: Record<Lang, string>) => pick(lang, m);
   const loc = (x: Localized) => x[lang as "fr" | "en"] ?? x.en;
+  const auditCopy = dashboardCopy(lang);
+  const access = useAccessLog();
 
   useEffect(() => {
     const saved =
@@ -354,11 +369,6 @@ export default function Kerdaxis() {
     [levers],
   );
 
-  // Écran « Prouvé » de l'autopilote : le gain annuel compte jusqu'au chiffre
-  // du moteur (même compteur que le hero). La valeur finale reste celle du moteur.
-  const proofShown = apStep === 6 && apDecision === "approved";
-  const proofAnnual = apLever ? apLever.saving * 12 : 0;
-  const { val: proofVal, ready: proofReady } = useCountUp(proofAnnual, proofShown);
 
   // Texte que la voix lit — dans la langue courante, avec le chiffre du hero.
   const voiceScript = () => {
@@ -982,39 +992,31 @@ export default function Kerdaxis() {
         </div>
       </section>
 
-      {/* Journal d'audit MCP — preuve du Zéro-PII */}
+      {/* Journal d'accès réel : chaque appel à un tiers de cette session, écrit au point d'appel réseau. */}
       <section className="arg-card arg-area-audit">
         <div className="arg-card-head">
-          <span className="arg-card-title">{L({ fr: "Journal d'audit MCP", en: "MCP audit log", de: "MCP-Audit-Protokoll", es: "Registro de auditoría MCP", it: "Registro di audit MCP" })}</span>
-          <span className="arg-src live">● {L({ fr: "Zéro PII prouvé", en: "Zero PII proven", de: "Null PII bewiesen", es: "Cero PII probado", it: "Zero PII dimostrato" })}</span>
+          <span className="arg-card-title">{auditCopy.auditLog}</span>
+          <span className="arg-src live">● {L({ fr: "En direct", en: "Live", de: "Live", es: "En directo", it: "In diretta" })}</span>
         </div>
-        <ul className="arg-audit">
-          {[
-            { t: "mcp__qonto__get_organization", out: L({ fr: "aucune donnée émise (lecture)", en: "no data sent (read)", de: "keine Daten gesendet (Lesen)", es: "ningún dato enviado (lectura)", it: "nessun dato inviato (lettura)" }), tone: "in" },
-            { t: "mcp__qonto__list_transactions", out: L({ fr: "reste dans la machine", en: "stays in the machine", de: "bleibt in der Maschine", es: "se queda en la máquina", it: "resta nella macchina" }), tone: "in" },
-            {
-              t: "mcp__linkup__linkup-search",
-              out: L({ fr: "sorti : « Figma · design » (marchand + catégorie)", en: "sent: “Figma · design” (merchant + category)", de: "gesendet: „Figma · Design“ (Händler + Kategorie)", es: "enviado: «Figma · design» (comercio + categoría)", it: "inviato: «Figma · design» (esercente + categoria)" }),
-              tone: "out",
-            },
-          ].map((r, i) => (
-            <li key={i} className="arg-audit-row">
-              <code className="arg-audit-tool">{r.t}</code>
-              <span className={"arg-audit-out " + r.tone}>
-                {r.tone === "out" ? "↗" : "•"} {r.out}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="arg-hint">
-          {L({
-            fr: "Aucun IBAN, transaction_id ni donnée perso ne sort. Seuls marchand + catégorie partent vers le web (règle 3).",
-            en: "No IBAN, transaction_id or personal data leaves. Only merchant + category go to the web (rule 3).",
-            de: "Keine IBAN, keine transaction_id, keine persönlichen Daten verlassen das System. Nur Händler + Kategorie gehen ins Web (Regel 3).",
-            es: "No sale ningún IBAN, transaction_id ni dato personal. Solo comercio + categoría van a la web (regla 3).",
-            it: "Nessun IBAN, transaction_id o dato personale esce. Solo esercente + categoria vanno sul web (regola 3).",
-          })}
-        </p>
+        {access.failed && access.entries.length === 0 ? (
+          <p className="arg-hint">{auditCopy.auditFailed}</p>
+        ) : access.loaded && access.entries.length === 0 ? (
+          <p className="arg-hint">{auditCopy.auditEmpty}</p>
+        ) : (
+          <ul className="arg-audit">
+            {access.entries.slice(0, MAX_AUDIT_ROWS).map((entry) => (
+              <li key={entry.id} className="arg-audit-row">
+                <code className="arg-audit-tool">
+                  {ACCESS_SERVICE_LABEL[entry.service]} · {entry.operation}
+                </code>
+                <span className={"arg-audit-out " + (entry.direction === "sent" ? "out" : "in")}>
+                  {entry.direction === "sent" ? `↗ ${auditCopy.auditSent} ${entry.sent ?? ""}` : `• ${auditCopy.auditRead}`}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="arg-hint">{auditCopy.auditNote}</p>
       </section>
 
       {/* Bientôt — fake-it grisé + liste d'attente */}
@@ -1523,7 +1525,7 @@ export default function Kerdaxis() {
             <span className="arg-ap-brand">
               <span className="arg-mark"><ArgLogo /></span>
               {L({ fr: "Autopilote", en: "Autopilot", de: "Autopilot", es: "Autopiloto", it: "Autopilota" })}
-              <span className="arg-ap-badge">done-for-you</span>
+              <span className="arg-ap-badge">{L({ fr: "audit rejoué", en: "audit replay", de: "Audit-Wiedergabe", es: "auditoría reproducida", it: "audit riprodotto" })}</span>
             </span>
             <button className="arg-drawer-close" onClick={() => setApOpen(false)} aria-label={T.close}>✕</button>
           </div>
@@ -1637,17 +1639,19 @@ export default function Kerdaxis() {
               )}
 
               {apStep === 6 && apDecision === "approved" && (
+                // Nothing is proven on the day of approval: the statement only shows the drop at the next billing date.
                 <div className="arg-ap-proof">
-                  <p className="arg-ap-proof-badge">✓ {L({ fr: "Prouvé — J+30", en: "Proven — D+30", de: "Bewiesen — T+30", es: "Probado — D+30", it: "Dimostrato — G+30" })}</p>
-                  <p className="arg-ap-proof-num arg-mono">−{eur(proofReady ? proofAnnual : proofVal)}<span>/{L({ fr: "an", en: "yr", de: "Jahr", es: "año", it: "anno" })}</span></p>
+                  <p className="arg-ap-proof-badge">{L({ fr: "Approuvé · preuve à J+30", en: "Approved · proof at D+30", de: "Freigegeben · Nachweis an T+30", es: "Aprobado · prueba en D+30", it: "Approvato · prova a G+30" })}</p>
+                  <p className="arg-ap-proof-num arg-mono">−{eur(apLever.saving * 12)}<span>/{L({ fr: "an", en: "yr", de: "Jahr", es: "año", it: "anno" })}</span></p>
                   <p className="arg-ap-proof-sub">
-                    {L({ fr: "La charge a bien baissé. Ledger : pending → proven.", en: "The charge dropped. Ledger: pending → proven.", de: "Die Kosten sind tatsächlich gesunken. Ledger: pending → proven.", es: "El gasto bajó de verdad. Ledger: pending → proven.", it: "Il costo è davvero sceso. Ledger: pending → proven." })}
+                    {L({
+                      fr: "Ledger : en attente. Kerdaxis relit le relevé à la prochaine échéance et ne marque « prouvé » que si la charge a vraiment disparu.",
+                      en: "Ledger: pending. Kerdaxis rereads the statement at the next billing date and only marks it proven if the charge is really gone.",
+                      de: "Ledger: ausstehend. Kerdaxis prüft den Auszug zum nächsten Abrechnungstermin und markiert erst dann als bewiesen, wenn die Belastung wirklich weg ist.",
+                      es: "Ledger: pendiente. Kerdaxis relee el extracto en la próxima fecha de cobro y solo lo marca como probado si el cargo ha desaparecido de verdad.",
+                      it: "Ledger: in attesa. Kerdaxis rilegge l'estratto alla prossima scadenza e lo segna come dimostrato solo se l'addebito è davvero sparito.",
+                    })}
                   </p>
-                  <div className="arg-ap-roi">
-                    <span>{L({ fr: "Kerdaxis a prouvé", en: "Kerdaxis proved", de: "Kerdaxis hat bewiesen", es: "Kerdaxis probó", it: "Kerdaxis ha dimostrato" })} <b className="arg-mono">{eur(apLever.saving * 12)}</b></span>
-                    <span className="arg-ap-roi-arrow">→</span>
-                    <span>{L({ fr: "ta commande (5%)", en: "your fee (5%)", de: "deine Provision (5 %)", es: "tu comisión (5 %)", it: "la tua commissione (5%)" })} <b className="arg-mono">{eur(Math.round(apLever.saving * 12 * 0.05))}</b></span>
-                  </div>
                   <p className="arg-ap-proof-model">{L({ fr: "Pas d'économie, pas de coût.", en: "No savings, no cost.", de: "Keine Einsparung, keine Kosten.", es: "Sin ahorro, sin coste.", it: "Nessun risparmio, nessun costo." })}</p>
                   <button className="arg-ap-again" onClick={startAutopilot}>↻ {L({ fr: "Rejouer", en: "Replay", de: "Erneut abspielen", es: "Repetir", it: "Rigioca" })}</button>
                 </div>
