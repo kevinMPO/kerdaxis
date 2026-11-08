@@ -12,6 +12,7 @@
 // ---------------------------------------------------------------------------
 
 import React, { useEffect, useRef, useState } from "react";
+import type { FinalLabelSource, ResearchRunCheck, StepCheck } from "@/lib/execution/research/compare";
 import type { Lang } from "@/lib/types";
 
 type Status =
@@ -48,6 +49,8 @@ interface ExecView {
   replay?: boolean;
   /** Le parcours remis à l'agent, et d'où il vient (catalogue ou doc officielle). */
   playbook?: PlaybookView | null;
+  /** Le parcours Linkup confronté au journal de l'agent, calculé par le serveur. */
+  researchCheck?: ResearchRunCheck | null;
 }
 
 interface PlaybookView {
@@ -60,6 +63,9 @@ interface PlaybookView {
   screenshots: { read: number; sent: number; steps: string[] } | null;
   video: { title: string; url: string; steps: string[] } | null;
   fallbackReason: string | null;
+  researchedAt?: string | null;
+  sourceUrls?: string[];
+  finalLabelSource?: FinalLabelSource;
 }
 
 const TERMINAL: Status[] = ["supplier_confirmed", "failed", "needs_manual_action", "stopped_by_user"];
@@ -115,6 +121,12 @@ const T = {
     pbFinal: "Bouton final",
     pbTraps: "Pièges annoncés",
     pbSource: "source ↗",
+    pbDated: (n: number, day: string) => `${n} sources · recherche du ${day}`,
+    pbSeen: "✓ nommé par l'agent",
+    pbNotSeen: "jamais nommé par l'agent",
+    pbFinalFrom: { docs: "tiré de la doc", screenshots: "lu sur les captures", catalog: "catalogue Kerdaxis, absent de la doc" } as Record<FinalLabelSource, string>,
+    pbScore: (seen: number, total: number) => `Linkup face à cette exécution : ${seen}/${total} libellés de la doc nommés par l'agent`,
+    pbNotes: "Note de l'agent",
   },
   en: {
     title: "Execution · H Company agent",
@@ -160,6 +172,12 @@ const T = {
     pbFinal: "Final button",
     pbTraps: "Expected traps",
     pbSource: "source ↗",
+    pbDated: (n: number, day: string) => `${n} sources · researched ${day}`,
+    pbSeen: "✓ named by the agent",
+    pbNotSeen: "never named by the agent",
+    pbFinalFrom: { docs: "from the docs", screenshots: "read on the screenshots", catalog: "Kerdaxis catalog, not in the docs" } as Record<FinalLabelSource, string>,
+    pbScore: (seen: number, total: number) => `Linkup vs this run: ${seen}/${total} documented labels named by the agent`,
+    pbNotes: "Agent's note",
   },
 };
 
@@ -398,7 +416,7 @@ export default function ExecutionPanel({ id, lang, onClose }: { id: string; lang
             </div>
           )}
 
-          {view?.playbook && <PlaybookBox playbook={view.playbook} t={t} />}
+          {view?.playbook && <PlaybookBox playbook={view.playbook} check={view.researchCheck ?? null} lang={lang} t={t} />}
 
           <div className="kx-jbox">
             <p className="kx-journal">{t.journal}</p>
@@ -417,7 +435,27 @@ export default function ExecutionPanel({ id, lang, onClose }: { id: string; lang
   );
 }
 
-function PlaybookBox({ playbook, t }: { playbook: PlaybookView; t: (typeof T)["en"] }) {
+function StepMark({ check, t }: { check: StepCheck | undefined; t: (typeof T)["en"] }) {
+  if (check === "seen") return <span className="kx-pb-mark seen">{t.pbSeen}</span>;
+  if (check === "not_seen") return <span className="kx-pb-mark missed">{t.pbNotSeen}</span>;
+  return null;
+}
+
+function PlaybookBox({
+  playbook,
+  check,
+  lang,
+  t,
+}: {
+  playbook: PlaybookView;
+  check: ResearchRunCheck | null;
+  lang: string;
+  t: (typeof T)["en"];
+}) {
+  const researched = playbook.source === "research" && !playbook.fallbackReason;
+  const day = playbook.researchedAt
+    ? new Date(playbook.researchedAt).toLocaleDateString(lang, { day: "numeric", month: "short", year: "numeric" })
+    : null;
   const origin =
     playbook.fallbackReason
       ? t.pbFallback
@@ -435,9 +473,13 @@ function PlaybookBox({ playbook, t }: { playbook: PlaybookView; t: (typeof T)["e
           </a>
         )}
       </summary>
+      {researched && day && <p className="kx-pb-dated">{t.pbDated(playbook.sourceUrls?.length ?? 0, day)}</p>}
       <ol className="kx-pb-steps">
         {playbook.steps.map((step, i) => (
-          <li key={i}>{step}</li>
+          <li key={i}>
+            {step}
+            <StepMark check={check?.steps[i]?.check} t={t} />
+          </li>
         ))}
       </ol>
       {playbook.screenshots && (
@@ -467,6 +509,8 @@ function PlaybookBox({ playbook, t }: { playbook: PlaybookView; t: (typeof T)["e
       )}
       <p className="kx-pb-meta">
         {t.pbFinal} · <b>« {playbook.finalButtonLabel} »</b>
+        {researched && <> · {t.pbFinalFrom[playbook.finalLabelSource ?? "catalog"]}</>}
+        <StepMark check={check?.finalLabel.check} t={t} />
         {playbook.retentionTraps.length > 0 && (
           <>
             <br />
@@ -474,6 +518,14 @@ function PlaybookBox({ playbook, t }: { playbook: PlaybookView; t: (typeof T)["e
           </>
         )}
       </p>
+      {check && check.labelledSteps > 0 && (
+        <p className={`kx-pb-score ${check.seenSteps === check.labelledSteps ? "ok" : ""}`}>{t.pbScore(check.seenSteps, check.labelledSteps)}</p>
+      )}
+      {check?.agentNotes && (
+        <p className="kx-pb-meta">
+          <b>{t.pbNotes}</b> · {check.agentNotes}
+        </p>
+      )}
     </details>
   );
 }
@@ -626,4 +678,10 @@ const CSS = `
 .kx-pb-sub p{margin:0;font-size:12.5px;font-weight:600;color:var(--c-ink,#eef8f5);}
 .kx-pb-meta{margin:10px 0 0;font-size:12px;color:var(--c-ink3,#7c8f96);}
 .kx-pb-meta b{color:var(--c-ink,#eef8f5);font-weight:600;}
+.kx-pb-dated{margin:6px 0 0;font-size:12px;color:var(--c-ink3,#7c8f96);}
+.kx-pb-mark{display:inline-block;margin-left:8px;padding:0 7px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap;}
+.kx-pb-mark.seen{color:var(--c-lime,#b4f768);background:rgba(180,247,104,.1);}
+.kx-pb-mark.missed{color:var(--c-amber,#eedc9d);background:rgba(238,220,157,.1);}
+.kx-pb-score{margin:10px 0 0;padding:7px 10px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--c-amber,#eedc9d);background:rgba(238,220,157,.07);}
+.kx-pb-score.ok{color:var(--c-lime,#b4f768);background:rgba(180,247,104,.08);}
 `;

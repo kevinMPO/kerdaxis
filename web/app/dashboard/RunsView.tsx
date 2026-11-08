@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import type { Lever } from "@/lib/types";
 import type { Dashboard, RunRef } from "./use-dashboard";
 import { TERMINAL_STATUSES, useExecution, type ExecutionView } from "./use-execution";
+import { ResearchPath } from "./ResearchPath";
 import { RunLine } from "./RunLine";
 import { Icon } from "./Icon";
 import { StatusPill } from "./StatusPill";
@@ -144,21 +145,7 @@ function RunDetail({ id, d }: { id: string; d: Dashboard }): React.ReactElement 
         </div>
         <aside className="kd-run-side">
           <Journal view={view} title={copy.journal} />
-          {view.playbook && view.playbook.steps.length > 0 && (
-            <details className="kd-playbook" open={view.playbook.source === "research"}>
-              <summary>{copy.playbook}</summary>
-              <ol>
-                {view.playbook.steps.map((step, index) => (
-                  <li key={index}>{step}</li>
-                ))}
-              </ol>
-              {view.playbook.officialDocUrl && (
-                <a className="kd-link" href={view.playbook.officialDocUrl} target="_blank" rel="noreferrer">
-                  {view.playbook.merchant ?? "source"} <Icon name="external" size={13} />
-                </a>
-              )}
-            </details>
-          )}
+          <ResearchPath view={view} d={d} />
           <p className="kd-run-meta kd-mono">
             #{view.actionHash.slice(0, 16)}
             {view.costUsd != null && (

@@ -19,6 +19,7 @@ import type { ToolCall } from "./hcompany";
 import type { SupplierState, SupplierTarget } from "./suppliers";
 import type { RunLang } from "./run-copy";
 import { baseD1SiPresente } from "@/lib/runtime/bindings";
+import { checkResearchAgainstRun, type FinalLabelSource } from "./research/compare";
 
 /** Statuts du PRD Kerdaxis (§4.5), + `running` et `stopped_by_user` pour l'affichage. */
 export type ExecutionStatus =
@@ -59,6 +60,13 @@ export interface PlaybookView {
   video: { title: string; url: string; steps: string[] } | null;
   /** Recherche en échec : l'agent suit la consigne générique du catalogue. */
   fallbackReason: string | null;
+  /** Date de la recherche Linkup (elle peut venir du cache) : un parcours affiché porte sa source ET sa date. */
+  researchedAt?: string | null;
+  /** Pages lues par Linkup, les premières seulement. */
+  sourceUrls?: string[];
+  depthUsed?: "deep" | "standard" | null;
+  /** Le libellé du bouton final vient-il de la doc, des captures, ou du catalogue Kerdaxis faute de mieux ? */
+  finalLabelSource?: FinalLabelSource;
 }
 
 export interface Execution {
@@ -151,6 +159,11 @@ export function publicView(exec: Execution) {
     updatedAt: exec.updatedAt,
     replay: Boolean(exec.replay),
     playbook: exec.playbook ?? null,
+    // Calculé sur TOUT le journal, pas sur les 40 derniers événements envoyés.
+    researchCheck:
+      exec.playbook?.source === "research" && !exec.playbook.fallbackReason
+        ? checkResearchAgainstRun(exec.playbook, exec.events, exec.answer)
+        : null,
     events: exec.events.slice(-40).map(({ screenshot: _s, ...rest }) => rest),
   };
 }

@@ -22,7 +22,7 @@ export interface RunCopy {
   agentLanguage: string;
   catalogGuide: (vendor: string) => string;
   researchStart: (merchant: string) => string;
-  researchDone: (steps: number, docUrl: string | null) => string;
+  researchDone: (steps: number, docUrl: string | null, sources: number, researchedOn: string) => string;
   researchScreens: (relevant: number, sent: number, steps: number) => string;
   researchVideo: (title: string, steps: number) => string;
   researchUnavailable: (reason: string) => string;
@@ -79,7 +79,8 @@ const fr: RunCopy = {
   agentLanguage: "French",
   catalogGuide: (v) => `Parcours ${v} : fiche du catalogue Kerdaxis.`,
   researchStart: (m) => `Linkup lit la documentation officielle : ${m}…`,
-  researchDone: (n, url) => `Linkup : ${n} étapes dans la doc officielle${url ? ` (${url})` : ""}.`,
+  researchDone: (n, url, sources, day) =>
+    `Linkup : ${n} étapes dans la doc officielle${url ? ` (${url})` : ""}, ${sources} sources, recherche du ${day}.`,
   researchScreens: (r, s, n) => `Agent H Company : ${r}/${s} captures de la doc lues, ${n} étapes avec libellés exacts.`,
   researchVideo: (t, n) => `Gladia a écouté le tutoriel « ${t} » : ${n} étapes.`,
   researchUnavailable: (r) => `Recherche indisponible (${r}) : l'agent suit la consigne générique.`,
@@ -149,7 +150,8 @@ const en: RunCopy = {
   agentLanguage: "English",
   catalogGuide: (v) => `${v} path: Kerdaxis catalog entry.`,
   researchStart: (m) => `Linkup reads the official documentation: ${m}…`,
-  researchDone: (n, url) => `Linkup: ${n} steps in the official docs${url ? ` (${url})` : ""}.`,
+  researchDone: (n, url, sources, day) =>
+    `Linkup: ${n} steps in the official docs${url ? ` (${url})` : ""}, ${sources} sources, researched on ${day}.`,
   researchScreens: (r, s, n) => `H Company agent: read ${r}/${s} doc screenshots, ${n} steps with exact labels.`,
   researchVideo: (t, n) => `Gladia listened to the tutorial “${t}”: ${n} steps.`,
   researchUnavailable: (r) => `Research unavailable (${r}): the agent follows the generic instructions.`,

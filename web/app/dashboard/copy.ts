@@ -1,4 +1,5 @@
 import type { CancelChannel, Lang, Risk, UnverifiedReason } from "@/lib/types";
+import type { FinalLabelSource } from "@/lib/execution/research/compare";
 
 export type ViewId = "today" | "subscriptions" | "runs" | "ledger";
 
@@ -76,6 +77,13 @@ export interface DashboardCopy {
   proofSource: string;
   journal: string;
   playbook: string;
+  pathResearched: (sources: number, day: string) => string;
+  pathSeen: string;
+  pathNotSeen: string;
+  pathFinal: (label: string) => string;
+  pathFinalSource: Record<FinalLabelSource, string>;
+  pathScore: (seen: number, total: number) => string;
+  pathNotes: string;
   stop: string;
   cost: (usd: string, steps: number) => string;
   ledgerTitle: string;
@@ -201,6 +209,13 @@ const fr: DashboardCopy = {
   proofSource: "Lu sur le portail du fournisseur, pas sur la parole de l'agent.",
   journal: "Journal de l'agent",
   playbook: "Parcours suivi",
+  pathResearched: (n, day) => `Linkup · ${n} sources · recherche du ${day}`,
+  pathSeen: "nommé par l'agent",
+  pathNotSeen: "jamais nommé par l'agent",
+  pathFinal: (label) => `Bouton final : « ${label} »`,
+  pathFinalSource: { docs: "tiré de la doc", screenshots: "lu sur les captures de la doc", catalog: "catalogue Kerdaxis, absent de la doc" },
+  pathScore: (seen, total) => `Linkup face à cette exécution : ${seen}/${total} libellés de la doc nommés par l'agent`,
+  pathNotes: "Note de l'agent",
   stop: "Arrêter l'agent",
   cost: (u, s) => `${s} étapes · ${u} $ d'agent`,
   ledgerTitle: "Grand livre",
@@ -325,6 +340,13 @@ const en: DashboardCopy = {
   proofSource: "Read on the supplier's portal, not taken from the agent's word.",
   journal: "Agent log",
   playbook: "Path followed",
+  pathResearched: (n, day) => `Linkup · ${n} sources · researched ${day}`,
+  pathSeen: "named by the agent",
+  pathNotSeen: "never named by the agent",
+  pathFinal: (label) => `Final button: “${label}”`,
+  pathFinalSource: { docs: "from the docs", screenshots: "read on the doc screenshots", catalog: "Kerdaxis catalog, not in the docs" },
+  pathScore: (seen, total) => `Linkup vs this run: ${seen}/${total} documented labels named by the agent`,
+  pathNotes: "Agent's note",
   stop: "Stop the agent",
   cost: (u, s) => `${s} steps · $${u} of agent`,
   ledgerTitle: "Ledger",

@@ -146,8 +146,12 @@ interface Guide {
   finalLabel: string;
 }
 
-function playbookFromResearch(research: CancelResearch, finalButtonLabel: string): PlaybookView {
+/** Combien de pages lues par Linkup le panneau liste. */
+const MAX_SHOWN_SOURCES = 5;
+
+export function playbookFromResearch(research: CancelResearch, finalButtonLabel: string): PlaybookView {
   const { written, screenshots, video } = research;
+  const finalLabelSource = written.finalConfirmLabel ? "docs" : screenshots?.finalConfirmLabel ? "screenshots" : "catalog";
   return {
     source: "research",
     merchant: research.merchant,
@@ -158,6 +162,10 @@ function playbookFromResearch(research: CancelResearch, finalButtonLabel: string
     screenshots: screenshots ? { read: screenshots.relevantScreenshots.length, sent: screenshots.screenshotsSent, steps: screenshots.steps } : null,
     video: video ? { title: video.title, url: video.url, steps: video.steps } : null,
     fallbackReason: null,
+    researchedAt: research.researchedAt,
+    sourceUrls: written.sourceUrls.slice(0, MAX_SHOWN_SOURCES),
+    depthUsed: written.depthUsed,
+    finalLabelSource,
   };
 }
 
@@ -196,7 +204,12 @@ async function prepareGuide(exec: Execution, supplier: Supplier): Promise<Guide>
     appendEvent(exec, {
       kind: "system",
       // Pas de champ `url` : le panneau affiche la dernière URL du journal comme adresse de l'écran de l'agent.
-      message: runCopy(exec.lang).researchDone(research.written.steps.length, research.written.officialDocUrl ?? null),
+      message: runCopy(exec.lang).researchDone(
+        research.written.steps.length,
+        research.written.officialDocUrl || null,
+        research.written.sourceUrls.length,
+        research.researchedAt.slice(0, 10),
+      ),
     });
     if (research.screenshots) {
       const shots = research.screenshots;
