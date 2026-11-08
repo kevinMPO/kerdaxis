@@ -1,4 +1,4 @@
-import type { Lang, Risk, UnverifiedReason } from "@/lib/types";
+import type { CancelChannel, Lang, Risk, UnverifiedReason } from "@/lib/types";
 
 export type ViewId = "today" | "subscriptions" | "runs" | "ledger";
 
@@ -102,6 +102,7 @@ export interface DashboardCopy {
   pricePending: string;
   priceUnverified: Record<UnverifiedReason, string>;
   priceSource: (checkedAt: string) => string;
+  cancelChannel: Record<CancelChannel, string>;
   close: string;
   launching: string;
   error: string;
@@ -220,9 +221,9 @@ const fr: DashboardCopy = {
   benchmark: "Comparer les prix (Linkup)",
   benchSearching: "Recherche des prix publics…",
   benchNone: "Aucun prix public vérifiable trouvé.",
-  checkPrices: (n) => `Vérifier les prix sur le web (${n})`,
-  checkingPrices: (d, t) => `Recherche des prix publics… ${d}/${t}`,
-  checkPricesNote: "Seuls le nom du fournisseur et sa catégorie partent vers Linkup. Chaque euro est ensuite calculé par le moteur à partir d'un prix sourcé et daté.",
+  checkPrices: (n) => `Vérifier sur le web (${n})`,
+  checkingPrices: (d, t) => `Recherche sur le web… ${d}/${t}`,
+  checkPricesNote: "Seuls le nom du fournisseur et sa catégorie partent vers Linkup. Chaque euro est ensuite calculé par le moteur à partir d'un prix sourcé et daté. Pour une résiliation, Linkup vérifie aussi si elle se fait en ligne : l'agent H Company s'en charge, sinon une lettre.",
   pricePending: "prix à vérifier",
   priceUnverified: {
     no_price: "non vérifié · aucun prix public trouvé",
@@ -231,6 +232,11 @@ const fr: DashboardCopy = {
     web_down: "non vérifié · recherche web indisponible",
   },
   priceSource: (c) => `source · relevé le ${c}`,
+  cancelChannel: {
+    online: "résiliable en ligne",
+    offline: "pas de résiliation en ligne",
+    unknown: "résiliation en ligne non vérifiée",
+  },
   close: "Fermer",
   launching: "Lancement…",
   error: "Une erreur est survenue.",
@@ -339,9 +345,9 @@ const en: DashboardCopy = {
   benchmark: "Compare prices (Linkup)",
   benchSearching: "Looking up public prices…",
   benchNone: "No verifiable public price found.",
-  checkPrices: (n) => `Check prices on the web (${n})`,
-  checkingPrices: (d, t) => `Looking up public prices… ${d}/${t}`,
-  checkPricesNote: "Only the supplier name and its category go to Linkup. Every euro is then computed by the engine from a sourced, dated price.",
+  checkPrices: (n) => `Check on the web (${n})`,
+  checkingPrices: (d, t) => `Searching the web… ${d}/${t}`,
+  checkPricesNote: "Only the supplier name and its category go to Linkup. Every euro is then computed by the engine from a sourced, dated price. For a cancellation, Linkup also checks whether it can be done online: the H Company agent handles it, otherwise a letter.",
   pricePending: "price to check",
   priceUnverified: {
     no_price: "not verified · no public price found",
@@ -350,6 +356,11 @@ const en: DashboardCopy = {
     web_down: "not verified · web search unavailable",
   },
   priceSource: (c) => `source · checked ${c}`,
+  cancelChannel: {
+    online: "can be cancelled online",
+    offline: "no online cancellation",
+    unknown: "online cancellation not verified",
+  },
   close: "Close",
   launching: "Starting…",
   error: "Something went wrong.",
@@ -357,8 +368,8 @@ const en: DashboardCopy = {
 
 const de: DashboardCopy = {
   ...en,
-  checkPrices: (n) => `Preise im Web prüfen (${n})`,
-  checkingPrices: (d, t) => `Öffentliche Preise werden gesucht… ${d}/${t}`,
+  checkPrices: (n) => `Im Web prüfen (${n})`,
+  checkingPrices: (d, t) => `Websuche läuft… ${d}/${t}`,
   pricePending: "Preis zu prüfen",
   priceSource: (c) => `Quelle · geprüft am ${c}`,
   agentSubscribers: "Kostenloser Test: Nur die Nuvio-CRM-Sitzung wird abgespielt. Live-Kündigung ist für Abonnenten.",
@@ -398,8 +409,8 @@ const de: DashboardCopy = {
 
 const es: DashboardCopy = {
   ...en,
-  checkPrices: (n) => `Verificar precios en la web (${n})`,
-  checkingPrices: (d, t) => `Buscando precios públicos… ${d}/${t}`,
+  checkPrices: (n) => `Verificar en la web (${n})`,
+  checkingPrices: (d, t) => `Buscando en la web… ${d}/${t}`,
   pricePending: "precio por verificar",
   priceSource: (c) => `fuente · consultada el ${c}`,
   agentSubscribers: "Prueba gratuita: solo se reproduce la sesión de Nuvio CRM. La cancelación en directo es para suscriptores.",
@@ -439,8 +450,8 @@ const es: DashboardCopy = {
 
 const it: DashboardCopy = {
   ...en,
-  checkPrices: (n) => `Verifica i prezzi sul web (${n})`,
-  checkingPrices: (d, t) => `Ricerca dei prezzi pubblici… ${d}/${t}`,
+  checkPrices: (n) => `Verifica sul web (${n})`,
+  checkingPrices: (d, t) => `Ricerca sul web… ${d}/${t}`,
   pricePending: "prezzo da verificare",
   priceSource: (c) => `fonte · rilevata il ${c}`,
   agentSubscribers: "Prova gratuita: viene riprodotta solo la sessione Nuvio CRM. La disdetta dal vivo è per gli abbonati.",

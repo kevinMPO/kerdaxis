@@ -257,7 +257,7 @@ describe("reponseTropDeRequetes", () => {
 describe("plafonds déclarés", () => {
   it("couvre exactement les routes limitées", () => {
     // `engine` : API moteur publique (par jeton). Les autres : routes payantes.
-    expect(Object.keys(PLAFONDS).sort()).toEqual(["benchmark", "engine", "letter", "risk", "voice"]);
+    expect(Object.keys(PLAFONDS).sort()).toEqual(["benchmark", "cancel_channel", "engine", "letter", "risk", "voice"]);
   });
 
   it("garde des plafonds finis et strictement positifs", () => {

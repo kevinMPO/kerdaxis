@@ -68,7 +68,7 @@ const LinkupSearchResponse = z.object({
 });
 
 /** Linkup écrit parfois « non précisé dans la doc » dans un champ URL : on ne garde que de vraies URL. */
-function onlyUrl(value: string | null | undefined): string {
+export function onlyUrl(value: string | null | undefined): string {
   const v = (value ?? "").trim();
   return /^https?:\/\//.test(v) ? v : "";
 }
@@ -104,7 +104,7 @@ export function parseWrittenPath(body: unknown, depth: WrittenPath["depthUsed"])
   };
 }
 
-async function postLinkup(url: string, body: unknown, timeoutMs: number): Promise<unknown> {
+export async function postLinkup(url: string, body: unknown, timeoutMs: number): Promise<unknown> {
   const response = await fetch(url, {
     method: "POST",
     headers: { Authorization: `Bearer ${linkupKey()}`, "Content-Type": "application/json" },

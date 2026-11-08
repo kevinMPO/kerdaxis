@@ -81,6 +81,7 @@ cd web
 npx wrangler d1 execute argentier --local  --file=./db/0003_market_benchmarks.sql
 npx wrangler d1 execute argentier --remote --file=./db/0003_market_benchmarks.sql
 npx wrangler d1 execute argentier --remote --file=./db/0004_demo_results.sql
+npx wrangler d1 execute argentier --remote --file=./db/0005_cancel_channels.sql
 ```
 
 Sans la table `market_benchmarks`, le benchmark marche quand même : le cache se tait

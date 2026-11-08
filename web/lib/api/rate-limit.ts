@@ -76,6 +76,12 @@ export const PLAFONDS: Readonly<Record<string, readonly Fenetre[]>> = Object.fre
     { max: 15, secondes: 60 },
     { max: 60, secondes: 3600 },
   ]),
+  // Linkup seul, une recherche « standard » par fournisseur à résilier. Même
+  // clic que les prix : une quinzaine au plus ; le cache D1 ne compte pas.
+  cancel_channel: Object.freeze([
+    { max: 15, secondes: 60 },
+    { max: 60, secondes: 3600 },
+  ]),
   // H Company seul, réponse courte : la plus tolérante des trois.
   letter: Object.freeze([
     { max: 8, secondes: 60 },

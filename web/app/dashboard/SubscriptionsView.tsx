@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import type { Lever, Risk } from "@/lib/types";
-import type { Dashboard } from "./use-dashboard";
+import { cancelsOnline, type Dashboard } from "./use-dashboard";
 import { LaunchButton } from "./RunsView";
 import { Icon } from "./Icon";
 
@@ -108,8 +108,8 @@ export function SubscriptionsView({ d }: { d: Dashboard }): React.ReactElement {
 function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElement {
   const { copy, eur } = d;
   const agent = d.agentState(lever.id);
-  const canRun = lever.action === "cancel" && agent === "ready";
-  const showAgent = lever.action === "cancel";
+  const showAgent = cancelsOnline(lever);
+  const canRun = showAgent && agent === "ready";
   const hasEuro = lever.basis !== "pending" && lever.basis !== "unverified";
   return (
     <tr className={lever.active ? "" : "is-off"}>
@@ -159,5 +159,29 @@ function ProposalCell({ lever, d }: { lever: Lever; d: Dashboard }): React.React
       </span>
     );
   }
-  return <span>{lever.to}</span>;
+  return (
+    <span>
+      {lever.to}
+      <ChannelNote lever={lever} d={d} />
+    </span>
+  );
+}
+
+function ChannelNote({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElement | null {
+  const check = lever.cancelChannel;
+  if (lever.action !== "cancel" || !check) return null;
+  return (
+    <span className="kd-small">
+      {" · "}
+      {d.copy.cancelChannel[check.channel]}
+      {check.sourceUrl && (
+        <>
+          {" "}
+          <a className="kd-link" href={check.sourceUrl} target="_blank" rel="noopener">
+            {d.copy.priceSource(check.checkedAt)} <Icon name="external" size={12} />
+          </a>
+        </>
+      )}
+    </span>
+  );
 }

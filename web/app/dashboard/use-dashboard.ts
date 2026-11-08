@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AnalyzeResult, Lang, Lever, LeverEvidence, Localized, UnverifiedReason } from "@/lib/types";
+import type { AnalyzeResult, CancelChannelCheck, Lang, Lever, LeverEvidence, Localized, UnverifiedReason } from "@/lib/types";
 import { EMPTY_ANALYSIS } from "@/lib/analysis/empty";
 import { detectLang, eur as eurFmt, LANGS } from "@/lib/i18n";
 import { buildPlanCsv, planFilename } from "@/lib/export";
@@ -19,8 +19,11 @@ const DEFAULT_BENCH_CATEGORY = "outil SaaS";
 
 export type ApiRefusal = null | "reconnect" | "unavailable";
 
-/** Suppliers the H Company agent has a cancellation path for (mirrors SUPPLIER_IDS on the server). */
-const AGENT_CATALOG = ["nuvio", "lumen"] as const;
+/**
+ * Suppliers the H Company agent has a cancellation path for (mirrors SUPPLIER_IDS on the server).
+ * They are our own demo portals, so the web knows nothing about them: their online path is known, not searched.
+ */
+const AGENT_CATALOG: readonly string[] = ["nuvio", "lumen"];
 
 /**
  * ready: the agent can run now; offline: path exists but the portal is unreachable; unsupported: no path yet;
@@ -83,6 +86,19 @@ const IDLE_PRICING: PricingRun = { status: "idle", done: 0, total: 0 };
 export function needsMarketPrice(lever: Lever): boolean {
   return lever.basis === "pending" || lever.basis === "unverified";
 }
+
+/** Cancellation whose channel Linkup has not answered yet. */
+export function needsCancelCheck(lever: Lever): boolean {
+  if (lever.action !== "cancel" || AGENT_CATALOG.includes(lever.id)) return false;
+  return (lever.cancelChannel?.channel ?? "unknown") === "unknown";
+}
+
+/** The agent cancels only what can be cancelled online; everything else is a letter. */
+export function cancelsOnline(lever: Lever): boolean {
+  return lever.action === "cancel" && (AGENT_CATALOG.includes(lever.id) || lever.cancelChannel?.channel === "online");
+}
+
+const unknownChannel = (): CancelChannelCheck => ({ channel: "unknown", sourceUrl: "", checkedAt: new Date().toISOString().slice(0, 10) });
 
 function applyPricing(lever: Lever, response: PricingResponse | null): Lever {
   const pricing = response?.pricing;
@@ -317,7 +333,7 @@ export function useDashboard(): Dashboard {
       const trialLocked = replayMode && execStatus?.replaySupplierId != null && supplierId !== execStatus.replaySupplierId;
       if (trialLocked) return "subscribers";
       if (isExecutable(supplierId)) return "ready";
-      return (AGENT_CATALOG as readonly string[]).includes(supplierId) ? "offline" : "unsupported";
+      return AGENT_CATALOG.includes(supplierId) ? "offline" : "unsupported";
     },
     [isExecutable, replayMode, execStatus],
   );
@@ -407,14 +423,35 @@ export function useDashboard(): Dashboard {
     [lang, copy.benchNone],
   );
 
-  const pendingPriceCount = useMemo(() => levers.filter(needsMarketPrice).length, [levers]);
+  const pendingPriceCount = useMemo(() => levers.filter((l) => needsMarketPrice(l) || needsCancelCheck(l)).length, [levers]);
 
-  // One consent click (rule 3): only each merchant's name and business pole leave, the engine turns prices into €.
+  const checkChannel = useCallback(async (lever: Lever): Promise<void> => {
+    let channel = unknownChannel();
+    try {
+      const reply = await fetch("/api/cancel-channel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ merchant: lever.label }),
+      });
+      if (reply.ok) channel = (await reply.json()) as CancelChannelCheck;
+    } catch {
+      /* web down: the lever stays a letter */
+    }
+    setLevers((all) => all.map((l) => (l.id === lever.id ? { ...l, cancelChannel: channel } : l)));
+  }, []);
+
+  // One consent click (rule 3): only each merchant's name and business pole leave. The engine turns prices into €,
+  // and Linkup says whether a cancellation can be done online (agent) or needs a letter.
   const priceAllLevers = useCallback(async () => {
-    const targets = levers.filter(needsMarketPrice);
+    const targets = levers.filter((l) => needsMarketPrice(l) || needsCancelCheck(l));
     if (targets.length === 0 || pricing.status === "running") return;
     setPricing({ status: "running", done: 0, total: targets.length });
     await runPool(targets, PRICING_CONCURRENCY, async (lever) => {
+      if (needsCancelCheck(lever)) {
+        await checkChannel(lever);
+        setPricing((run) => ({ ...run, done: run.done + 1 }));
+        return;
+      }
       let response: PricingResponse | null = null;
       try {
         const reply = await fetch("/api/benchmark", {
@@ -436,7 +473,7 @@ export function useDashboard(): Dashboard {
       setPricing((run) => ({ ...run, done: run.done + 1 }));
     });
     setPricing((run) => ({ ...run, status: "done" }));
-  }, [levers, lang, pricing.status]);
+  }, [levers, lang, pricing.status, checkChannel]);
 
   const regenerateWithPrices = useCallback(() => {
     if (!letter.lever || !letter.bench) return;

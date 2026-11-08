@@ -62,6 +62,11 @@ le LLM ne rend que des ETIQUETTES (categories), le moteur detient les euros.
   modele ne garde qu'un drapeau `hard` (migration lourde).
 - Les benchmarks verifies sont caches 30 jours dans D1 (`market_benchmarks`, db/0003),
   table partagee entre organisations car elle ne contient que du web public.
+- **Agent ou lettre** : une resiliation (`cancel`) n'est confiee a l'agent H Company que
+  si Linkup, sur accord (meme clic que « verifier les prix »), trouve dans la doc officielle
+  qu'elle se fait en ligne (`Lever.cancelChannel`, source + date). Hors ligne ou non
+  verifie : lettre. Nuvio et Lumen (portails de demo a nous) sont connus en ligne sans
+  recherche. Cache 30 jours dans D1 (`cancel_channels`, db/0005).
 - `ENGINE_VERSION` est jointe a chaque reponse de l'API moteur.
 
 ## API moteur publique (`/api/v1/engine`) et Claude Tag

@@ -141,9 +141,25 @@ export interface Lever {
   evidence?: LeverEvidence;
   /** Présent seulement si `basis === "unverified"` : pourquoi aucun euro n'est affiché. */
   unverifiedReason?: UnverifiedReason;
+  /** Résiliation en ligne ou non, relevée par Linkup sur accord. Absent tant que non vérifié. */
+  cancelChannel?: CancelChannelCheck;
 }
 
 export type UnverifiedReason = "no_price" | "no_seats" | "not_cheaper" | "web_down";
+
+/**
+ * Où se résilie un abonnement, d'après la doc officielle du fournisseur lue par
+ * Linkup. `online` : l'agent H Company peut le faire ; sinon, une lettre.
+ */
+export type CancelChannel = "online" | "offline" | "unknown";
+
+export interface CancelChannelCheck {
+  channel: CancelChannel;
+  /** Page qui fonde la réponse (règle 4). Vide quand `channel === "unknown"`. */
+  sourceUrl: string;
+  /** Jour du relevé (AAAA-MM-JJ). */
+  checkedAt: string;
+}
 
 export interface FluxItem {
   kind: "new" | "check" | "dup" | "ghost";
