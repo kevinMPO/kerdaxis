@@ -348,7 +348,7 @@ export function useDashboard(): Dashboard {
       setLaunchingId(lever.id);
       setLaunchError(null);
       try {
-        const id = await launchCancellation(lever.id);
+        const id = await launchCancellation(lever.id, lang);
         const ref: RunRef = { id, supplierId: lever.id, vendor: lever.label, startedAt: new Date().toISOString() };
         setRuns((current) => {
           const next = [ref, ...current.filter((r) => r.id !== id)];
@@ -363,7 +363,7 @@ export function useDashboard(): Dashboard {
         setLaunchingId(null);
       }
     },
-    [],
+    [lang],
   );
 
   const reportRunView = useCallback((next: ExecutionView) => {
