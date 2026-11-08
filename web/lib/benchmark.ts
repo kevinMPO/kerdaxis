@@ -34,7 +34,6 @@ import { assertNoPii, redactForLogs, sanitizeMerchantQuery } from "@/lib/privacy
 import type { Lang } from "./types";
 import { recordAccess } from "@/lib/privacy/access-log";
 import { readCachedBenchmark, writeCachedBenchmark } from "@/lib/benchmark-cache";
-import { LINKUP_SEARCH_URL } from "@/lib/execution/research/linkup";
 
 const EXTRACT_TIMEOUT_MS = 30_000;
 const EXTRACT_MAX_TOKENS = 2000;
@@ -156,7 +155,7 @@ async function searchLinkupOnce(
   assertNoPii(corps, "recherche Linkup");
   void recordAccess({ service: "linkup", operation: "price search", direction: "sent", sent: `${merchant} · ${category}` });
 
-  const res = await fetch(LINKUP_SEARCH_URL, {
+  const res = await fetch("https://api.linkup.so/v1/search", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.LINKUP_API_KEY}`,
