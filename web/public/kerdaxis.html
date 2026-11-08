@@ -459,16 +459,16 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
   <div class="wrap">
     <header class="sec-head">
       <h2 id="proofTitle" data-i="proofTitle">Measured on real runs, including the one that went wrong.</h2>
-      <p class="lede" data-i="proofLede">Run on Stripe’s real customer portal, an interface we did not build. Each result is read from Stripe, never from the agent’s report.</p>
+      <p class="lede" data-i="proofLede">The failure below happened on our demo supplier portal, a fictional supplier we built to test against. The figures come from the 7 runs after the fix, on Stripe’s real customer portal in test mode, an interface we did not build. Each result is read from Stripe, never from the agent’s report.</p>
     </header>
     <dl class="figures">
       <div><dt data-i="fig1t">Cancellations confirmed</dt><dd class="big">5/5</dd><dd class="sub" data-i="fig1s">Confirmed by the Stripe API, 7 Nov 2026</dd></div>
       <div><dt data-i="fig2t">Refusals respected</dt><dd class="big" data-i="fig2v">2/2</dd><dd class="sub" data-i="fig2s">Green light refused: subscription still active</dd></div>
-      <div><dt data-i="fig3t">From approval to proof</dt><dd class="big" data-i="fig3v"><span class="approx">≈</span>56&nbsp;s</dd><dd class="sub" data-i="fig3s">Median, about $0.03 of agent per run</dd></div>
+      <div><dt data-i="fig3t">From approval to proof</dt><dd class="big" data-i="fig3v"><span class="approx">≈</span>56&nbsp;s</dd><dd class="sub" data-i="fig3s">Median of the 5 cancellations. About $0.03 of agent per run, on average.</dd></div>
     </dl>
     <div class="story">
       <article class="s-fail">
-        <h3 data-i="s1t">Run 1: it didn't stop.</h3>
+        <h3 data-i="s1t">Run 1, demo portal: it didn't stop.</h3>
         <p data-i="s1">The agent clicked through the confirmation without pausing. That is exactly the failure an approval step exists to prevent, so we made the stop structural.</p>
       </article>
       <article class="s-fix">
@@ -481,7 +481,7 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
       </article>
       <article class="s-after">
         <h3 data-i="s3t">Since the fix</h3>
-        <p data-i="s3">On Stripe’s real portal the agent stopped at the final button in every run, after about 24 s. With the green light it confirmed, and the Stripe API showed the subscription cancelled. Without it, the subscription stayed active.</p>
+        <p data-i="s3">On Stripe’s real portal the agent stopped at the final button in all 7 runs, after about 24 s. With the green light it confirmed, and the Stripe API showed the subscription cancelled. Without it, the subscription stayed active.</p>
       </article>
     </div>
   </div>
@@ -661,14 +661,14 @@ en:{
   resAgent:'Number read by the agent',resPortal:"Number on the supplier's portal",resText:'Same number. Status: supplier confirmed. (Example number.)',
   runFoot:'Illustration of the sequence. The film shows a real recorded run.',replay:'Replay',
   proofTitle:'Measured on real runs, including the one that went wrong.',
-  proofLede:'Run on Stripe’s real customer portal, an interface we did not build. Each result is read from Stripe, never from the agent’s report.',
-  fig1t:'Cancellations confirmed',fig1s:'Confirmed by the Stripe API, 7 Nov 2026',fig2t:'Refusals respected',fig2v:'2/2',fig2s:'Green light refused: subscription still active',fig3t:'From approval to proof',fig3v:'<span class="approx">≈</span>56&nbsp;s',fig3s:'Median, about $0.03 of agent per run',
-  s1t:"Run 1: it didn't stop.",s1:'The agent clicked through the confirmation without pausing. That is exactly the failure an approval step exists to prevent, so we made the stop structural.',
+  proofLede:'The failure below happened on our demo supplier portal, a fictional supplier we built to test against. The figures come from the 7 runs after the fix, on Stripe’s real customer portal in test mode, an interface we did not build. Each result is read from Stripe, never from the agent’s report.',
+  fig1t:'Cancellations confirmed',fig1s:'Confirmed by the Stripe API, 7 Nov 2026',fig2t:'Refusals respected',fig2v:'2/2',fig2s:'Green light refused: subscription still active',fig3t:'From approval to proof',fig3v:'<span class="approx">≈</span>56&nbsp;s',fig3s:'Median of the 5 cancellations. About $0.03 of agent per run, on average.',
+  s1t:"Run 1, demo portal: it didn't stop.",s1:'The agent clicked through the confirmation without pausing. That is exactly the failure an approval step exists to prevent, so we made the stop structural.',
   s2t:'The fix: a stop in three layers',
   l1:'<b>Two-turn mission.</b> The first turn ends at the confirmation page; the second starts only after approval.',
   l2:'<b>Automatic pause.</b> Kerdaxis halts the run itself when the confirmation page appears.',
   l3:"<b>Human green light.</b> Required to continue. Voice can't give it.",
-  s3t:'Since the fix',s3:'On Stripe’s real portal the agent stopped at the final button in every run, after about 24 s. With the green light it confirmed, and the Stripe API showed the subscription cancelled. Without it, the subscription stayed active.',
+  s3t:'Since the fix',s3:'On Stripe’s real portal the agent stopped at the final button in all 7 runs, after about 24 s. With the green light it confirmed, and the Stripe API showed the subscription cancelled. Without it, the subscription stayed active.',
   productTitle:'Before the agent moves, the numbers are already checked.',productLede:'The agent is the last step. Everything before it is read-only, deterministic and sourced.',
   p1t:'Read-only access',p1:'Kerdaxis reads your Qonto account through MCP. It cannot make payments or transfers.',
   p2t:'The engine counts, the model labels',p2:'Every euro comes from a deterministic engine. The language model only tags transactions.',
@@ -731,14 +731,14 @@ fr:{
   resAgent:'Numéro lu par l’agent',resPortal:'Numéro sur le portail du fournisseur',resText:'Même numéro. Statut : confirmée par le fournisseur. (Numéro d’exemple.)',
   runFoot:'Illustration du parcours. Le film montre une vraie exécution enregistrée.',replay:'Rejouer',
   proofTitle:'Mesuré sur de vraies exécutions, y compris celle qui a mal tourné.',
-  proofLede:'Exécuté sur le vrai portail client de Stripe, une interface que nous n’avons pas construite. Chaque résultat est lu chez Stripe, jamais dans le rapport de l’agent.',
-  fig1t:'Résiliations confirmées',fig1s:'Confirmées par l’API Stripe, 7 nov. 2026',fig2t:'Refus respectés',fig2v:'2/2',fig2s:'Feu vert refusé : abonnement toujours actif',fig3t:'De l’accord à la preuve',fig3v:'<span class="approx">≈</span>56&nbsp;s',fig3s:'Médiane, environ 0,03 $ d’agent par exécution',
-  s1t:'Exécution 1 : il ne s’est pas arrêté.',s1:'L’agent a cliqué sur la confirmation sans marquer de pause. C’est précisément ce qu’une étape d’approbation doit empêcher : nous avons rendu l’arrêt structurel.',
+  proofLede:'L’échec ci-dessous a eu lieu sur notre portail fournisseur de démo, un fournisseur fictif construit pour les tests. Les chiffres viennent des 7 exécutions après le correctif, sur le vrai portail client de Stripe en mode test, une interface que nous n’avons pas construite. Chaque résultat est lu chez Stripe, jamais dans le rapport de l’agent.',
+  fig1t:'Résiliations confirmées',fig1s:'Confirmées par l’API Stripe, 7 nov. 2026',fig2t:'Refus respectés',fig2v:'2/2',fig2s:'Feu vert refusé : abonnement toujours actif',fig3t:'De l’accord à la preuve',fig3v:'<span class="approx">≈</span>56&nbsp;s',fig3s:'Médiane des 5 résiliations. Environ 0,03 $ d’agent par exécution, en moyenne.',
+  s1t:'Exécution 1, portail de démo : il ne s’est pas arrêté.',s1:'L’agent a cliqué sur la confirmation sans marquer de pause. C’est précisément ce qu’une étape d’approbation doit empêcher : nous avons rendu l’arrêt structurel.',
   s2t:'Le correctif : un arrêt en trois couches',
   l1:'<b>Mission en deux tours.</b> Le premier tour s’arrête à la page de confirmation ; le second ne démarre qu’après approbation.',
   l2:'<b>Pause automatique.</b> Kerdaxis met lui-même la mission en pause quand la page de confirmation s’affiche.',
   l3:'<b>Feu vert humain.</b> Obligatoire pour continuer. La voix ne peut pas le donner.',
-  s3t:'Depuis le correctif',s3:'Sur le vrai portail Stripe, l’agent s’est arrêté devant le bouton final à chaque exécution, après environ 24 s. Avec le feu vert, il a confirmé et l’API Stripe a montré l’abonnement résilié. Sans feu vert, l’abonnement est resté actif.',
+  s3t:'Depuis le correctif',s3:'Sur le vrai portail Stripe, l’agent s’est arrêté devant le bouton final lors des 7 exécutions, après environ 24 s. Avec le feu vert, il a confirmé et l’API Stripe a montré l’abonnement résilié. Sans feu vert, l’abonnement est resté actif.',
   productTitle:'Avant que l’agent agisse, les chiffres sont déjà vérifiés.',productLede:'L’agent n’est que la dernière étape. Tout ce qui précède est en lecture seule, déterministe et sourcé.',
   p1t:'Accès en lecture seule',p1:'Kerdaxis lit votre compte Qonto via MCP. Il ne peut ni payer ni faire de virement.',
   p2t:'Le moteur compte, le modèle étiquette',p2:'Chaque euro vient d’un moteur déterministe. Le modèle de langage ne fait qu’étiqueter les transactions.',
