@@ -30,6 +30,7 @@ export interface RunCopy {
   approvalGiven: (voice: boolean, plan: string, vendor: string, fingerprint: string) => string;
   preparing: string;
   launchFailed: (error: string) => string;
+  preparationResumed: (seconds: number) => string;
   sessionStarted: (host: string, attempt: number, max: number) => string;
   agentNeverStarted: (max: number, seconds: number) => string;
   nothingDoneAtSupplier: (error: string) => string;
@@ -89,6 +90,7 @@ const fr: RunCopy = {
   approvalGiven: (voice, p, v, f) => `Accord ${voice ? "vocal confirmé" : "donné"} pour résilier ${p} (${v}) · empreinte ${f}…`,
   preparing: "Préparation : parcours et cible chez le fournisseur.",
   launchFailed: (e) => `Lancement impossible : ${e}`,
+  preparationResumed: (s) => `Préparation interrompue depuis ${s} s : reprise, l'agent suit la consigne générique.`,
   sessionStarted: (h, a, m) => `Session H Company lancée sur ${h}${a > 1 ? ` (essai ${a}/${m})` : ""}.`,
   agentNeverStarted: (m, s) => `H Company ne démarre pas l'agent (${m} sessions sans aucune action en ${s} s)`,
   nothingDoneAtSupplier: (e) => `${e}. Rien n'a été fait chez le fournisseur.`,
@@ -161,6 +163,7 @@ const en: RunCopy = {
   approvalGiven: (voice, p, v, f) => `Approval ${voice ? "confirmed by voice" : "given"} to cancel ${p} (${v}) · fingerprint ${f}…`,
   preparing: "Preparing: cancellation path and target at the supplier.",
   launchFailed: (e) => `Could not launch: ${e}`,
+  preparationResumed: (s) => `Preparation interrupted for ${s}s: resuming, the agent follows the generic instructions.`,
   sessionStarted: (h, a, m) => `H Company session started on ${h}${a > 1 ? ` (attempt ${a}/${m})` : ""}.`,
   agentNeverStarted: (m, s) => `H Company did not start the agent (${m} sessions without any action in ${s} s)`,
   nothingDoneAtSupplier: (e) => `${e}. Nothing was done at the supplier.`,

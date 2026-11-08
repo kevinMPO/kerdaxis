@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ACTIVE_WINDOW_MS, applyChanges, findActiveExecution, isStalled, STALL_MS } from "../runner";
+import { ACTIVE_WINDOW_MS, applyChanges, findActiveExecution, isPreparationStalled, isStalled, PREPARE_STALL_MS, STALL_MS } from "../runner";
 import type { Execution } from "../store";
 import type { HaiChanges } from "../hcompany";
 
@@ -77,5 +77,34 @@ describe("findActiveExecution (one H agent at a time)", () => {
 
   it("should ignore free-trial replays, which never use the H agent", () => {
     expect(findActiveExecution([run("running", at(1_000), true)], now)).toBeNull();
+  });
+});
+
+describe("isPreparationStalled (background preparation cut off by the Worker)", () => {
+  const lastNews = Date.parse("2026-11-08T12:13:23.017Z");
+  const prepared = (overrides: Partial<Execution> = {}) =>
+    exec({ status: "prepared", sessionId: null, updatedAt: new Date(lastNews).toISOString(), ...overrides });
+
+  it("should resume a run still preparing, without session, after the stall delay", () => {
+    expect(isPreparationStalled(prepared(), lastNews + PREPARE_STALL_MS + 1)).toBe(true);
+  });
+
+  it("should leave a preparation that is still within the delay alone", () => {
+    expect(isPreparationStalled(prepared(), lastNews + PREPARE_STALL_MS - 1)).toBe(false);
+  });
+
+  it("should never resume once an H session exists", () => {
+    expect(isPreparationStalled(prepared({ sessionId: "s-1" }), lastNews + 10 * PREPARE_STALL_MS)).toBe(false);
+  });
+
+  it("should never resume a run that left the preparing state", () => {
+    for (const status of ["running", "stopped_by_user", "failed"] as const) {
+      expect(isPreparationStalled(prepared({ status }), lastNews + 10 * PREPARE_STALL_MS)).toBe(false);
+    }
+  });
+
+  it("should ignore free-trial replays", () => {
+    const replay = { startedMs: 0, goMs: null, shown: 0 };
+    expect(isPreparationStalled(prepared({ replay } as Partial<Execution>), lastNews + 10 * PREPARE_STALL_MS)).toBe(false);
   });
 });
