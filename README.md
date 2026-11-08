@@ -127,21 +127,78 @@ The middleware strips and then rewrites the internal headers `x-kx-test-auth` an
 
 ## Architecture
 
+The rule behind every box: **the LLM labels, the engine counts, the human decides.** Euros only ever come out of the deterministic engine.
+
+```mermaid
+flowchart TB
+    subgraph IN["Read and research · zero PII out"]
+      direction LR
+      Q[("Qonto Business API<br/>OAuth · read-only guard")]
+      AN["Anthropic · Claude"]
+      LK["Linkup"]
+      GOV["BODACC · recherche-entreprises"]
+    end
+
+    subgraph APP["Kerdaxis app · Next.js 15 · web/"]
+      LBL["Categorize<br/>LLM returns labels only<br/>rules as fallback"]
+      BM["Benchmark<br/>source + date or dropped"]
+      RISK["Risk agent<br/>Mastra orchestrates · engine scores"]
+      ENG["Deterministic engine<br/>lib/engine · every euro"]
+      AP["Autopilot<br/>approval = action hash · 10 min · single use"]
+      EX["Execution runner<br/>two-turn mission · watchdog pause"]
+      LED[("Ledger + access log<br/>5 saving states · every third-party call")]
+      VO["Voice"]
+    end
+
+    subgraph OUT["Act · never without a human click"]
+      direction LR
+      H["H Company Agents API<br/>computer-use agent"]
+      P["Supplier portal · portal.kerdaxis.com<br/>Worker + Durable Object"]
+    end
+
+    U([Human])
+    GL["Gladia live STT"]
+    ST["Stripe Checkout · test mode"]
+
+    Q -->|transactions| ENG
+    AN <-->|merchant + category| LBL
+    LBL -->|nature · motif · action| ENG
+    LK <-->|merchant + category only| BM
+    BM -->|sourced prices| ENG
+    LK --> RISK
+    GOV --> RISK
+    ENG --> AP
+    U -->|approve| AP
+    AP --> EX
+    U -->|final go · UI click only| EX
+    EX --> LED
+    EX <-->|session · pause · APPROVED| H
+    H -->|cloud browser| P
+    P -->|state: cancelled · NUV-…| EX
+    GL <--> VO
+    VO -.->|explains · prepares · never the final go| AP
+    ST --- APP
+```
+
+The same engine is reachable outside the app, always with the same split: Claude labels or explains, the engine computes.
+
 ```mermaid
 flowchart LR
-    U([Human]) -->|approve · final go| APP
-    subgraph APP["Kerdaxis app · Next.js 15 (web/)"]
-      ENG["Deterministic engine<br/>every euro"]
-      AP["Autopilot<br/>approval = action hash"]
-      EX["Execution runner<br/>gate · watchdog · ledger"]
-      VO["Voice · Gladia"]
+    subgraph CC["Claude Code skill · /audit · /verify"]
+      direction TB
+      QM[("Qonto MCP<br/>write tools hard-denied")]
+      PY["engine.py"]
+      LM["Linkup MCP"]
+      OUT["drafts/ · data/decisions.json<br/>ready for you to send"]
+      QM --> PY --> OUT
+      LM --> OUT
     end
-    Q[("Qonto MCP<br/>read-only")] --> ENG
-    AP --> EX
-    EX <-->|sessions · pause · APPROVED| H["H Company Agents API<br/>computer-use agent"]
-    H -->|cloud browser| P["Supplier portal<br/>portal.kerdaxis.com<br/>Cloudflare Worker + Durable Object"]
-    EX -->|read state: cancelled · NUV-…| P
-    S["Stripe Checkout<br/>(test mode)"] --- APP
+
+    SL(["Slack · @Claude"]) -->|Claude Tag skill labels| CE["claude-tag/scripts/call_engine.py"]
+    CE -->|Bearer · Zod strict · 60/min| API["/api/v1/engine<br/>analyze · simulate · health"]
+    API --> ENGW["web/lib/engine<br/>deterministic, no LLM, no writes"]
+
+    MC(["Any MCP client"]) --> MCP["my-app/<br/>engine as a remote MCP server<br/>Cloudflare Workers"]
 ```
 
 | Piece | Stack | Where it runs |
