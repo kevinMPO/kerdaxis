@@ -29,3 +29,9 @@ export const WAITLIST_URL = `${ACCOUNTS_WORKER_URL}/waitlist`;
 export function appOrigin(): string {
   return withoutTrailingSlash(process.env.KERDAXIS_APP_ORIGIN || DEFAULT_APP_ORIGIN);
 }
+
+/** App on the anonymised demo company: the trial and guest landing page. */
+export const DEMO_PATH = "/demo";
+
+/** The signed-in user's own dashboard: live Qonto data only, never demo figures. */
+export const LIVE_DASHBOARD_PATH = "/dashboard";

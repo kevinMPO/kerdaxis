@@ -13,7 +13,7 @@
 //      identifiant, puis dérivation d'un identifiant de locataire opaque ;
 //   5. persistance : organisation dans D1, jetons CHIFFRÉS dans le token store,
 //      entrée d'audit ;
-//   6. cookie de session, nettoyage des cookies temporaires, retour vers /demo.
+//   6. cookie de session, nettoyage des cookies temporaires, retour vers le tableau de bord réel (/dashboard).
 //
 // UNE SEULE CLÉ DE LOCATAIRE, ET C'EST CELLE DE LA BASE.
 // Deux identifiants coexistaient : l'`orgId` DÉRIVÉ (HMAC de l'identifiant
@@ -70,6 +70,7 @@ import { getTokenStore } from "@/lib/auth/token-store";
 import { appendAudit, avecSchema, upsertOrganization } from "@/lib/db/tenant";
 import { getOrganizationIdentity } from "@/lib/mcp/qonto-read-client";
 import { baseD1, bindingsKerdaxis } from "@/lib/runtime/bindings";
+import { LIVE_DASHBOARD_PATH } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +78,7 @@ export const dynamic = "force-dynamic";
 function urlRetour(requete: Request, statut: string): string {
   const configuree = process.env.ARGENTIER_BASE_URL?.trim();
   const base = configuree || new URL(requete.url).origin;
-  const url = new URL("/demo", base.replace(/\/+$/, ""));
+  const url = new URL(LIVE_DASHBOARD_PATH, base.replace(/\/+$/, ""));
   url.searchParams.set("qonto", statut);
   return url.toString();
 }

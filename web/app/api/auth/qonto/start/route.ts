@@ -18,6 +18,7 @@ import { NextResponse } from "next/server";
 import { buildAuthorizationUrl } from "@/lib/auth/oauth-client";
 import { createPkcePair, generateState } from "@/lib/auth/pkce";
 import { activeProvider, connexionQontoOuverte } from "@/lib/auth/providers";
+import { LIVE_DASHBOARD_PATH } from "@/lib/site";
 import {
   NOM_COOKIE_STATE,
   NOM_COOKIE_VERIFIER,
@@ -49,10 +50,10 @@ export async function GET(requete: Request): Promise<Response> {
           `blanche uniquement).`,
       );
       // Un NAVIGATEUR ne doit pas se retrouver devant du JSON brut : on le
-      // renvoie sur /demo, où le bandeau explique la situation en français.
+      // renvoie sur le tableau de bord, où le bandeau explique la situation en français.
       // Les clients d'API, eux, gardent la réponse structurée.
       if ((requete.headers.get("accept") ?? "").includes("text/html")) {
-        const retour = new URL("/demo", provider.redirectUri);
+        const retour = new URL(LIVE_DASHBOARD_PATH, provider.redirectUri);
         retour.searchParams.set("qonto", "indisponible");
         const redirection = NextResponse.redirect(retour.toString(), 302);
         redirection.headers.set("Cache-Control", "no-store");

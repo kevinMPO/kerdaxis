@@ -20,6 +20,12 @@ const DEFAULT_BENCH_CATEGORY = "outil SaaS";
 
 export type ApiRefusal = null | "reconnect" | "unavailable";
 
+/** demo: the demo company until Qonto is connected. live: the user's own account only, never demo figures. */
+export type DashboardMode = "demo" | "live";
+
+const LIVE_SOURCE = "qonto";
+const HTTP_UNAUTHORIZED = 401;
+
 /**
  * Suppliers the H Company agent has a cancellation path for (mirrors SUPPLIER_IDS on the server).
  * They are our own demo portals, so the web knows nothing about them: their online path is known, not searched.
@@ -165,6 +171,9 @@ export interface Dashboard {
   levers: Lever[];
   loaded: boolean;
   refusal: ApiRefusal;
+  mode: DashboardMode;
+  /** Live mode with no readable Qonto account: the screen asks to connect instead of showing figures. */
+  needsQonto: boolean;
   qontoConnected: boolean;
   /** null until /api/auth/qonto/status answers; false where Qonto would refuse the callback address. */
   qontoConnectable: boolean | null;
@@ -208,13 +217,14 @@ export interface LetterState {
 
 const EMPTY_LETTER: LetterState = { lever: null, text: "", loading: false, bench: null, benchLoading: false };
 
-export function useDashboard(): Dashboard {
+export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
   const [lang, setLangState] = useState<Lang>("fr");
   const [view, setView] = useState<ViewId>("today");
   const [data, setData] = useState<AnalyzeResult>(EMPTY_ANALYSIS);
   const [levers, setLevers] = useState<Lever[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [refusal, setRefusal] = useState<ApiRefusal>(null);
+  const [needsQonto, setNeedsQonto] = useState(false);
   const [qontoConnected, setQontoConnected] = useState(false);
   const [qontoConnectable, setQontoConnectable] = useState<boolean | null>(null);
   const [qontoConnectBlocked, setQontoConnectBlocked] = useState(false);
@@ -263,11 +273,18 @@ export function useDashboard(): Dashboard {
         const response = await fetch("/api/analyze", { signal: controller.signal });
         if (response.ok) {
           const result = (await response.json()) as AnalyzeResult;
-          setData(result);
-          setLevers(result.levers);
+          // Without a Qonto session the API answers with the demo company: the live dashboard must not show it.
+          if (mode === "live" && result.meta?.source !== LIVE_SOURCE) {
+            setNeedsQonto(true);
+          } else {
+            setData(result);
+            setLevers(result.levers);
+          }
           setRefusal(null);
+        } else if (mode === "live" && response.status === HTTP_UNAUTHORIZED) {
+          setNeedsQonto(true);
         } else {
-          setRefusal(response.status === 401 ? "reconnect" : "unavailable");
+          setRefusal(response.status === HTTP_UNAUTHORIZED ? "reconnect" : "unavailable");
         }
       } catch (error) {
         if (controller.signal.aborted) return;
@@ -277,7 +294,7 @@ export function useDashboard(): Dashboard {
     };
     void load();
     return () => controller.abort();
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -308,7 +325,7 @@ export function useDashboard(): Dashboard {
     try {
       await fetch("/api/auth/qonto/revoke", { method: "POST" });
     } finally {
-      window.location.href = "/demo";
+      window.location.href = window.location.pathname;
     }
   }, []);
 
@@ -551,6 +568,8 @@ export function useDashboard(): Dashboard {
     levers,
     loaded,
     refusal,
+    mode,
+    needsQonto,
     qontoConnected,
     qontoConnectable,
     qontoConnectBlocked,

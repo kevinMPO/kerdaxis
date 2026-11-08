@@ -16,6 +16,8 @@ export interface DashboardCopy {
   unavailable: string;
   connectClosed: string;
   connectClosedHint: string;
+  connectTitle: string;
+  connectLede: string;
   headline: (recoverable: string, confirmed: string | null) => string;
   headlineSub: (monthly: string, count: number) => string;
   ledgerSteps: [string, string, string, string, string];
@@ -133,6 +135,8 @@ const fr: DashboardCopy = {
   navClassic: "Ancienne vue",
   navPitch: "Le pitch",
   demoData: "Données de démonstration",
+  connectTitle: "Connecte ton compte Qonto",
+  connectLede: "Kerdaxis lit ton compte en lecture seule : aucun virement, aucune carte, aucune écriture. Tant qu'il n'est pas connecté, ce tableau de bord reste vide, jamais rempli de chiffres de démonstration.",
   liveData: "Compte Qonto réel · lecture seule",
   analyzing: "Lecture du compte et calcul par le moteur…",
   connectQonto: "Connecter Qonto",
@@ -266,6 +270,8 @@ const en: DashboardCopy = {
   navClassic: "Previous view",
   navPitch: "The pitch",
   demoData: "Demo data",
+  connectTitle: "Connect your Qonto account",
+  connectLede: "Kerdaxis reads your account read-only: no transfers, no cards, no writes. Until it is connected, this dashboard stays empty, never filled with demo figures.",
   liveData: "Real Qonto account · read-only",
   analyzing: "Reading the account, the engine is computing…",
   connectQonto: "Connect Qonto",
@@ -405,6 +411,8 @@ const de: DashboardCopy = {
   navClassic: "Vorherige Ansicht",
   navPitch: "Der Pitch",
   demoData: "Demodaten",
+  connectTitle: "Verbinde dein Qonto-Konto",
+  connectLede: "Kerdaxis liest dein Konto nur lesend: keine Überweisungen, keine Karten, keine Schreibzugriffe. Solange es nicht verbunden ist, bleibt dieses Dashboard leer, nie mit Demozahlen gefüllt.",
   liveData: "Echtes Qonto-Konto · nur Lesen",
   analyzing: "Konto wird gelesen, die Engine rechnet…",
   connectQonto: "Qonto verbinden",
@@ -448,6 +456,8 @@ const es: DashboardCopy = {
   navClassic: "Vista anterior",
   navPitch: "El pitch",
   demoData: "Datos de demostración",
+  connectTitle: "Conecta tu cuenta Qonto",
+  connectLede: "Kerdaxis lee tu cuenta en solo lectura: sin transferencias, sin tarjetas, sin escrituras. Mientras no esté conectada, este panel queda vacío, nunca con cifras de demostración.",
   liveData: "Cuenta Qonto real · solo lectura",
   analyzing: "Leyendo la cuenta, el motor está calculando…",
   connectQonto: "Conectar Qonto",
@@ -491,6 +501,8 @@ const it: DashboardCopy = {
   navClassic: "Vista precedente",
   navPitch: "Il pitch",
   demoData: "Dati dimostrativi",
+  connectTitle: "Collega il tuo conto Qonto",
+  connectLede: "Kerdaxis legge il tuo conto in sola lettura: nessun bonifico, nessuna carta, nessuna scrittura. Finché non è collegato, questa dashboard resta vuota, mai riempita con cifre dimostrative.",
   liveData: "Conto Qonto reale · sola lettura",
   analyzing: "Lettura del conto, il motore sta calcolando…",
   connectQonto: "Collega Qonto",
