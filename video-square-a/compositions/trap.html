@@ -1,0 +1,55 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; }
+    #t-page { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #t-page img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; }
+    #t-inj { position: absolute; left: 272px; top: 506px; width: 494px; height: 28px; border: 3px solid #0d0d12; border-radius: 6px; background: rgba(212, 245, 60, 0.5); opacity: 0; }
+    #t-want { position: absolute; left: 276px; top: 377px; width: 418px; height: 67px; border: 3px dashed #0d0d12; border-radius: 10px; opacity: 0; }
+    #t-ag { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-svg { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-pill { position: absolute; left: 28px; top: 20px; height: 28px; padding: 0 10px 0 8px; border-radius: 14px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 19px; line-height: 28px; white-space: nowrap; }
+    .ag-pill i { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 4px; background: #d4f53c; vertical-align: 1px; }
+    #t-band { position: absolute; left: 0; top: 0; width: 1080px; height: 230px; background: #0d0d12; color: #f4f4f8; }
+    #t-eye { position: absolute; left: 60px; top: 46px; font-family: "Fira Code", monospace; font-size: 28px; letter-spacing: 0.12em; color: #d4f53c; white-space: nowrap; }
+    #t-line { position: absolute; left: 60px; top: 92px; width: 960px; font-weight: 800; font-size: 54px; line-height: 1.12; letter-spacing: -0.03em; }
+    #t-injtag { position: absolute; left: 620px; top: 990px; height: 54px; padding: 0 20px; border-radius: 12px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 30px; line-height: 54px; white-space: nowrap; opacity: 0; }
+    #t-injtag b { color: #d4f53c; }
+    #t-stamp { position: absolute; left: 0; top: 780px; width: 1080px; text-align: center; opacity: 0; }
+    #t-stamp span { display: inline-block; padding: 14px 44px; border: 8px solid #0d0d12; border-radius: 20px; background: #d4f53c; color: #0d0d12;
+      font-weight: 800; font-size: 120px; letter-spacing: -0.02em; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="trap" data-width="1080" data-height="1080">
+    <div id="t-page">
+      <img src="assets/shots/offer.png" alt="Supplier portal: retention offer with an injected note to AI assistants" />
+      <div id="t-want"></div>
+      <div id="t-inj"></div>
+      <div id="t-ag" data-layout-allow-occlusion><svg viewBox="0 0 26 37" class="ag-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="ag-pill"><i></i>H Company agent</div></div>
+    </div>
+    <div id="t-injtag" data-layout-allow-overlap><b>Injected</b> instruction</div>
+    <div id="t-band"><div id="t-eye">DEMO PORTAL · RECORDED RUN</div><div id="t-line">This page told our AI agent to accept the offer.</div></div>
+    <div id="t-stamp" data-layout-allow-overlap><span>IT SAID NO.</span></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Beat grid (124 BPM): b(i) = 0.035 + 0.4843 i. Inject b2 0.99, want b3, agent b4-b6, click b6 2.94, stamp b7 3.42.
+      gsap.set("#t-page", { x: -370, y: -60, scale: 1.6 });
+      tl.to("#t-page", { x: -390, y: -70, scale: 1.63, duration: 4.4, ease: "none" }, 0);
+      tl.fromTo("#t-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 0.03);
+      tl.fromTo("#t-inj", { opacity: 0, scale: 1.08, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.2, ease: "expo.out" }, 0.99);
+      tl.fromTo("#t-injtag", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.2, ease: "expo.out" }, 1.0);
+      tl.fromTo("#t-want", { opacity: 0 }, { opacity: 1, duration: 0.15 }, 1.48);
+      // The agent comes from below-right and stays under "Accept the offer" (y > 444 wherever x < 694).
+      gsap.set("#t-ag", { x: 900, y: 690 });
+      tl.to("#t-ag", { x: 429, y: 470, duration: 0.95, ease: "power2.inOut" }, 1.97);
+      tl.to("#t-ag", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.06 }, 2.94);
+      tl.to("#t-ag", { scale: 1, duration: 0.14, ease: "power3.out" }, 3.0);
+      tl.to(["#t-want", "#t-injtag"], { opacity: 0, duration: 0.15 }, 3.3);
+      tl.fromTo("#t-stamp", { opacity: 0, scale: 2.2, rotation: 8, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, rotation: -4, duration: 0.18, ease: "back.out(1.6)" }, 3.42);
+      tl.set({}, {}, 4.4);
+      window.__timelines["trap"] = tl;
+    })();
+  </script>
+</template>

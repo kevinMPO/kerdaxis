@@ -1,0 +1,38 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0d0d12; font-family: "Plus Jakarta Sans", sans-serif; color: #f4f4f8; }
+    #p-chips { position: absolute; left: 0; top: 150px; width: 1080px; text-align: center; white-space: nowrap; }
+    .chip { display: inline-block; height: 58px; margin: 0 6px; padding: 0 22px; border-radius: 29px; border: 2px solid #2a2a36; background: #1a1a23;
+      font-weight: 700; font-size: 28px; line-height: 54px; opacity: 0; }
+    .chip.test { background: #f0fadb; border-color: #f0fadb; color: #2f7d12; }
+    #p-big { position: absolute; left: 0; top: 270px; width: 1080px; text-align: center; font-weight: 800; font-size: 330px; line-height: 1; letter-spacing: -0.05em; white-space: nowrap; }
+    #p-big span { display: inline-block; opacity: 0; }
+    #p-a { color: #d4f53c; }
+    #p-lab { position: absolute; left: 0; top: 650px; width: 1080px; text-align: center; font-weight: 800; font-size: 54px; line-height: 1.15; letter-spacing: -0.02em; opacity: 0; }
+    .stat { position: absolute; top: 850px; width: 540px; text-align: center; font-size: 32px; color: #a9a9bb; opacity: 0; white-space: nowrap; }
+    .stat b { display: block; color: #ffffff; font-weight: 800; font-size: 56px; margin-bottom: 4px; }
+    #st1 { left: 0; } #st2 { left: 540px; }
+  </style>
+  <div id="root" data-composition-id="proof" data-width="1080" data-height="1080">
+    <div id="p-chips"><span id="pc1" class="chip">Stripe customer portal</span><span id="pc2" class="chip test">Test mode</span></div>
+    <div id="p-big"><span id="p-a">5</span><span id="p-b">/5</span></div>
+    <div id="p-lab">cancellations confirmed<br />by the Stripe API</div>
+    <div id="st1" class="stat"><b>2/2</b>refusals respected</div>
+    <div id="st2" class="stat"><b>≈56 s</b>approval to proof</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 17.47 (b36). "5" on b37, "/5" on b38, label b39, stats b40-b41.
+      tl.fromTo("#pc1", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25, ease: "expo.out" }, 0.0);
+      tl.fromTo("#pc2", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25, ease: "expo.out" }, 0.12);
+      tl.fromTo("#p-a", { opacity: 0, scale: 1.9, transformOrigin: "50% 60%" }, { opacity: 1, scale: 1, duration: 0.18, ease: "back.out(1.5)" }, 0.484);
+      tl.fromTo("#p-b", { opacity: 0, scale: 1.9, transformOrigin: "30% 60%" }, { opacity: 1, scale: 1, duration: 0.18, ease: "back.out(1.5)" }, 0.969);
+      tl.fromTo("#p-lab", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 1.453);
+      tl.fromTo("#st1", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.25, ease: "expo.out" }, 1.937);
+      tl.fromTo("#st2", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.25, ease: "expo.out" }, 2.422);
+      tl.set({}, {}, 3.875);
+      window.__timelines["proof"] = tl;
+    })();
+  </script>
+</template>

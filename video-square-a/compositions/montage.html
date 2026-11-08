@@ -1,0 +1,106 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; color: #0d0d12; }
+    .layer { position: absolute; inset: 0; opacity: 0; overflow: hidden; }
+    .cam { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; transform-origin: 0 0; }
+    .cam img { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; }
+    .mk { position: absolute; border-radius: 8px; background: rgba(212, 245, 60, 0.6); mix-blend-mode: multiply; transform-origin: 0 50%; }
+    #mk-head { left: 372px; top: 128px; width: 1030px; height: 72px; }
+    #mk-sub { left: 372px; top: 287px; width: 878px; height: 30px; }
+    .row { position: absolute; left: 392px; width: 1546px; height: 92px; border: 5px solid #0d0d12; border-radius: 14px; opacity: 0; }
+    #r1 { top: 596px; } #r2 { top: 697px; } #r3 { top: 798px; }
+    .num { position: absolute; left: 326px; width: 58px; height: 58px; border-radius: 29px; background: #d4f53c; border: 4px solid #0d0d12;
+      font-weight: 800; font-size: 32px; line-height: 50px; text-align: center; opacity: 0; }
+    #n1 { top: 613px; } #n2 { top: 714px; } #n3 { top: 815px; }
+    #band { position: absolute; left: 0; top: 0; width: 1080px; height: 230px; background: #0d0d12; color: #f4f4f8; z-index: 5; }
+    #eye { position: absolute; left: 60px; top: 46px; font-family: "Fira Code", monospace; font-size: 28px; letter-spacing: 0.12em; color: #d4f53c; white-space: nowrap; }
+    .bl { position: absolute; left: 60px; top: 92px; width: 960px; font-weight: 800; font-size: 54px; line-height: 1.12; letter-spacing: -0.03em; opacity: 0; }
+    #chip { position: absolute; left: 40px; top: 254px; height: 52px; padding: 0 20px; border-radius: 26px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 28px; line-height: 52px; white-space: nowrap; z-index: 4; opacity: 0; }
+    #flow { background: #f7f7f9; }
+    .st { position: absolute; left: 150px; width: 800px; height: 108px; }
+    .st .d { position: absolute; left: 0; top: 14px; width: 80px; height: 80px; border-radius: 40px; border: 4px solid #d6d6e0; background: #f7f7f9;
+      font-family: "Fira Code", monospace; font-size: 30px; line-height: 72px; text-align: center; color: #5f5f70; }
+    .st .on { position: absolute; left: 0; top: 14px; width: 80px; height: 80px; border-radius: 40px; background: #0d0d12; color: #ffffff;
+      font-family: "Fira Code", monospace; font-size: 30px; line-height: 80px; text-align: center; opacity: 0; }
+    .st b { position: absolute; left: 120px; top: 22px; font-weight: 800; font-size: 48px; letter-spacing: 0.04em; opacity: 0.25; white-space: nowrap; }
+    .st span { position: absolute; left: 470px; top: 34px; font-size: 32px; color: #4a4a58; opacity: 0.25; white-space: nowrap; }
+    #s4 .on { background: #d4f53c; color: #0d0d12; box-shadow: 0 0 0 12px #f0fadb; }
+    #s4 span { color: #2f7d12; font-weight: 700; }
+    .shot { position: absolute; left: -110px; top: 300px; width: 1300px; height: 731px; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="montage" data-width="1080" data-height="1080">
+    <div id="L1" class="layer"><div id="cam1" class="cam"><img src="assets/media/dashboard.jpg" alt="Kerdaxis dashboard (demo data): You can recover 5,388 € a year" /><div id="mk-head" class="mk"></div></div></div>
+    <div id="L2" class="layer"><div id="cam2" class="cam"><img src="assets/media/dashboard.jpg" alt="Kerdaxis dashboard (demo data): Needs you" />
+      <div id="r1" class="row" data-layout-allow-overflow></div><div id="r2" class="row" data-layout-allow-overflow></div><div id="r3" class="row" data-layout-allow-overflow></div>
+      <div id="n1" class="num">1</div><div id="n2" class="num">2</div><div id="n3" class="num">3</div></div></div>
+    <div id="flow" class="layer">
+      <div id="s1" class="st" style="top: 270px" data-layout-allow-overlap><div class="d" data-layout-allow-occlusion>01</div><div class="on">01</div><b>CONNECT</b><span>Qonto · read-only</span></div>
+      <div id="s2" class="st" style="top: 400px" data-layout-allow-overlap><div class="d" data-layout-allow-occlusion>02</div><div class="on">02</div><b>ANALYZE</b><span>Rule engine</span></div>
+      <div id="s3" class="st" style="top: 530px" data-layout-allow-overlap><div class="d" data-layout-allow-occlusion>03</div><div class="on">03</div><b>COMPARE</b><span>Linkup prices</span></div>
+      <div id="s4" class="st" style="top: 660px" data-layout-allow-overlap><div class="d" data-layout-allow-occlusion>04</div><div class="on">04</div><b>APPROVE</b><span>You</span></div>
+      <div id="s5" class="st" style="top: 790px" data-layout-allow-overlap><div class="d" data-layout-allow-occlusion>05</div><div class="on">05</div><b>EXECUTE</b><span>H Company</span></div>
+      <div id="s6" class="st" style="top: 920px" data-layout-allow-overlap><div class="d" data-layout-allow-occlusion>06</div><div class="on">06</div><b>VERIFY</b><span>Supplier + bank</span></div>
+    </div>
+    <div id="L4" class="layer"><div id="cam4" class="cam"><img src="assets/media/dashboard.jpg" alt="Kerdaxis dashboard: every euro comes from the engine, never the model" /><div id="mk-sub" class="mk"></div></div></div>
+    <div id="L5" class="layer" style="background: #0d0d12">
+      <img id="p1" class="shot" src="assets/shots/obs-01-184315-account.png" alt="Supplier portal: account" />
+      <img id="p2" class="shot" src="assets/shots/obs-02-184320-billing.png" alt="Supplier portal: billing" />
+      <img id="p3" class="shot" src="assets/shots/obs-03-184324-subscription.png" alt="Supplier portal: subscription" />
+      <img id="p4" class="shot" src="assets/shots/obs-05-184331-reason.png" alt="Supplier portal: reason" />
+      <img id="p5" class="shot" src="assets/shots/obs-06-184336-offer.png" alt="Supplier portal: offer" />
+      <img id="p6" class="shot" src="assets/shots/obs-07-184340-confirm-paused.png" alt="Supplier portal: confirmation" />
+    </div>
+    <div id="chip" data-layout-allow-overlap>app.kerdaxis.com · demo data</div>
+    <div id="band"><div id="eye">KERDAXIS · YOUR AI CFO</div>
+      <div id="b1" class="bl">It finds the waste: 3 subscriptions.</div>
+      <div id="b3" class="bl">Six steps. One of them is yours.</div>
+      <div id="b4" class="bl">The engine counts. You decide.</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 9.72 (b20). One beat = 0.4843 s; a shot every 2 beats, the six steps one per beat.
+      const B = 0.4843, b = (k) => +(k * B).toFixed(3);
+      const show = (layer, line, t0, t1) => {
+        tl.set(layer, { opacity: 1 }, t0); tl.set(line, { opacity: 1 }, t0);
+        if (t1 !== undefined) { tl.set(layer, { opacity: 0 }, t1); tl.set(line, { opacity: 0 }, t1); }
+      };
+      gsap.set(".mk", { scaleX: 0 });
+      // 1 · headline (b0-b2)
+      gsap.set("#cam1", { x: -260, y: 263, scale: 0.9 });
+      show("#L1", "#b1", 0, b(2)); tl.set("#b1", { opacity: 1 }, b(2)); tl.set("#b1", { opacity: 0 }, b(6)); tl.set("#chip", { opacity: 1 }, 0); tl.set("#chip", { opacity: 0 }, b(6));
+      tl.to("#cam1", { x: -280, y: 255, scale: 0.92, duration: b(2), ease: "none" }, 0);
+      tl.to("#mk-head", { scaleX: 1, duration: 0.35, ease: "power2.out" }, 0.12);
+      // 2 · the three lines, counted on the beat (b2-b6)
+      gsap.set("#cam2", { x: -332, y: -266, scale: 0.95 });
+      tl.set("#L2", { opacity: 1 }, b(2)); tl.set("#L2", { opacity: 0 }, b(6));
+      [["#r1", "#n1", b(3)], ["#r2", "#n2", b(4)], ["#r3", "#n3", b(5)]].forEach(([r, n, t]) => {
+        tl.fromTo(r, { opacity: 0 }, { opacity: 1, duration: 0.12 }, t);
+        tl.fromTo(n, { opacity: 0, scale: 0.4, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.22, ease: "back.out(1.8)" }, t);
+      });
+      // 3 · six steps, one per beat (b6-b12)
+      show("#flow", "#b3", b(6), b(12));
+      ["#s1", "#s2", "#s3", "#s4", "#s5", "#s6"].forEach((s, i) => {
+        const t = b(6 + i);
+        tl.to(s + " .on", { opacity: 1, duration: 0.12 }, t);
+        tl.fromTo(s + " .on", { scale: 0.7, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.22, ease: "back.out(1.8)" }, t);
+        tl.to([s + " b", s + " span"], { opacity: 1, duration: 0.15 }, t);
+      });
+      // 4 · the product's own rule (b12-b14)
+      gsap.set("#cam4", { x: -381, y: 225, scale: 1.05 });
+      show("#L4", "#b4", b(12), b(14)); tl.set("#b4", { opacity: 1 }, b(14));
+      tl.to("#mk-sub", { scaleX: 1, duration: 0.4, ease: "power2.out" }, b(12) + 0.1);
+      // 5 · the cancellation path, six screens in two beats (b14-b16)
+      tl.set("#L5", { opacity: 1 }, b(14));
+      for (let i = 1; i <= 6; i++) {
+        const t = +(b(14) + (i - 1) * B / 3).toFixed(3);
+        tl.set("#p" + i, { opacity: 1 }, t);
+        if (i > 1) tl.set("#p" + (i - 1), { opacity: 0 }, t);
+      }
+      tl.set({}, {}, b(16));
+      window.__timelines["montage"] = tl;
+    })();
+  </script>
+</template>

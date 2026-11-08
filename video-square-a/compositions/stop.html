@@ -1,0 +1,61 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; }
+    #s-page { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #s-page img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; }
+    #s-ag { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-svg { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-pill { position: absolute; left: 28px; top: 20px; height: 28px; padding: 0 10px 0 8px; border-radius: 14px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 19px; line-height: 28px; white-space: nowrap; }
+    .ag-pill i { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 4px; background: #d4f53c; vertical-align: 1px; }
+    #s-band { position: absolute; left: 0; top: 0; width: 1080px; height: 230px; background: #0d0d12; color: #f4f4f8; }
+    #s-eye { position: absolute; left: 60px; top: 46px; font-family: "Fira Code", monospace; font-size: 28px; letter-spacing: 0.12em; color: #d4f53c; white-space: nowrap; }
+    #s-line { position: absolute; left: 60px; top: 92px; width: 960px; font-weight: 800; font-size: 54px; line-height: 1.12; letter-spacing: -0.03em; }
+    #s-panel { position: absolute; left: 0; top: 760px; width: 1080px; height: 320px; background: #0d0d12; color: #f4f4f8; }
+    #s-call { position: absolute; left: 60px; top: 34px; font-weight: 800; font-size: 96px; line-height: 1; letter-spacing: -0.05em; color: #d4f53c; white-space: nowrap; }
+    #s-go { position: absolute; left: 60px; top: 166px; width: 560px; height: 106px; border-radius: 22px; background: #d4f53c; color: #0d0d12;
+      font-weight: 800; font-size: 40px; line-height: 106px; text-align: center; white-space: nowrap; }
+    #s-note { position: absolute; left: 660px; top: 176px; width: 380px; font-size: 32px; line-height: 1.3; color: #a9a9bb; }
+    #s-you { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .cur-svg { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .pill { position: absolute; left: 56px; top: 56px; height: 44px; padding: 0 16px; border-radius: 22px; background: #f4f4f8; color: #0d0d12;
+      font-weight: 700; font-size: 28px; line-height: 44px; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="stop" data-width="1080" data-height="1080">
+    <div id="s-page">
+      <img src="assets/shots/confirm-unchecked.png" alt="Supplier portal: final confirmation page" />
+      <div id="s-ag" data-layout-allow-occlusion><svg viewBox="0 0 26 37" class="ag-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="ag-pill"><i></i>H Company agent</div></div>
+    </div>
+    <div id="s-band"><div id="s-eye">THE IRREVERSIBLE STEP</div><div id="s-line">Before the final click, it stops. And waits.</div></div>
+    <div id="s-panel">
+      <div id="s-call">YOUR CALL.</div>
+      <div id="s-go">Give the green light</div>
+      <div id="s-note">Nothing irreversible happens without it.</div>
+    </div>
+    <div id="s-you" data-layout-allow-occlusion data-layout-allow-overflow><svg viewBox="0 0 26 37" class="cur-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="pill">You</div></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 4.4. Music cuts at b10 (local 0.48); the "You" click lands at local 3.3, the beat returns on b16 (local 3.38).
+      gsap.set("#s-page", { x: -70, y: -250, scale: 1.45 });
+      tl.to("#s-page", { x: -90, y: -265, scale: 1.48, duration: 3.38, ease: "none" }, 0);
+      tl.fromTo("#s-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 0.05);
+      gsap.set("#s-ag", { x: 700, y: 640 });
+      tl.to("#s-ag", { x: 385, y: 534, duration: 0.45, ease: "power2.out" }, 0.0);
+      gsap.set("#s-panel", { y: 320 });
+      tl.to("#s-panel", { y: 0, duration: 0.4, ease: "power3.out" }, 0.55);
+      tl.fromTo("#s-call", { opacity: 0, scale: 1.15, transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, duration: 0.25, ease: "expo.out" }, 0.8);
+      tl.fromTo("#s-go", { opacity: 0, scale: 0.92, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.4)" }, 1.1);
+      tl.fromTo("#s-note", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 1.3);
+      gsap.set("#s-you", { x: 1100, y: 1120 });
+      tl.to("#s-you", { x: 420, y: 960, duration: 0.8, ease: "power2.inOut" }, 2.35);
+      tl.to("#s-you", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.07 }, 3.3);
+      tl.to("#s-you", { scale: 1, duration: 0.08 }, 3.37);
+      tl.to("#s-go", { scale: 0.95, duration: 0.07 }, 3.3);
+      tl.set("#s-go", { textContent: "✓ Green light given" }, 3.33);
+      tl.set({}, {}, 3.38);
+      window.__timelines["stop"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,37 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0d0d12; font-family: "Plus Jakarta Sans", sans-serif; color: #f4f4f8; }
+    #e-mark { position: absolute; left: 430px; top: 170px; width: 220px; height: 220px; }
+    #e-mark svg { width: 220px; height: 220px; }
+    #e-word { position: absolute; left: 0; top: 410px; width: 1080px; text-align: center; font-weight: 800; font-size: 120px; letter-spacing: -0.045em; }
+    #e-line { position: absolute; left: 0; top: 590px; width: 1080px; text-align: center; font-weight: 800; font-size: 82px; letter-spacing: -0.04em; white-space: nowrap; }
+    #e-ai { position: relative; z-index: 0; isolation: isolate; display: inline-block; padding: 0 10px; color: #f4f4f8; }
+    #e-hl { position: absolute; left: 0; right: 0; bottom: -4px; height: 94px; background: #d4f53c; z-index: -1; transform-origin: 0 50%; }
+    #e-btn { position: absolute; left: 190px; top: 760px; width: 700px; height: 112px; border-radius: 22px; background: #d4f53c; color: #0d0d12;
+      font-weight: 800; font-size: 50px; line-height: 112px; text-align: center; white-space: nowrap; }
+    #e-url { position: absolute; left: 0; top: 900px; width: 1080px; text-align: center; font-size: 40px; color: #a9a9bb; }
+  </style>
+  <div id="root" data-composition-id="end" data-width="1080" data-height="1080">
+    <div id="e-mark"><svg viewBox="0 0 24 24" aria-label="Kerdaxis"><defs><linearGradient id="kqs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fdc3c"/><stop offset="1" stop-color="#2e8b1f"/></linearGradient><linearGradient id="kql" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2e8b1f"/><stop offset="1" stop-color="#a6e33a"/></linearGradient></defs><rect x="2.5" y="1.5" width="6.5" height="21" rx="2.2" fill="url(#kqs)"/><path d="M11.2 12.6 19.4 22.5H22L13.6 11.2z" fill="url(#kql)"/><path d="M3.5 22.5 16.2 1.5h5.8L9.4 22.5z" fill="#d4f53c"/></svg></div>
+    <div id="e-word">Kerdaxis</div>
+    <div id="e-line">Let <span id="e-ai"><span id="e-hl"></span>AI</span> do the work.</div>
+    <div id="e-btn">See it live, no signup</div>
+    <div id="e-url">kerdaxis.com</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 21.35 (b44). Mark on b45, line b47, marker b48, CTA b49.
+      tl.fromTo("#e-mark", { opacity: 0, y: -220, rotation: -24, scale: 0.6, transformOrigin: "50% 50%" }, { opacity: 1, y: 0, rotation: 0, scale: 1, duration: 0.45, ease: "back.out(1.4)" }, 0.3);
+      tl.fromTo("#e-word", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 0.6);
+      tl.fromTo("#e-line", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 1.453);
+      gsap.set("#e-hl", { scaleX: 0 });
+      tl.to("#e-hl", { scaleX: 1, duration: 0.35, ease: "power3.out" }, 1.937);
+      tl.to("#e-ai", { color: "#0d0d12", duration: 0.25, ease: "power2.out" }, 1.95);
+      tl.fromTo("#e-btn", { opacity: 0, scale: 0.9, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.5)" }, 2.422);
+      tl.fromTo("#e-url", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 2.7);
+      tl.set({}, {}, 4.85);
+      window.__timelines["end"] = tl;
+    })();
+  </script>
+</template>
