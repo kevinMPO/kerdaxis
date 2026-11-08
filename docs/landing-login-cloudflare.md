@@ -23,9 +23,9 @@ L'auth se fait proprement :
 
 | | **Landing (publique)** | **App (connectée)** |
 |---|---|---|
-| URL | `argentier.xyz` (racine) | `argentier.xyz/app` (derrière login) |
+| URL | `kerdaxis.com` (racine) | `app.kerdaxis.com` (derrière login) |
 | Contenu | Pitch DAF autonome, démo, **voix ElevenLabs**, liste d'attente | Le dashboard actuel (audit, natures, leviers, **Autopilote**) |
-| Source repo | nouveau `web/app/page.tsx` (landing) | l'actuel `Argentier.tsx` déplacé sous `/app` |
+| Source repo | nouveau `web/app/page.tsx` (landing) | l'actuel `Kerdaxis.tsx` déplacé sous `/app` |
 | Accès | ouvert à tous | e-mail autorisé + mot de passe (hash en secret) |
 
 Le **pitch deck** actuel (elevator pitch bilingue + section Architecture) devient le

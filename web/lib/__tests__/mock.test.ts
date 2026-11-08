@@ -7,9 +7,9 @@
 //  1. ANONYMAT — aucune donnée d'un compte bancaire réel. Le fondateur avait sa
 //     raison sociale, son solde et sa ligne « perso » en ligne : plus jamais.
 //     Le test échoue sur toute réapparition de l'identité réelle.
-//  2. JUSTESSE — Argentier vend la rigueur des chiffres. Une démo dont le total
+//  2. JUSTESSE — Kerdaxis vend la rigueur des chiffres. Une démo dont le total
 //     ne tombe pas juste détruit l'argument de vente, et la cascade
-//     `NatureWaterfall` (app/Argentier.tsx) afficherait une barre fausse. Les
+//     `NatureWaterfall` (app/Kerdaxis.tsx) afficherait une barre fausse. Les
 //     invariants ci-dessous sont ceux que `lib/engine.ts` produit sur de vraies
 //     données ; le mock doit s'y tenir.
 // ---------------------------------------------------------------------------

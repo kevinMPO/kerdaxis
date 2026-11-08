@@ -5,7 +5,7 @@
 // (lib/mcp/readonly-guard.ts), traversée avant chaque appel à l'API Qonto. Le
 // jeton, lui, porte des droits d'écriture que le serveur d'autorisation refuse
 // de restreindre — l'allowlist applicative est donc la seule chose qui empêche
-// Argentier de bouger de l'argent.
+// Kerdaxis de bouger de l'argent.
 //
 // Cet invariant a déjà été enfreint une fois, et personne ne l'a vu : `lib/qonto.ts`
 // appelait `fetch("https://thirdparty.qonto.com/v2" + path)` avec une clé API

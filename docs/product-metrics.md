@@ -1,12 +1,12 @@
-# Argentier — Product Metrics & North Star Framework
+# Kerdaxis — Product Metrics & North Star Framework
 
-> **One question this document answers:** how do we know Argentier works — for the user *and* the
+> **One question this document answers:** how do we know Kerdaxis works — for the user *and* the
 > business — with a number that cannot be hallucinated by the LLM and whose core component can be
 > checked against the customer's own bank statement? And, just as important: **where that number is
 > a projection, where the guardrails are convention rather than architecture, and what we still have
 > to build.** A metric framework that hides its own gaps is a vanity framework.
 
-Argentier is a **read-only** AI CFO agent on the Qonto MCP. It is **free**; it charges a **5% success
+Kerdaxis is a **read-only** AI CFO agent on the Qonto MCP. It is **free**; it charges a **5% success
 fee on savings proven at J+30** ("no savings, no cost"). That business model is why the North Star is
 easy to choose: the metric that captures user value and the metric that captures revenue are **the
 same euro**.
@@ -51,7 +51,7 @@ Every metric that needs data we don't keep yet is marked **(to instrument)** and
 **approved and sent**, and for which a **J+30 read-only re-read of the real Qonto account confirmed
 the recurring debit dropped or vanished** for the elapsed cycle(s) — the recurring SEPA/card debit
 disappeared, the renegotiated amount fell, or the aggregated `fx_card` fees dropped. Money the
-business keeps because Argentier read the blind spots in its account. Not money "identified", not
+business keeps because Kerdaxis read the blind spots in its account. Not money "identified", not
 money "recommended": money whose **monthly drop is visible on the statement**.
 
 **The two halves — stated plainly.**
@@ -62,7 +62,7 @@ money "recommended": money whose **monthly drop is visible on the statement**.
   tool cancelled in month 1 that silently resumes in month 2 is now caught by **net-of-reversal**
   (§6, live): the next `/verify` flips it to `reverte` and it leaves APS. We name this openly rather than claim "you can't
   fake a number on the customer's statement" — the customer's statement shows one cycle; the year is
-  Argentier's extrapolation of it.
+  Kerdaxis's extrapolation of it.
 
 **Formula.**
 
@@ -119,7 +119,7 @@ through the input tree (§2), not by waiting on the lagging number.
 
 | Candidate | Why it fails the value-capture test |
 |---|---|
-| `# audits run` | Activity, not outcome. Grows while the customer saves €0 (and Argentier earns €0). |
+| `# audits run` | Activity, not outcome. Grows while the customer saves €0 (and Kerdaxis earns €0). |
 | `Savings identified` (engine candidates) | A generous theoretical ceiling. Proves nothing left the account. |
 | `economies_en_attente_eur_an` (approved) | Validated intent, but the money hasn't moved — the *leading* signal, not the star. |
 | Loops / trust-loops count | Breaks `Revenue = APS × 5%` and invites magnitude-gaming (20 tiny proven duplicates outscore one €5,000/yr win). Good *engagement* signal → secondary. |
@@ -144,7 +144,7 @@ what an earlier stage produced, so this is also the debugging order when APS sta
 
 ## 3. Secondary metrics
 
-Adapted from the classic product-health set to Argentier's real artifacts. Each names a source.
+Adapted from the classic product-health set to Kerdaxis's real artifacts. Each names a source.
 Fields marked **(to instrument)** are honestly *not* readable today (`decisions[]` is empty); the two
 aggregate scalars and all `engine.py` fields are.
 
@@ -163,7 +163,7 @@ aggregate scalars and all `engine.py` fields are.
 
 ### Future receivables module (roadmap — NOT computed today)
 
-Argentier today is **cost-recovery**, not receivables collection. These belong to a **future
+Kerdaxis today is **cost-recovery**, not receivables collection. These belong to a **future
 receivables module** and must **not** be claimed until the agent reads invoice/payment data:
 
 | Metric | Would measure | Prerequisite (not connected today) |
@@ -191,7 +191,7 @@ human-approved recommendation.
 
 **Aha** — two moments, one hooks, one proves.
 
-- **Hook (first `/audit`):** *"the statement lies"* dissolves — Argentier splits blended spend by
+- **Hook (first `/audit`):** *"the statement lies"* dissolves — Kerdaxis splits blended spend by
   nature, reveals the **true controllable run-rate**, and surfaces one lever the user didn't know
   about (a duplicate, a silent +X% hike, a phantom sub) with a dated alternative price and a draft
   letter already written — while being **provably unable to spend it** (read-only).
@@ -214,7 +214,7 @@ prompt/convention, LLM could deviate · **BACKLOG** = claimed but not yet implem
 
 | Principle | Counter-metric | Bound | Enforced by | Grade |
 |---|---|---|---|---|
-| **Authorization before execution** | Qonto payment/transfer/card actions by Argentier | **= 0** | `settings.json` `deny` > `allow` hard-denies every write/transfer/card tool **and** the Qonto MCP server cannot move money (its own docs) | **HARD (two layers)** |
+| **Authorization before execution** | Qonto payment/transfer/card actions by Kerdaxis | **= 0** | `settings.json` `deny` > `allow` hard-denies every write/transfer/card tool **and** the Qonto MCP server cannot move money (its own docs) | **HARD (two layers)** |
 | **Least privilege** | Qonto write tools invoked | **= 0** | Explicit 8-read-tool allowlist; everything else denied | **HARD** |
 | **Reversibility** | Irreversible banking side-effects | **= 0** | Output is a file in `drafts/`; read-only ⇒ no banking side-effect | **HARD** (follows from read-only) |
 | **Explainability** | Displayed euro ≠ `engine.py` euro | **= 0** | Rule #2 + 24 `unittest` tests pin engine math; **APS sum now recomputed by `sum_ledger.py`** (not LLM) | **SOFT + tests** — *sum gap closed; remaining backlog: assert card/letter € == engine output.* |

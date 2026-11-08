@@ -62,7 +62,7 @@ export async function GET(requete: Request): Promise<Response> {
     // Garde-fou : sur une origine que Qonto refusera, on s'arrête ici.
     if (provider.id === "mcp-proxy" && !origineAcceptableParQonto(provider.redirectUri)) {
       console.warn(
-        `[argentier][oauth] Départ refusé : le proxy MCP de Qonto n'accepte ` +
+        `[kerdaxis][oauth] Départ refusé : le proxy MCP de Qonto n'accepte ` +
           `pas la redirect_uri « ${provider.redirectUri} » (loopback ou liste ` +
           `blanche uniquement).`,
       );
@@ -83,11 +83,11 @@ export async function GET(requete: Request): Promise<Response> {
           message:
             "La connexion directe à ton compte Qonto n'est pas encore ouverte " +
             "sur ce domaine : Qonto doit d'abord autoriser l'adresse de retour " +
-            "d'Argentier. En attendant, la démonstration fonctionne avec un " +
+            "de Kerdaxis. En attendant, la démonstration fonctionne avec un " +
             "jeu de données d'exemple.",
           message_en:
             "Connecting your Qonto account is not yet available on this domain: " +
-            "Qonto must first allow Argentier's callback address. Meanwhile, the " +
+            "Qonto must first allow Kerdaxis's callback address. Meanwhile, the " +
             "demo runs on sample data.",
         },
         { status: 503, headers: { "Cache-Control": "no-store" } },
@@ -102,7 +102,7 @@ export async function GET(requete: Request): Promise<Response> {
       state,
     });
   } catch (erreur) {
-    console.error("[argentier][oauth] Départ du flux impossible :", erreur);
+    console.error("[kerdaxis][oauth] Départ du flux impossible :", erreur);
     return NextResponse.json(
       { error: "configuration_oauth", message: "Connexion Qonto indisponible : configuration OAuth incomplète." },
       { status: 500 },

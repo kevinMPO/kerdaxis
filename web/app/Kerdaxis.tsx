@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Argentier — front d'entrée, bilingue FR / EN.
+ * Kerdaxis — front d'entrée, bilingue FR / EN.
  * Au montage, il fetch /api/analyze (Qonto → Claude → engine.ts). Tant que la
  * réponse n'arrive pas — ou si l'API échoue — il affiche les données mock.
  * La langue est persistée (localStorage) et transmise à Claude (lettres, benchmark).
@@ -110,7 +110,7 @@ function useCountUp(target: number, trigger: unknown, ms = 900) {
   return { val, ready };
 }
 
-export default function Argentier() {
+export default function Kerdaxis() {
   const [lang, setLang] = useState<Lang>("fr");
   const [data, setData] = useState<AnalyzeResult>(MOCK);
   const [levers, setLevers] = useState(MOCK.levers);
@@ -1719,7 +1719,7 @@ export default function Argentier() {
   );
 }
 
-// Marque Argentier : chevron « A » + barres ascendantes (le run-rate qui monte).
+// Marque Kerdaxis : chevron « A » + barres ascendantes (le run-rate qui monte).
 function ArgLogo() {
   return (
     <svg className="arg-logo" viewBox="0 0 32 32" fill="none" aria-hidden="true">

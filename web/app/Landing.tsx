@@ -3,7 +3,7 @@
 /**
  * Landing — page principale du site (le pitch, façon page marketing).
  * Palette inspirée de qonto.com : fond quasi-noir, texte blanc, accent jaune.
- * Bouton « Voir la démo » → l'app Argentier, sur le jeu de démonstration
+ * Bouton « Voir la démo » → l'app Kerdaxis, sur le jeu de démonstration
  * anonymisé de `lib/mock.ts` (société fictive, montants fictifs).
  */
 
@@ -152,7 +152,7 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
 
       <header className="lp-nav">
         <span className="lp-brand">
-          <Mark /> Argentier
+          <Mark /> Kerdaxis
         </span>
         <div className="lp-nav-right">
           <div className="lp-langs" role="group" aria-label="Language">
@@ -292,16 +292,16 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
         ))}
       </section>
 
-      {/* Argentier dans Slack (Claude Tag) — accès qualifié */}
+      {/* Kerdaxis dans Slack (Claude Tag) — accès qualifié */}
       <section className="lp-slack" id="slack">
         <div className="lp-slack-card">
           <span className="lp-slack-badge">
             {L(lang, {
-              fr: "Nouveau · Argentier dans Slack",
-              en: "New · Argentier in Slack",
-              de: "Neu · Argentier in Slack",
-              es: "Nuevo · Argentier en Slack",
-              it: "Novità · Argentier in Slack",
+              fr: "Nouveau · Kerdaxis dans Slack",
+              en: "New · Kerdaxis in Slack",
+              de: "Neu · Kerdaxis in Slack",
+              es: "Nuevo · Kerdaxis en Slack",
+              it: "Novità · Kerdaxis in Slack",
             })}
           </span>
           <h2 className="lp-slack-title">
@@ -315,11 +315,11 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
           </h2>
           <p className="lp-slack-sub">
             {L(lang, {
-              fr: "Depuis ton espace Slack, demande un audit de tes dépenses. Argentier étiquette, le moteur déterministe calcule chaque euro, tu approuves. Toujours en lecture seule.",
-              en: "From your Slack workspace, ask for a spend audit. Argentier labels, the deterministic engine computes every euro, you approve. Always read-only.",
-              de: "Frag aus deinem Slack-Workspace nach einem Ausgaben-Audit. Argentier etikettiert, die deterministische Engine berechnet jeden Euro, du gibst frei. Immer nur lesend.",
-              es: "Desde tu espacio de Slack, pide una auditoría de gastos. Argentier etiqueta, el motor determinista calcula cada euro, tú apruebas. Siempre en solo lectura.",
-              it: "Dal tuo spazio Slack, chiedi un audit delle spese. Argentier etichetta, il motore deterministico calcola ogni euro, tu approvi. Sempre in sola lettura.",
+              fr: "Depuis ton espace Slack, demande un audit de tes dépenses. Kerdaxis étiquette, le moteur déterministe calcule chaque euro, tu approuves. Toujours en lecture seule.",
+              en: "From your Slack workspace, ask for a spend audit. Kerdaxis labels, the deterministic engine computes every euro, you approve. Always read-only.",
+              de: "Frag aus deinem Slack-Workspace nach einem Ausgaben-Audit. Kerdaxis etikettiert, die deterministische Engine berechnet jeden Euro, du gibst frei. Immer nur lesend.",
+              es: "Desde tu espacio de Slack, pide una auditoría de gastos. Kerdaxis etiqueta, el motor determinista calcula cada euro, tú apruebas. Siempre en solo lectura.",
+              it: "Dal tuo spazio Slack, chiedi un audit delle spese. Kerdaxis etichetta, il motore deterministico calcola ogni euro, tu approvi. Sempre in sola lettura.",
             })}
           </p>
           <p className="lp-slack-note">
@@ -462,11 +462,11 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
             </p>
             <p className="lp-gate-sub">
               {L(lang, {
-                fr: "Laisse ton email pour lancer la démo Argentier.",
-                en: "Leave your email to launch the Argentier demo.",
-                de: "Gib deine E-Mail an, um die Argentier-Demo zu starten.",
-                es: "Deja tu email para iniciar la demo de Argentier.",
-                it: "Lascia la tua email per avviare la demo di Argentier.",
+                fr: "Laisse ton email pour lancer la démo Kerdaxis.",
+                en: "Leave your email to launch the Kerdaxis demo.",
+                de: "Gib deine E-Mail an, um die Kerdaxis-Demo zu starten.",
+                es: "Deja tu email para iniciar la demo de Kerdaxis.",
+                it: "Lascia la tua email per avviare la demo di Kerdaxis.",
               })}
             </p>
             <form className="lp-gate-form" onSubmit={submitDemo}>
@@ -618,7 +618,7 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
 
       <footer className="lp-foot">
         <div className="lp-foot-brand">
-          <Mark /> Argentier
+          <Mark /> Kerdaxis
         </div>
         <nav className="lp-foot-liens">
           <a href="/mentions-legales">Mentions légales</a>
@@ -628,7 +628,7 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
           <a href="/sous-traitants">Sous-traitants</a>
         </nav>
         <div className="lp-foot-note">
-          Lecture seule — Argentier ne déplace jamais d’argent.
+          Lecture seule — Kerdaxis ne déplace jamais d’argent.
         </div>
       </footer>
     </div>

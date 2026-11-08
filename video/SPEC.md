@@ -16,7 +16,7 @@ LOOK:    Three worlds, all taken from the real product. No other grounds.
          APP (Kerdaxis demo app): paper #FAFAF7, ink #17140F, ink2 #5B554C, rule #E4E0D6,
            strong rule #B8B2A5, green #2F6F5B, green-soft #E7F0EC, amber #B9812B, clay #A9432B.
            Titles Space Grotesk 600 76 px, −0.02em; UI Inter 400/600; numbers JetBrains Mono 600.
-           Real components rebuilt from Argentier.tsx / ExecutionPanel.tsx with their EN labels,
+           Real components rebuilt from Kerdaxis.tsx / ExecutionPanel.tsx with their EN labels,
            at 1.5–2.2× real size, text ≥ 28 px; cards white, 1–2 px rule, radius 14×scale.
          PORTAL (Nuvio CRM, fictional supplier): REAL captures of the recorded H Company session of
            7 Nov 2026, 18:43:07–18:44:00 Paris (English portal, ?lang=en), 1280×720, in

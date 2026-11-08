@@ -28,7 +28,7 @@ import type { D1Database } from "@/lib/db/tenant";
 import type { KvNamespaceLike, TokenStoreEnv } from "@/lib/auth/token-store";
 
 /** Bindings attendus dans `wrangler.jsonc`. `unknown` : on valide la forme. */
-export interface BindingsArgentier extends TokenStoreEnv {
+export interface BindingsKerdaxis extends TokenStoreEnv {
   /** KV : tokens OAuth chiffrés (cf. lib/auth/token-store.ts). */
   ARGENTIER_TOKENS?: unknown;
   /** D1 : socle multi-locataire (cf. lib/db/tenant.ts). */
@@ -89,7 +89,7 @@ export function modeDegradeAutorise(): boolean {
  * C'est l'accès BRUT : c'est aux accesseurs typés ci-dessous (`baseD1`,
  * `getTokenStore`) de décider si l'absence est acceptable.
  */
-export function bindingsArgentier(): BindingsArgentier {
+export function bindingsKerdaxis(): BindingsKerdaxis {
   const global = globalThis as Record<symbol, unknown> & Record<string, unknown>;
   const contexte = global[SYMBOLE_CONTEXTE] as ContexteCloudflare | undefined;
   const env = contexte?.env;
@@ -137,7 +137,7 @@ export function estKvNamespace(valeur: unknown): valeur is KvNamespaceLike {
  * plutôt que de la servir sans journal.
  */
 export function baseD1(
-  bindings: BindingsArgentier = bindingsArgentier(),
+  bindings: BindingsKerdaxis = bindingsKerdaxis(),
 ): D1Database | null {
   if (estBaseD1(bindings.ARGENTIER_DB)) return bindings.ARGENTIER_DB;
   if (modeDegradeAutorise()) return null;
@@ -154,7 +154,7 @@ export function baseD1(
  * route `/api/auth/qonto/status`), jamais à celles qui lisent la banque.
  */
 export function baseD1SiPresente(
-  bindings: BindingsArgentier = bindingsArgentier(),
+  bindings: BindingsKerdaxis = bindingsKerdaxis(),
 ): D1Database | null {
   return estBaseD1(bindings.ARGENTIER_DB) ? bindings.ARGENTIER_DB : null;
 }

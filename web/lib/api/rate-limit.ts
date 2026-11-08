@@ -30,7 +30,7 @@
 // ---------------------------------------------------------------------------
 
 import type { KvNamespaceLike } from "@/lib/auth/token-store";
-import { bindingsArgentier } from "@/lib/runtime/bindings";
+import { bindingsKerdaxis } from "@/lib/runtime/bindings";
 
 /** Une fenêtre glissante-par-paliers : `max` requêtes toutes les `secondes`. */
 export interface Fenetre {
@@ -181,13 +181,13 @@ let kvManquantSignale = false;
 
 /** KV de comptage, ou `null` hors Cloudflare (le limiteur reste mémoire seule). */
 function kvDebit(): KvNamespaceLike | null {
-  const binding = bindingsArgentier().ARGENTIER_TOKENS;
+  const binding = bindingsKerdaxis().ARGENTIER_TOKENS;
   if (estKvNamespace(binding)) return binding;
 
   if (!kvManquantSignale) {
     kvManquantSignale = true;
     console.warn(
-      "[argentier][debit] Binding KV ARGENTIER_TOKENS absent : la limitation de " +
+      "[kerdaxis][debit] Binding KV ARGENTIER_TOKENS absent : la limitation de " +
         "débit ne tient plus que dans la mémoire de l'isolat, donc elle est " +
         "remise à zéro à chaque redémarrage et n'est pas partagée. Acceptable " +
         "en dev local uniquement.",
@@ -255,7 +255,7 @@ export async function verifierDebit(
           // Un KV en panne ne doit pas transformer une limite en erreur 500 :
           // on retombe sur le compteur mémoire, en le disant.
           console.error(
-            "[argentier][debit] Écriture KV du compteur impossible :",
+            "[kerdaxis][debit] Écriture KV du compteur impossible :",
             erreur instanceof Error ? erreur.name : "erreur inconnue",
           );
         });

@@ -11,15 +11,15 @@ Two distribution modes: (1) direct SMB subscription; (2) white-label product dis
 
 **Non-goal:** replacing general-ledger accounting or financial advice by a licensed professional. No automatic money movement, bank payment authorizations, financial transfers, changes in payment instruments, or unauthorized access.
 
-## 2. Evidence from GetArgentier (existing private GitHub project)
-Repository inspected: `kevinMPO/getargentier` on `main` (README, Python engine, Mastra risk agent, audit command, package manifest). Existing assets worth reusing:
+## 2. Existing assets
+Repository inspected on `main` (README, Python engine, Mastra risk agent, audit command, package manifest). Existing assets worth reusing:
 - `engine.py`: deterministic detection of subscriptions, recurring cadence, duplicates, FX fees, and indicative missing-receipt VAT; distinctions between annualizable and one-off savings.
 - `sum_ledger.py`, `/verify`, and `decisions.json`: distinguish estimated, approved and verified savings; reversals correct totals.
 - `web/`: Next.js/React frontend, dashboard, mock path, translations, and prior ElevenLabs voice prototype.
 - `web/lib/risk/mastra.ts`: already uses `@mastra/core`, `@mastra/mcp`, a Linkup MCP client, optional persistent memory, and prompt-injection precautions.
 - `/audit` workflow: read-only financial ingestion → deterministic financial analysis → sourced comparison → human gate → ledger.
 
-**Critical delta from GetArgentier:** GetArgentier intentionally stops before sending/cancelling. Kerdaxis adds an explicitly approved, tracked, human-supervised **execution layer** using H Company. Preserve hard read-only permissions for bank and finance data; create a *separate supplier-portal execution capability* with an independent permission policy. Never loosen the previous Qonto write restrictions to make browser actions work.
+**Critical delta:** the read-only audit intentionally stops before sending/cancelling. Kerdaxis adds an explicitly approved, tracked, human-supervised **execution layer** using H Company. Preserve hard read-only permissions for bank and finance data; create a *separate supplier-portal execution capability* with an independent permission policy. Never loosen the previous Qonto write restrictions to make browser actions work.
 
 Do not claim the current repo already contains H Company or Gladia working integrations. Verify actual SDK/API contracts, credentials, quotas and supported runtime before coding.
 
@@ -83,7 +83,7 @@ Backend API + auth + organizations / tenant scope
 Mastra orchestration / workflow state machine / logs
    |               |                   |
 Financial data  Deterministic core   Linkup MCP
-read-only        (reuse Argentier)    benchmark+sources
+read-only        (existing engine)    benchmark+sources
 MCP/API/Browser         |                   |
    +------ normalized transactions -----------+
                          |
@@ -101,7 +101,7 @@ MCP/API/Browser         |                   |
 
 Implement adapters: `FinancialSourceAdapter`, `BenchmarkProvider`, `BrowserExecutor`, `SpeechAdapter`. `BrowserExecutor` API should abstract the exact H Company SDK; use an official SDK/tool contract only after validation. `SpeechAdapter` receives Gladia transcripts and exposes command intents to Mastra; do not pretend Gladia itself executes actions. Mastra must own long-running execution states, retries and tool guards. Persist execution checkpoints so replays don't double-cancel.
 
-Recommended initial stack: Next.js + TypeScript + Mastra + existing deterministic Python/TS engine + PostgreSQL (tenants, approvals, events) + object storage (encrypted proofs) + scoped browser sessions + H Company + Linkup MCP + Gladia. For hackathon, use seeded JSON with a real H Company demonstration on a permitted sandbox/test supplier or owned demo website, while Linkup/Gladia are integrated if credentials are available. Avoid unnecessary migration of mature Argentier modules.
+Recommended initial stack: Next.js + TypeScript + Mastra + existing deterministic Python/TS engine + PostgreSQL (tenants, approvals, events) + object storage (encrypted proofs) + scoped browser sessions + H Company + Linkup MCP + Gladia. For hackathon, use seeded JSON with a real H Company demonstration on a permitted sandbox/test supplier or owned demo website, while Linkup/Gladia are integrated if credentials are available. Avoid unnecessary migration of mature Kerdaxis modules.
 
 ## 7. Data contracts (minimal)
 - `Tenant(id, type, brand, plan)`; `Organization(id, tenant_id, name)`; `User(id, tenant_id, role)`.

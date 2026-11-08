@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Configuration Next.js d'Argentier.
+// Configuration Next.js de Kerdaxis.
 //
 // L'essentiel de ce fichier, ce sont les EN-TÊTES DE SÉCURITÉ : un pentest sur
 // / et /demo n'en a trouvé aucun (ni CSP, ni X-Frame-Options, ni nosniff, ni
@@ -9,7 +9,7 @@
 //
 // La CSP est écrite à partir de ce que l'application appelle RÉELLEMENT depuis
 // le navigateur, vérifié dans `app/` :
-//   - `<style>{CSS}</style>` inline (Landing.tsx, Argentier.tsx) + `@import`
+//   - `<style>{CSS}</style>` inline (Landing.tsx, Kerdaxis.tsx) + `@import`
 //     de fonts.googleapis.com  → style-src 'unsafe-inline' + googleapis ;
 //   - hydratation Next 15, qui injecte `self.__next_f.push(...)` en inline
 //     → script-src 'self' 'unsafe-inline'. Les nonces exigeraient un
@@ -81,7 +81,7 @@ const CSP = [
   "worker-src 'self' blob:",
   // Aucune iframe tierce n'est attendue.
   "frame-src 'self'",
-  // Argentier ne doit JAMAIS être encadré : pas de clickjacking sur un écran
+  // Kerdaxis ne doit JAMAIS être encadré : pas de clickjacking sur un écran
   // qui affiche un solde bancaire.
   "frame-ancestors 'none'",
   // Verrous génériques : pas de plugin, pas de <base> détournée, pas de POST

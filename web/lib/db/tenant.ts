@@ -74,7 +74,7 @@ export const STATUTS_PROMOUVABLES: readonly StatutDecision[] = ["approuve", "ref
 
 /** Une organisation Qonto connectée = un locataire. */
 export interface Organization {
-  /** Identifiant interne Argentier (clé de locataire). */
+  /** Identifiant interne Kerdaxis (clé de locataire). */
   id: string;
   /** Identifiant de l'organisation côté Qonto (unique). */
   qontoOrgId: string;
@@ -188,7 +188,7 @@ export interface SaisieAudit {
  * confort de lecture.
  */
 export const SQL_MIGRATION_0001 = `-- ---------------------------------------------------------------------------
--- Migration 0001 — socle multi-locataire (multi-tenant) d'Argentier.
+-- Migration 0001 — socle multi-locataire (multi-tenant) de Kerdaxis.
 -- Cible : Cloudflare D1 (SQLite).
 --
 -- Pourquoi : le prototype est mono-locataire (un seul data/decisions.json plat,
@@ -212,7 +212,7 @@ export const SQL_MIGRATION_0001 = `-- ------------------------------------------
 -- ---------------------------------------------------------------------------
 -- Table 1/3 — organizations : une ligne par organisation Qonto connectee.
 --
---   id           identifiant interne Argentier (opaque, genere par l'app).
+--   id           identifiant interne Kerdaxis (opaque, genere par l'app).
 --                C'est LA cle de locataire referencee partout ailleurs.
 --   qonto_org_id identifiant de l'organisation cote Qonto. UNIQUE : une meme
 --                organisation Qonto ne peut pas exister en double.
@@ -442,7 +442,7 @@ export async function avecSchema<T>(
   } catch (erreur) {
     if (!estTableManquante(erreur) || schemasAppliques.has(db)) throw erreur;
     console.error(
-      "[argentier][db] Schéma multi-locataire absent : application de " +
+      "[kerdaxis][db] Schéma multi-locataire absent : application de " +
         "db/0001_init.sql, puis nouvelle tentative.",
     );
     await applyMigrations(db);

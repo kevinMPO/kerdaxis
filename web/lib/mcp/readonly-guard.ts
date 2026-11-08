@@ -6,7 +6,7 @@
 // envoyé et impose sa propre liste (request_transfers.write, card.write…).
 // Autrement dit, la lecture seule n'est plus garantie par le jeton : elle est
 // garantie ICI, et nulle part ailleurs. Ce module est le seul rempart entre
-// Argentier et un mouvement d'argent (règle non négociable n°1 du CLAUDE.md).
+// Kerdaxis et un mouvement d'argent (règle non négociable n°1 du CLAUDE.md).
 //
 // Deux verrous cumulatifs, en « deny by default » :
 //   (a) méthode HTTP — GET seul, HEAD toléré. Tout le reste est rejeté.
@@ -250,7 +250,7 @@ export function assertReadOnly(method: string, path: string): void {
   const cheminAffiche = typeof path === "string" ? path : String(path);
 
   console.error(
-    `[argentier][read-only] REFUS « ${methodeAffichee} ${cheminAffiche} » — ${raison}.`,
+    `[kerdaxis][read-only] REFUS « ${methodeAffichee} ${cheminAffiche} » — ${raison}.`,
   );
   throw new ReadOnlyViolationError(methodeAffichee, cheminAffiche, raison);
 }
