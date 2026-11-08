@@ -71,8 +71,7 @@ that only holds an opaque tenant id, and `/api/auth/qonto/revoke` disconnects ev
 | `lib/engine/core.ts` | Deterministic engine: natures, run-rate, poles, score, runway, levers, anomalies, risk. |
 | `lib/engine/pricing.ts` | Sourced prices → saving (seats deduced, switch / downgrade / renegotiate). |
 | `lib/analysis/pipeline.ts` | One pipeline for the real account and the demo: categorize, then engine. |
-| `lib/demo/` | The FICTIONAL statement of the public demo (transactions only). |
-| `lib/demo/demo-cache.ts` · `db/0004_demo_results.sql` | Today's Holo result of the demo, shared between isolates through D1 (a rules fallback is never stored). |
+| `lib/demo/` | The FICTIONAL statement of the public demo (transactions only), labelled by keyword rules, never by Holo. |
 | `lib/benchmark.ts` · `benchmark-cache.ts` | Linkup public prices + Holo extraction, 30-day D1 cache. |
 | `lib/benchmark-scraper.ts` | Fallback: the H `web-scraper-flash` agent reads the official pricing page. |
 | `lib/execution/` | Human gate (`policy.ts`), H Company runner (`runner.ts`), trial replay, suppliers, Stripe portal. |
@@ -128,7 +127,7 @@ provisioned there, and they are not optional:
 | Binding | Type | Role | Without it, in production |
 |---|---|---|---|
 | `ARGENTIER_TOKENS` | KV | OAuth tokens encrypted with AES-GCM, TTL set on the refresh token | **refused** (`BindingManquantError`) |
-| `ARGENTIER_DB` | D1 (`weur`) | Multi-tenant base: organizations, decisions, `audit_log`, accounts, executions, and three caches (prices and cancel channels for 30 days, today's demo) (see [`db/README.md`](db/README.md)) | **refused** (`BindingManquantError`); the caches stay silent without their table |
+| `ARGENTIER_DB` | D1 (`weur`) | Multi-tenant base: organizations, decisions, `audit_log`, accounts, executions, and two caches (prices and cancel channels, 30 days each) (see [`db/README.md`](db/README.md)) | **refused** (`BindingManquantError`); the caches stay silent without their table |
 
 Outside production (`next dev`, tests), their absence is tolerated: tokens in process memory, no
 log. In production it **throws**, and `/api/analyze` answers `503 configuration_incomplete`. This
@@ -139,7 +138,7 @@ bank read with no trace is exactly what a CFO pays us to prevent. The
 
 Deploys start from `main`: every push with green CI is deployed by
 `.github/workflows/deploy-web.yml` (Worker secrets check, OpenNext build, `wrangler deploy`, smoke
-test, demo warm-up). D1 migrations are not part of the deploy: they are applied by hand (see
+test). D1 migrations are not part of the deploy: they are applied by hand (see
 [`db/README.md`](db/README.md)). The manual equivalent of the deploy is:
 
 ```bash

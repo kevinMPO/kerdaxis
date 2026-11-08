@@ -5,7 +5,7 @@
 // Ce module ne contient AUCUN résultat : ni économie, ni score, ni risque, ni
 // alternative. Il ne contient que des opérations, comme un vrai relevé Qonto.
 // Tout ce que la démo affiche sort du pipeline réel (lib/analysis/pipeline.ts) :
-// catégorisation Holo, moteur, puis prix Linkup sur accord.
+// catégorisation par mots-clés, moteur, puis prix Linkup sur accord.
 //
 // Les dates sont relatives au jour de la visite, pour que la fenêtre « 30
 // derniers jours » du moteur tombe toujours sur ce relevé.
@@ -43,7 +43,7 @@ const SPECS: readonly TxSpec[] = [
   { merchant: "Nuvio", amount: 129, daysAgo: [4, 34], operationType: "direct_debit" },
   { merchant: "Lumen", amount: 39, daysAgo: [9, 39], operationType: "direct_debit" },
 
-  // Outils pilotables : la catégorisation et le benchmark se font en direct.
+  // Outils pilotables : le benchmark se fait en direct, sur accord.
   { merchant: "HubSpot", amount: 60, daysAgo: [6, 36], missingReceipt: true },
   { merchant: "Instantly", amount: 97, daysAgo: [8, 38] },
   { merchant: "Apollo", amount: 59, daysAgo: [8, 38] },
@@ -98,8 +98,8 @@ const SPECS: readonly TxSpec[] = [
 ];
 
 /**
- * Étiquettes des deux fournisseurs FICTIFS. Aucun modèle ne peut les connaître :
- * on les étiquette comme le ferait l'appelant de l'API moteur. Ce sont des
+ * Étiquettes des deux fournisseurs FICTIFS. Aucune règle ni aucun modèle ne peut
+ * les connaître : on les étiquette comme le ferait l'appelant de l'API moteur. Ce sont des
  * catégories, pas des euros : le moteur chiffre la résiliation sur le relevé.
  */
 export const DEMO_LABELS: readonly MerchantVerdict[] = [

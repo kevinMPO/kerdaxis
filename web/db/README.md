@@ -9,7 +9,7 @@ This folder holds Kerdaxis's **SQL schema**. The typed access layer that uses it
 | `0001_init.sql` | Initial migration: `organizations`, `decisions`, `audit_log` and their indexes. |
 | `0002_accounts_executions.sql` | Kerdaxis accounts (`accounts`), trial sign-ups (`leads`), agent approvals and executions (`exec_records`). |
 | `0003_market_benchmarks.sql` | 30-day cache of public prices (Linkup + Holo). Public web only, no `org_id`. |
-| `0004_demo_results.sql` | Today's result of the public demo (fictional statement), shared between isolates. |
+| `0004_demo_results.sql` | Unused since the demo stopped calling Holo (it is labelled by keyword rules and needs no cache). Kept so replaying the migrations stays unchanged; the table stays empty. |
 | `0005_cancel_channels.sql` | 30-day cache of "can this supplier be cancelled online?" (Linkup). Public web only, no `org_id`. |
 
 Every migration is idempotent (`CREATE TABLE / CREATE INDEX IF NOT EXISTS`, no `DROP`).
@@ -19,7 +19,7 @@ Every migration is idempotent (`CREATE TABLE / CREATE INDEX IF NOT EXISTS`, no `
 - **Tenant data is isolated by `org_id`.** Every table that holds a tenant's data carries an
   `org_id`. Every function in `tenant.ts` takes `orgId` as its first business parameter and puts it
   in its `WHERE` clause: no query can cross two organizations. The caches (`market_benchmarks`,
-  `cancel_channels`, `demo_results`) hold only public web or fictional data, so they are shared.
+  `cancel_channels`) hold only public web data, so they are shared.
 - **The database computes no euro.** Amounts arrive already computed by `lib/engine/` (project
   rule 2). No view, no trigger, no generated column that would derive an amount.
 - **The state machine is enforced by the database**, not only by the code:
