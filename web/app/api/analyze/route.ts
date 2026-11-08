@@ -46,21 +46,11 @@ import {
 } from "@/lib/mcp/qonto-read-client";
 import { BindingManquantError, baseD1, bindingsKerdaxis } from "@/lib/runtime/bindings";
 import type { Categorizer, Localized, MerchantVerdict, Tx } from "@/lib/types";
+import { rollingWindowLabel } from "@/lib/window-label";
 import { withAccessScope } from "@/lib/privacy/access-log";
 import { recordAccess } from "@/lib/privacy/access-log";
 
 export const dynamic = "force-dynamic";
-
-function windowLabel(days: number): Localized {
-  const end = new Date();
-  const start = new Date(end.getTime() - 30 * 86_400_000);
-  const fmt = (d: Date, locale: string) =>
-    d.toLocaleDateString(locale, { day: "numeric", month: "long" });
-  return {
-    fr: `${fmt(start, "fr-FR")} – ${fmt(end, "fr-FR")} ${end.getFullYear()}`,
-    en: `${fmt(start, "en-US")} – ${fmt(end, "en-US")}, ${end.getFullYear()}`,
-  };
-}
 
 /** OBSERVE terminé → CATÉGORISE (Holo) → CALCULE (engine.ts). */
 async function runPipeline(
@@ -90,7 +80,7 @@ async function runPipeline(
 
   return build({
     account,
-    windowLabel: windowLabel(windowDays),
+    windowLabel: rollingWindowLabel(windowDays),
     txs,
     verdicts,
     windowDays,

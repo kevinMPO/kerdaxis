@@ -21,10 +21,14 @@
 // ---------------------------------------------------------------------------
 
 import type { AnalyzeResult } from "./types";
+import { rollingWindowLabel } from "./window-label";
+
+// Rolling window ending today, so the demo never shows a stale period.
+const DEMO_WINDOW_DAYS = 30;
 
 export const MOCK: AnalyzeResult = {
   account: { name: "ACME Conseil (démo)", bank: "Qonto", balance: 9380 },
-  window: { label: { fr: "20 mai – 19 juin 2026", en: "May 20 – June 19, 2026" } },
+  window: { label: rollingWindowLabel(DEMO_WINDOW_DAYS) },
   totals: { out: 16137, runRate: 1627 },
   natures: [
     { key: "structurel", label: "Structurel", amount: 9240 },
