@@ -10,7 +10,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { AnalyzeResult, Lang, Lever, Localized, Nature, NatureSlice, Risk } from "@/lib/types";
 import { buildPlanCsv, planFilename } from "@/lib/export";
-import { MOCK } from "@/lib/mock";
+import { EMPTY_ANALYSIS } from "@/lib/analysis/empty";
 import { WAITLIST_URL } from "@/lib/site";
 import { categorizerName, detectLang, eur as eurFmt, LANGS, LOCALE, natureLabel, PITCH, riskLabel, tr } from "@/lib/i18n";
 import { EUROPE_PATHS, EUROPE_VIEWBOX, EU_CITY_XY } from "@/lib/europeMap";
@@ -126,8 +126,8 @@ function useCountUp(target: number, trigger: unknown, ms = 900) {
 
 export default function Kerdaxis() {
   const [lang, setLang] = useState<Lang>("fr");
-  const [data, setData] = useState<AnalyzeResult>(MOCK);
-  const [levers, setLevers] = useState(MOCK.levers);
+  const [data, setData] = useState<AnalyzeResult>(EMPTY_ANALYSIS);
+  const [levers, setLevers] = useState(EMPTY_ANALYSIS.levers);
   const [horizon, setHorizon] = useState(12);
   const [loaded, setLoaded] = useState(false);
   // Refus de /api/analyze. `null` = pas de refus. Voir l'effet de chargement :
@@ -323,7 +323,7 @@ export default function Kerdaxis() {
     let alive = true;
     // `r.ok` est VÉRIFIÉ, et ce n'est pas un détail : sans ce contrôle, un 401
     // « reconnecte ton compte » était parsé comme une analyse, l'écran retombait
-    // sur MOCK, et l'utilisateur lisait des montants FICTIFS en croyant qu'ils
+    // sur la démo, et l'utilisateur lisait des montants FICTIFS en croyant qu'ils
     // étaient les siens. Sur un produit qui vend la justesse des chiffres, c'est
     // le pire défaut possible. Un refus doit se voir.
     fetch("/api/analyze")
@@ -338,8 +338,8 @@ export default function Kerdaxis() {
           setLevers(res.data.levers);
           setRefusApi(null);
         } else {
-          // 401 = session valide mais jeton indisponible. Les données affichées
-          // restent celles de la démonstration : on le DIT, on ne le masque pas.
+          // 401 = session valide mais jeton indisponible. L'écran reste vide de
+          // chiffres : on le DIT, on n'affiche pas ceux d'un autre.
           setRefusApi(res.statut === 401 ? "reconnexion" : "indisponible");
         }
         setLoaded(true);

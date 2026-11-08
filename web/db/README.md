@@ -9,6 +9,7 @@ sont dans [`../lib/db/__tests__/tenant.test.ts`](../lib/db/__tests__/tenant.test
 | `0001_init.sql` | Migration initiale : `organizations`, `decisions`, `audit_log` + index. Idempotente. |
 | `0002_accounts_executions.sql` | Comptes, inscriptions à l'essai, exécutions agent. Idempotente. |
 | `0003_market_benchmarks.sql` | Cache 30 jours des prix publics (Linkup + Holo). Web public uniquement, sans `org_id`. Idempotente. |
+| `0004_demo_results.sql` | Résultat du jour de la démo publique (relevé fictif), partagé entre isolats. Idempotente. |
 
 ## Ce que le schéma garantit
 
@@ -79,6 +80,7 @@ Même chose pour les migrations suivantes (base réelle : `argentier`, cf. `wran
 cd web
 npx wrangler d1 execute argentier --local  --file=./db/0003_market_benchmarks.sql
 npx wrangler d1 execute argentier --remote --file=./db/0003_market_benchmarks.sql
+npx wrangler d1 execute argentier --remote --file=./db/0004_demo_results.sql
 ```
 
 Sans la table `market_benchmarks`, le benchmark marche quand même : le cache se tait

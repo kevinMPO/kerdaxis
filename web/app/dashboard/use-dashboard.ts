@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AnalyzeResult, Lang, Lever, LeverEvidence, Localized, UnverifiedReason } from "@/lib/types";
-import { MOCK } from "@/lib/mock";
+import { EMPTY_ANALYSIS } from "@/lib/analysis/empty";
 import { detectLang, eur as eurFmt, LANGS } from "@/lib/i18n";
 import { buildPlanCsv, planFilename } from "@/lib/export";
 import { parseIntent } from "@/lib/voice/intents";
@@ -189,8 +189,8 @@ const EMPTY_LETTER: LetterState = { lever: null, text: "", loading: false, bench
 export function useDashboard(): Dashboard {
   const [lang, setLangState] = useState<Lang>("fr");
   const [view, setView] = useState<ViewId>("today");
-  const [data, setData] = useState<AnalyzeResult>(MOCK);
-  const [levers, setLevers] = useState<Lever[]>(MOCK.levers);
+  const [data, setData] = useState<AnalyzeResult>(EMPTY_ANALYSIS);
+  const [levers, setLevers] = useState<Lever[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [refusal, setRefusal] = useState<ApiRefusal>(null);
   const [qontoConnected, setQontoConnected] = useState(false);
@@ -231,7 +231,7 @@ export function useDashboard(): Dashboard {
     }
   }, []);
 
-  // A refused /api/analyze must never be shown as an analysis: the demo data stays and the refusal is said.
+  // A refused /api/analyze must never be shown as an analysis: the screen stays empty and the refusal is said.
   useEffect(() => {
     const controller = new AbortController();
     const load = async (): Promise<void> => {

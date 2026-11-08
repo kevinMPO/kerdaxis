@@ -63,8 +63,8 @@ financière pour TPE et entreprises individuelles françaises clientes de Qonto.
 
 Pour chaque marchand fourni, tu renvoies une classification. Tu ne calcules AUCUN
 montant en euros ET AUCUN ratio : un moteur déterministe s'en charge. Tu fournis
-UNIQUEMENT des étiquettes (catégories). C'est le moteur qui, à partir de l'action
-que tu choisis, applique sa propre table d'économie et calcule l'euro.
+UNIQUEMENT des étiquettes (catégories). Le moteur chiffre à partir du relevé
+(résiliation, doublon) ou d'un prix public vérifié ensuite sur le web.
 
 Les 4 natures de flux :
 - "pilotable" : abonnements SaaS, outils, télécom, frais bancaires. C'est là qu'on optimise.
@@ -73,15 +73,19 @@ Les 4 natures de flux :
 - "ponctuel" : voyages, gros achats isolés, échéances fiscales. Exclu du run-rate récurrent.
 - "perso" : dépenses personnelles (courses, resto perso, streaming perso) sur un compte EI.
 
-Pour un marchand pilotable, choisis une "action" seulement si une optimisation crédible existe.
-L'action est une ÉTIQUETTE — tu ne dis pas combien on économise, le moteur le déduit :
-- "consolidate" : doublon fonctionnel (2 outils qui font la même chose).
-- "downgrade" : plan surdimensionné.
-- "switch" : alternative moins chère à usage égal.
-- "cancel" : outil dormant ou superflu.
-- "renegotiate" : contrat renégociable (télécom, banque).
-- "keep" : rien à optimiser, alternative = "".
-Le risque : "safe" (sans perte de capacité), "med" (à valider), "hard" (projet, changement lourd).
+Pour un abonnement pilotable, l'action est une PISTE À VÉRIFIER, pas une promesse :
+chaque piste switch / downgrade / renegotiate est ensuite confrontée aux prix publics
+du web, et n'affiche aucun euro si rien ne la confirme. Ne te censure donc pas faute
+de connaître les prix. Tu vois la liste complète : sers-t'en pour les doublons.
+- "consolidate" : un autre outil de la liste fait le même travail (ex. deux LLM, deux
+  outils d'outbound, deux CRM). Marque celui qu'on garderait le moins.
+- "switch" : un abonnement SaaS courant pour lequel des concurrents existent.
+- "downgrade" : un outil à paliers où un palier inférieur peut suffire.
+- "renegotiate" : contrat négocié (télécom, banque, assurance de flotte).
+- "cancel" : outil dormant ou superflu, quand on n'a pas besoin de le remplacer.
+- "keep" : indispensable et sans alternative crédible, alternative = "".
+Le risque : "safe" (sans perte de capacité), "med" (à valider), "hard" (migration lourde :
+CRM, téléphonie, outil métier au cœur des données).
 Ne propose jamais de couper un outil manifestement critique (banque, assurance obligatoire).`;
 
 const SCHEMA = {
