@@ -1,7 +1,7 @@
 # Claude Code execution brief — Kerdaxis
 
 ## Mission
-Create a new Kerdaxis project derived from patterns/components of `kevinMPO/getargentier` without altering the original project until authorized. Start by reading `PRD_KERDAXIS.md` and inspecting the actual existing repo. Reuse the deterministic finance engine, tests, Mastra/Linkup integration and ledger. The differentiator is **H Company controlled browser execution** with **Gladia voice commands**.
+Build Kerdaxis. Start by reading `PRD_KERDAXIS.md` and inspecting the existing repo. Reuse the deterministic finance engine, tests, Mastra/Linkup integration and ledger. The differentiator is **H Company controlled browser execution** with **Gladia voice commands**.
 
 ## First tasks
 1. Inspect existing repository README, `engine.py`, TS mirror, `sum_ledger.py`, `web/lib/risk/mastra.ts`, `web/package.json`, tests, `/audit` and `/verify`. Record working assets, anti-patterns and missing dependencies; do not copy secrets or production user data.
@@ -41,4 +41,4 @@ tests/{engine,approval,execution,tenant-isolation}.test.ts
 `index.html` is a standalone marketing **interactive prototype**, not a finished product. The form uses a placeholder mailto. Replace that with a real, consent-aware waitlist API before publishing. Do not announce the integrations as live until tested.
 
 ## Execution prompt
-"Read PRD_KERDAXIS.md and CLAUDE_CODE_START_HERE.md. Inspect the GetArgentier source code first. Build the narrow P0 demo in a new project, reusing deterministic financial calculations and Mastra/Linkup patterns. Prioritize real H Company browser execution on an owned test portal, Gladia voice STT, explicit user approval and transparent post-action status. Keep strict read-only policy on financial platforms. Before using vendor SDKs verify official APIs. Implement tests, run them, report exact live/mock coverage, and give commands to launch the demo."
+"Read PRD_KERDAXIS.md and CLAUDE_CODE_START_HERE.md. Inspect the existing source code first. Build the narrow P0 demo in a new project, reusing deterministic financial calculations and Mastra/Linkup patterns. Prioritize real H Company browser execution on an owned test portal, Gladia voice STT, explicit user approval and transparent post-action status. Keep strict read-only policy on financial platforms. Before using vendor SDKs verify official APIs. Implement tests, run them, report exact live/mock coverage, and give commands to launch the demo."

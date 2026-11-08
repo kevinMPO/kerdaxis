@@ -1,6 +1,6 @@
-# Argentier — Agent DAF (dans Claude Code)
+# Kerdaxis — Agent DAF (dans Claude Code)
 
-Argentier analyse **en lecture seule** un compte Qonto reel, benchmarke les depenses
+Kerdaxis analyse **en lecture seule** un compte Qonto reel, benchmarke les depenses
 via Linkup / Bright Data, et **prepare** des livrables (mails, lettres). Il n'agit
 jamais a ta place : tu declenches, tu relis, tu approuves.
 
@@ -58,7 +58,7 @@ Le moteur est appelable en HTTP, 100 % deterministe, aucun appel LLM/reseau/ecri
 - `GET  /api/v1/engine/health` — sonde ouverte : `{ ok, engineVersion, ts }`.
 
 Auth Bearer (`ENGINE_API_TOKENS`, sinon 503), validation Zod `.strict()`, debit 60/min
-par jeton (best-effort en memoire sur Vercel). `claude-tag/` rend Argentier utilisable
+par jeton (best-effort en memoire sur Vercel). `claude-tag/` rend Kerdaxis utilisable
 depuis Slack (@Claude) : la skill ETIQUETTE, `scripts/call_engine.py` fait CALCULER
 l'API moteur, Claude reprend les chiffres verbatim.
 

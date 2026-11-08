@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // CompanyRisk — types partages (identite, finances, signaux, score).
 //
-// Principe Argentier : le LLM identifie/classe/explique ; le MOTEUR calcule.
+// Principe Kerdaxis : le LLM identifie/classe/explique ; le MOTEUR calcule.
 // Ces types sont l'unique contrat entre l'agent (qui remplit) et le moteur
 // deterministe (qui note). Aucune donnee manquante n'est mise a 0 par defaut :
 // une valeur inconnue reste `null` et sort du calcul.

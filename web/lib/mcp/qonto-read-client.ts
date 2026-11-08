@@ -30,7 +30,7 @@ export interface QontoAuth {
 }
 
 /**
- * Réglages optionnels, injectés plutôt que codés en dur : le jour où Argentier
+ * Réglages optionnels, injectés plutôt que codés en dur : le jour où Kerdaxis
  * obtient un client OAuth dédié sur un autre hôte, on bascule par
  * configuration seule.
  */

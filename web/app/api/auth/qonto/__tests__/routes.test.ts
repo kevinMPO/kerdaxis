@@ -46,7 +46,7 @@ import { __resetTokenStoreForTests, getTokenStore } from "@/lib/auth/token-store
 import { QONTO_API_BASE } from "@/lib/mcp/qonto-read-client";
 
 const SECRET = "un-secret-de-test-suffisamment-long-0123456789";
-const BASE = "https://argentier.test";
+const BASE = "https://kerdaxis.test";
 
 let secretInitial: string | undefined;
 let baseInitiale: string | undefined;
@@ -142,7 +142,7 @@ describe("GET /api/auth/qonto/start", () => {
     // `400 invalid redirect_uri`. Partir quand même enverrait l'utilisateur sur
     // une page d'erreur OAuth brute chez un tiers — illisible, et donnant
     // l'impression que le produit est cassé.
-    process.env.ARGENTIER_BASE_URL = "https://www.getargentier.com";
+    process.env.ARGENTIER_BASE_URL = "https://kerdaxis.com";
 
     const reponse = await start(new Request(`${BASE_LOOPBACK}/api/auth/qonto/start`));
 

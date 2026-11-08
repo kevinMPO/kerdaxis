@@ -1,4 +1,4 @@
-# Argentier — 3-minute demo script (hackathon recording)
+# Kerdaxis — 3-minute demo script (hackathon recording)
 
 Goal of the recording: prove it **runs on real Qonto data**, calls the **MCPs
 live** (Qonto + Linkup), does **deterministic math**, and produces something
@@ -8,7 +8,7 @@ visible on screen.
 **Before you hit record**
 - Qonto MCP re-authorized (`/mcp` → qonto → authorize), Linkup MCP connected.
 - `ANTHROPIC_API_KEY` set. `python3 -m unittest discover -s tests` green.
-- Web dashboard running (`cd argentier && npm run dev`) in a browser tab for the finale.
+- Web dashboard running (`cd kerdaxis && npm run dev`) in a browser tab for the finale.
 
 ---
 
@@ -17,11 +17,11 @@ Say it straight to camera:
 > "Ninety percent of small businesses will never hire a CFO. Their Qonto account
 > is full of data and nobody to read it. **The statement lies** — it blends
 > recurring tools, structural costs and one-off spend into one number. Meet
-> Argentier: the CFO they'll never hire."
+> Kerdaxis: the CFO they'll never hire."
 
 ### 0:20 – 1:15 · OBSERVE + ANALYSE — real data, deterministic math
 In Claude Code, run the skill on the **real account**:
-> `/audit` (or: "Argentier, audit my Qonto account")
+> `/audit` (or: "Kerdaxis, audit my Qonto account")
 
 On screen, let these land and **point at them**:
 - The live `mcp__qonto__get_organization` and `mcp__qonto__list_transactions`
@@ -45,13 +45,13 @@ Emphasize: only the merchant name + category left the machine (rule 3), and the
 saving is `engine.py` math, not the model's.
 
 ### 2:05 – 2:40 · GATE — a letter you'd actually send
-Open the file Argentier just wrote in `drafts/`:
+Open the file Kerdaxis just wrote in `drafts/`:
 > "It drafts the renegotiation letter, **citing those dated prices**, ready to
-> send — but it sends nothing. I approve, I send. Argentier prepares, I decide."
+> send — but it sends nothing. I approve, I send. Kerdaxis prepares, I decide."
 
 ### 2:40 – 3:00 · The proof loop + the finale
 > "In 30 days, `/verify` re-reads the account and **proves** the money actually
-> dropped. Operator acts, Analyst explains — **Argentier optimizes**."
+> dropped. Operator acts, Analyst explains — **Kerdaxis optimizes**."
 
 Flash the web dashboard (simulator + sourced letters) for one beat, then land:
 > "**The CFO your business will never hire.**"

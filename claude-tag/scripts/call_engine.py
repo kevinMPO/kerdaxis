@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ---------------------------------------------------------------------------
-# call_engine.py — pont entre Claude (dans Slack) et l'API moteur d'Argentier.
+# call_engine.py — pont entre Claude (dans Slack) et l'API moteur de Kerdaxis.
 #
 # Claude ÉTIQUETTE (nature, motif, action) ; ce script fait CALCULER le moteur
 # déterministe et rend ses chiffres VERBATIM. Le LLM ne multiplie jamais un euro
@@ -8,7 +8,7 @@
 # pour tourner dans le bac à sable d'exécution de Claude Tag.
 #
 # Config (variables d'environnement / secrets de la skill) :
-#   ENGINE_API_URL    base publique, défaut https://getargentier.com
+#   ENGINE_API_URL    base publique, défaut https://app.kerdaxis.com
 #   ENGINE_API_TOKEN  jeton Bearer (un des ENGINE_API_TOKENS du déploiement)
 #
 # Usage :
@@ -37,7 +37,7 @@ import sys
 import urllib.error
 import urllib.request
 
-DEFAULT_BASE = "https://getargentier.com"
+DEFAULT_BASE = "https://app.kerdaxis.com"
 TIMEOUT_S = 30
 
 

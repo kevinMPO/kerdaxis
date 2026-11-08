@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Génération des lettres / emails de résiliation & renégociation (PRD §5.8).
 //
-// Argentier PRÉPARE le courrier ; l'utilisateur l'envoie lui-même. Aucune action
+// Kerdaxis PRÉPARE le courrier ; l'utilisateur l'envoie lui-même. Aucune action
 // bancaire, aucun envoi automatique. Les infos personnelles restent des
 // [crochets] à compléter — on n'invente pas les coordonnées de l'utilisateur.
 //

@@ -17,9 +17,9 @@ import type { Metadata } from "next";
 import DocumentLegal, { EDITEUR } from "../legal/DocumentLegal";
 
 export const metadata: Metadata = {
-  title: "Conditions générales de vente — Argentier",
+  title: "Conditions générales de vente — Kerdaxis",
   description:
-    "Argentier est gratuit et se rémunère par une commission de 5 % sur les " +
+    "Kerdaxis est gratuit et se rémunère par une commission de 5 % sur les " +
     "économies prouvées. Voici comment une économie devient prouvée.",
 };
 
@@ -30,7 +30,7 @@ export default function Cgv() {
       titre="Conditions générales de vente"
       chapo={
         <>
-          Argentier est gratuit. Il se rémunère par une commission de{" "}
+          Kerdaxis est gratuit. Il se rémunère par une commission de{" "}
           <strong>5 % sur les économies prouvées</strong>. Tout l’enjeu tient
           dans le mot « prouvées » : l’article 4 le définit précisément, et vous
           donne les moyens de le contester.
@@ -39,7 +39,7 @@ export default function Cgv() {
     >
       <h2>1. Objet et champ d’application</h2>
       <p>
-        Les présentes conditions régissent l’accès au service Argentier, exploité
+        Les présentes conditions régissent l’accès au service Kerdaxis, exploité
         par <strong>{EDITEUR.denomination}</strong> ({EDITEUR.forme}),{" "}
         {EDITEUR.adresse}, SIRET {EDITEUR.siret} (ci-après « l’Éditeur »).
       </p>
@@ -91,7 +91,7 @@ export default function Cgv() {
       </div>
 
       <h2>3. Le service</h2>
-      <p>Argentier, à la demande du Client :</p>
+      <p>Kerdaxis, à la demande du Client :</p>
       <ul>
         <li>lit les opérations du compte professionnel connecté ;</li>
         <li>
@@ -109,7 +109,7 @@ export default function Cgv() {
       </ul>
       <div className="dl-note">
         <p>
-          <strong>Ce que le service ne fait jamais.</strong> Argentier n’émet
+          <strong>Ce que le service ne fait jamais.</strong> Kerdaxis n’émet
           aucun virement, ne valide aucun paiement, ne résilie aucun contrat,
           n’envoie aucun courrier à votre place et ne modifie aucune donnée chez
           Qonto. L’accès au compte est <strong>techniquement</strong> restreint à

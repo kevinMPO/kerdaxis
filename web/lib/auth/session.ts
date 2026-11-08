@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Session Argentier — cookie signé (HMAC-SHA256, WebCrypto).
+// Session Kerdaxis — cookie signé (HMAC-SHA256, WebCrypto).
 //
 // Rôle : dire « cette requête appartient à l'organisation X », et rien d'autre.
 // Le cookie ne transporte QUE l'identifiant interne opaque du locataire et sa
@@ -59,7 +59,7 @@ import {
   base64UrlVersTexte,
   texteVersOctets,
 } from "@/lib/encodage";
-import { baseD1SiPresente, bindingsArgentier } from "@/lib/runtime/bindings";
+import { baseD1SiPresente, bindingsKerdaxis } from "@/lib/runtime/bindings";
 
 /** Nom du cookie de session. */
 export const NOM_COOKIE_SESSION = "argentier_session";
@@ -92,7 +92,7 @@ const VARIABLE_SECRET = "ARGENTIER_SESSION_SECRET";
 const VERSION = "v1";
 
 /** Session valide, telle que la lisent les routes. */
-export interface SessionArgentier {
+export interface SessionKerdaxis {
   /** Identifiant interne opaque du locataire (jamais l'identifiant Qonto). */
   orgId: string;
   /** Date d'émission, epoch millisecondes. */
@@ -241,7 +241,7 @@ export async function signerSession(
 export async function verifierSession(
   valeur: string | null | undefined,
   maintenant: number = Date.now(),
-): Promise<SessionArgentier | null> {
+): Promise<SessionKerdaxis | null> {
   if (typeof valeur !== "string" || valeur === "") return null;
 
   const morceaux = valeur.split(".");
@@ -309,7 +309,7 @@ export function lireCookie(enteteCookie: string | null | undefined, nom: string)
 export async function lireSessionSignee(
   requete: { headers: { get(nom: string): string | null } },
   maintenant: number = Date.now(),
-): Promise<SessionArgentier | null> {
+): Promise<SessionKerdaxis | null> {
   const brut = lireCookie(requete.headers.get("cookie"), NOM_COOKIE_SESSION);
   if (!brut) return null;
   return verifierSession(brut, maintenant);
@@ -346,7 +346,7 @@ export interface EtatLocataire {
  * (cf. en-tête).
  */
 export function sessionEncoreValide(
-  session: SessionArgentier,
+  session: SessionKerdaxis,
   etat: EtatLocataire | null,
 ): boolean {
   if (!etat) return true;
@@ -376,7 +376,7 @@ export function sessionEncoreValide(
  * sécurité qui échoue ne se conclut pas par « c'est bon ».
  */
 async function etatLocataire(orgId: string): Promise<EtatLocataire | null> {
-  const db = baseD1SiPresente(bindingsArgentier());
+  const db = baseD1SiPresente(bindingsKerdaxis());
   if (!db) return null;
 
   try {
@@ -389,7 +389,7 @@ async function etatLocataire(orgId: string): Promise<EtatLocataire | null> {
   } catch (erreur) {
     if (estTableManquante(erreur)) {
       console.error(
-        "[argentier][session] Schéma multi-locataire absent : la génération de " +
+        "[kerdaxis][session] Schéma multi-locataire absent : la génération de " +
           "session n'a pu être vérifiée. Applique db/0001_init.sql.",
       );
       return null;
@@ -409,7 +409,7 @@ async function etatLocataire(orgId: string): Promise<EtatLocataire | null> {
 export async function lireSession(
   requete: { headers: { get(nom: string): string | null } },
   maintenant: number = Date.now(),
-): Promise<SessionArgentier | null> {
+): Promise<SessionKerdaxis | null> {
   const session = await lireSessionSignee(requete, maintenant);
   if (!session) return null;
 
@@ -417,7 +417,7 @@ export async function lireSession(
   if (!sessionEncoreValide(session, etat)) {
     // Aucun identifiant dans le log : le motif suffit au diagnostic.
     console.warn(
-      "[argentier][session] Session refusée : accès révoqué, ou cookie émis " +
+      "[kerdaxis][session] Session refusée : accès révoqué, ou cookie émis " +
         "avant le dernier consentement (génération périmée).",
     );
     return null;

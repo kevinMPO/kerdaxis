@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Accord de sous-traitance (DPA) — article 28 du RGPD.
 //
-// Obligatoire dès lors qu'Argentier traite des données personnelles pour le
+// Obligatoire dès lors que Kerdaxis traite des données personnelles pour le
 // compte de ses clients, ce qui est le cas : les opérations d'un compte
 // professionnel comportent des données personnelles, a fortiori sur un compte
 // d'entrepreneur individuel où le professionnel et la personne se confondent.
@@ -14,9 +14,9 @@ import type { Metadata } from "next";
 import DocumentLegal, { EDITEUR } from "../legal/DocumentLegal";
 
 export const metadata: Metadata = {
-  title: "Accord de sous-traitance (DPA) — Argentier",
+  title: "Accord de sous-traitance (DPA) — Kerdaxis",
   description:
-    "Les engagements d'Argentier comme sous-traitant au sens de l'article 28 " +
+    "Les engagements de Kerdaxis comme sous-traitant au sens de l'article 28 " +
     "du RGPD : instructions, sécurité, sous-traitants ultérieurs, audit.",
 };
 
@@ -27,7 +27,7 @@ export default function Dpa() {
       titre="Accord de sous-traitance"
       chapo={
         <>
-          Le cadre imposé par l’article 28 du RGPD lorsqu’Argentier traite des
+          Le cadre imposé par l’article 28 du RGPD lorsque Kerdaxis traite des
           données personnelles <strong>pour le compte</strong> de son client.
           Publié, et non négocié au cas par cas : vous devez pouvoir le lire
           avant de brancher votre compte.

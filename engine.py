@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-engine.py — le moteur de calcul DETERMINISTE d'Argentier.
+engine.py — le moteur de calcul DETERMINISTE de Kerdaxis.
 
 REGLE D'OR : tout calcul en euros est fait ICI, par du code Python.
 Le LLM (Claude) ne calcule JAMAIS un montant lui-meme.

@@ -155,7 +155,7 @@ async function renouvellementUnique(
     // jetons frais et on crie dans le journal — c'est un incident d'exploitation
     // (clé de chiffrement tournée, KV indisponible), pas une erreur utilisateur.
     console.error(
-      "[argentier][oauth] INCIDENT : jetons Qonto rafraîchis mais NON stockés " +
+      "[kerdaxis][oauth] INCIDENT : jetons Qonto rafraîchis mais NON stockés " +
         "(le refresh token précédent est déjà consommé). Cause :",
       erreur instanceof Error ? erreur.name : "erreur inconnue",
     );
@@ -179,7 +179,7 @@ async function traiterEchec(
   if (!definitif) {
     // On ne journalise que le nom de l'erreur : ni jeton, ni code, ni verifier.
     console.error(
-      "[argentier][oauth] Rafraîchissement du jeton Qonto impossible " +
+      "[kerdaxis][oauth] Rafraîchissement du jeton Qonto impossible " +
         "(panne présumée transitoire) — les jetons sont CONSERVÉS :",
       erreur instanceof Error ? erreur.name : "erreur inconnue",
     );
@@ -192,14 +192,14 @@ async function traiterEchec(
   const courants = await store.get(orgId).catch(() => null);
   if (courants && !memeJeu(courants, tentes)) {
     console.warn(
-      "[argentier][oauth] Refus du serveur sur un refresh token déjà remplacé " +
+      "[kerdaxis][oauth] Refus du serveur sur un refresh token déjà remplacé " +
         "par un appel concurrent : les jetons frais sont conservés.",
     );
     return courants;
   }
 
   console.error(
-    "[argentier][oauth] Rafraîchissement du jeton Qonto REFUSÉ définitivement " +
+    "[kerdaxis][oauth] Rafraîchissement du jeton Qonto REFUSÉ définitivement " +
       "par le serveur d'autorisation :",
     erreur instanceof OAuthError ? erreur.error : "erreur inconnue",
   );

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// engine.ts — le moteur de calcul DÉTERMINISTE d'Argentier.
+// engine.ts — le moteur de calcul DÉTERMINISTE de Kerdaxis.
 //
 // RÈGLE D'OR : tout montant en euros est calculé ICI. Le LLM ne fait que
 // classer (nature, pôle, action, ratio) ; il ne multiplie jamais.

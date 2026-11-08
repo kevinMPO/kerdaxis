@@ -345,7 +345,7 @@ describe("comportement du refus", () => {
     expect(() => assertReadOnly("POST", "/transfers")).toThrow();
     expect(espionErreur).toHaveBeenCalledTimes(1);
     const message = String(espionErreur.mock.calls[0]?.[0]);
-    expect(message).toContain("[argentier][read-only]");
+    expect(message).toContain("[kerdaxis][read-only]");
     expect(message).toContain("REFUS");
     expect(message).toContain("POST");
     expect(message).toContain("/transfers");

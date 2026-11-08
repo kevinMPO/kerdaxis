@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# CI Argentier — trois portes indépendantes, toutes bloquantes :
+# CI Kerdaxis — trois portes indépendantes, toutes bloquantes :
 #   moteur    : le calcul déterministe reste juste (règle 2)
 #   web       : types, tests unitaires, build de production
 #   securite  : aucun secret ni donnée bancaire commité (règles 1 et 3)

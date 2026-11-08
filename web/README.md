@@ -1,9 +1,9 @@
-# Argentier
+# Kerdaxis
 
 Agent d'optimisation bancaire et fiscale pour TPE, freelances et EI, branché sur Qonto.
 **Ton vrai run-rate, pas ton relevé.**
 
-Argentier lit le compte **en lecture seule**, sépare les 4 natures de flux
+Kerdaxis lit le compte **en lecture seule**, sépare les 4 natures de flux
 (pilotable / structurel / ponctuel / perso), chiffre ce qui est récupérable et le
 rend actionnable en un écran : hero « tu peux récupérer X €/an », score de santé,
 runway, simulateur de leviers, fil d'anomalies.
@@ -16,7 +16,7 @@ runway, simulateur de leviers, fil d'anomalies.
 
 ```
 Qonto (lecture seule)  ─▶  categorize.ts (Claude : étiquettes)  ─▶  engine.ts (€)  ─▶  /api/analyze  ─▶  front
-   lib/mcp/qonto-read-client.ts   lib/categorize.ts                lib/engine.ts     app/api/analyze    app/Argentier.tsx
+   lib/mcp/qonto-read-client.ts   lib/categorize.ts                lib/engine.ts     app/api/analyze    app/Kerdaxis.tsx
 ```
 
 ### Connexion Qonto : OAuth par visiteur
@@ -28,7 +28,7 @@ opaque, et `/api/auth/qonto/revoke` débranche tout.
 
 > ⚠️ Le serveur d'autorisation de Qonto **ignore** le paramètre `scope` et
 > délivre un jeton doté de droits d'**écriture** qu'on ne peut pas refuser
-> (vérifié à la main, cf. `lib/auth/providers.ts`). La lecture seule d'Argentier
+> (vérifié à la main, cf. `lib/auth/providers.ts`). La lecture seule de Kerdaxis
 > ne vient donc PAS du jeton : elle vient de l'**allowlist applicative**
 > (`lib/mcp/readonly-guard.ts`), traversée avant chaque appel réseau. C'est une
 > frontière de sécurité de premier ordre, couverte par plus de 500 tests dont
@@ -55,7 +55,7 @@ opaque, et `/api/auth/qonto/revoke` débranche tout.
 | `app/api/analyze/route.ts` | Orchestration OBSERVE → CATÉGORISE → CALCULE (session OAuth, sinon démo — jamais le compte d'un autre). |
 | `app/api/auth/qonto/*` | Flux OAuth : `start`, `callback`, `revoke`, `status`. |
 | `app/api/letter/route.ts` | Prépare un courrier prêt à envoyer pour un levier. |
-| `app/Argentier.tsx` | Le front d'entrée (hero, ledger, simulateur, anomalies, lettres). |
+| `app/Kerdaxis.tsx` | Le front d'entrée (hero, ledger, simulateur, anomalies, lettres). |
 | `app/rapport/page.tsx` | Rapport imprimable (→ PDF via impression). |
 
 ## Démarrer
@@ -127,7 +127,7 @@ droits d'**écriture** complets. Elle causait deux défauts distincts :
    fonctionne sans la moindre clé) — badgée `source: "mock"`.
 2. **sortie réseau hors garde.** Ce client appelait `fetch` sans passer par
    `assertReadOnly`, c'est-à-dire à côté de la seule frontière qui empêche
-   Argentier de bouger de l'argent. L'invariant est maintenant **vérifié à
+   Kerdaxis de bouger de l'argent. L'invariant est maintenant **vérifié à
    l'échelle du dépôt** par `lib/mcp/__tests__/invariant-fetch-qonto.test.ts` :
    tout module de `lib/` ou `app/` qui appelle `fetch` sur un hôte Qonto doit
    importer *et* appeler la garde, sous peine de test rouge. Le même test passe
@@ -145,7 +145,7 @@ npm test
 npm run build
 ```
 
-## Ce qu'Argentier NE fait pas
+## Ce que Kerdaxis NE fait pas
 
 - Aucune action bancaire : pas de paiement, pas de résiliation automatique.
   Il conseille et prépare ; **c'est toi qui agis** (PRD §3, §5.8).
@@ -164,7 +164,7 @@ npm run build
 - **Rapport imprimable** — `/rapport` → *Imprimer / Enregistrer en PDF*.
 - **Lettres prêtes à envoyer** — l'icône ✎ sur chaque levier ouvre un courrier rédigé par Claude
   (résiliation / renégociation / consolidation selon l'action), éditable, avec bouton *Copier*.
-  Argentier prépare, **tu envoies** : aucun envoi automatique, `[crochets]` à compléter.
+  Kerdaxis prépare, **tu envoies** : aucun envoi automatique, `[crochets]` à compléter.
 
 ## Modèle Claude
 

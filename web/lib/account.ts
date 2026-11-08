@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// account.ts — client des comptes utilisateurs Argentier (front → Worker).
+// account.ts — client des comptes utilisateurs Kerdaxis (front → Worker).
 //
 // Parle au Worker Cloudflare (`/auth/*`), déjà déployé : inscription, connexion,
 // session. Le mot de passe est CHOISI par l'utilisateur et n'est JAMAIS renvoyé

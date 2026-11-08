@@ -1,4 +1,4 @@
-# PRD — Argentier en Autopilote
+# PRD — Kerdaxis en Autopilote
 
 > **Une page. Une feature.** L'audit qui se déclenche seul, ne dérange l'humain
 > qu'au moment de décider (1 tap), et se prouve tout seul ~30 jours après.
@@ -11,7 +11,7 @@
 
 ## 1. Problème
 
-Aujourd'hui Argentier est *un outil qu'on lance* (`/audit` dans Claude Code).
+Aujourd'hui Kerdaxis est *un outil qu'on lance* (`/audit` dans Claude Code).
 Le risque n°1 n'est pas *trouver* des économies — l'engine le fait — c'est le
 **gap entre trouver et agir** : dès qu'il faut penser à ouvrir une session, on
 perd l'essentiel du funnel. 90 % des TPE n'ont pas de DAF *et* pas le réflexe de
@@ -26,13 +26,13 @@ J+2   Push : « 3 leviers → ~1 920 €/an. Ringover facturé 2× : je résilie
 J+32  Push : « Prouvé : −430 €. La charge a disparu. »
 ```
 
-L'utilisateur n'a jamais rouvert l'app entre les deux. Argentier se réveille,
+L'utilisateur n'a jamais rouvert l'app entre les deux. Kerdaxis se réveille,
 lit le compte, calcule (engine.py), benchmarke (Linkup), **se met en pause au
 moment de la reco**, notifie, et reprend sur la décision.
 
 ## 3. User stories
 
-- **En tant que** dirigeant de TPE, **je veux** qu'Argentier audite mon compte
+- **En tant que** dirigeant de TPE, **je veux** que Kerdaxis audite mon compte
   tout seul chaque mois **afin de** ne rien avoir à lancer.
 - **…je veux** décider chaque action en 1 tap depuis une notif **afin de**
   garder le contrôle sans y passer du temps.

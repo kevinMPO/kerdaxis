@@ -1,10 +1,10 @@
-import Argentier from "../Argentier";
+import Kerdaxis from "../Kerdaxis";
 import AccountBar from "../demo/AccountBar";
 
 export default function ClassicPage() {
   return (
     <>
-      <Argentier />
+      <Kerdaxis />
       <AccountBar />
     </>
   );
