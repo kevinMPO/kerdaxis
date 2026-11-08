@@ -1,0 +1,169 @@
+/* Access pages (/try, /signup, /signin, /login): same tokens as kerdaxis.html and the dashboard. */
+
+.ka {
+  --ka-bg: #f7f7f9;
+  --ka-surface: #ffffff;
+  --ka-sunk: #f0f0f4;
+  --ka-ink: #0d0d12;
+  --ka-ink-3: #5f5f70;
+  --ka-line: #e8e8ef;
+  --ka-line-2: #d6d6e0;
+  --ka-night: #0d0d12;
+  --ka-night-2: #1a1a23;
+  --ka-night-line: #2a2a36;
+  --ka-night-ink: #a9a9bb;
+  --ka-accent: #b8ef3a;
+  --ka-accent-hover: #a5df24;
+  --ka-accent-ink: #2f7d12;
+  --ka-accent-soft: #f0fadb;
+  --ka-on-accent: #0d0d12;
+  --ka-lime: #d4f53c;
+  --ka-danger: #c22b39;
+  --ka-danger-soft: #fce9eb;
+  --ka-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ka-sans: var(--kd-font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ka-mono: var(--kd-font-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --ka-gutter: clamp(16px, 4vw, 40px);
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--ka-bg);
+  color: var(--ka-ink);
+  font-family: var(--ka-sans);
+  font-size: 15.5px;
+  line-height: 1.6;
+  caret-color: var(--ka-accent);
+  accent-color: var(--ka-accent);
+  -webkit-font-smoothing: antialiased;
+}
+
+.ka ::selection { background: var(--ka-lime); color: var(--ka-ink); }
+.ka :focus-visible { outline: 2px solid var(--ka-accent); outline-offset: 3px; border-radius: 6px; }
+.ka :where(h1, p) { margin: 0; }
+.ka :where(a) { color: inherit; text-decoration: none; }
+.ka :where(button, input) { font: inherit; color: inherit; }
+
+/* ---------- night header band, as on kerdaxis.com ---------- */
+.ka-head {
+  background: var(--ka-night);
+  border-bottom: 1px solid var(--ka-night-line);
+  color: #f4f4f8;
+}
+.ka-head-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 64px;
+  max-width: calc(1200px + 2 * var(--ka-gutter));
+  margin-inline: auto;
+  padding-inline: var(--ka-gutter);
+}
+.ka-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
+.ka-brand svg { width: 22px; height: 22px; flex: none; }
+.ka-back {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--ka-night-line);
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 650;
+  color: #fff;
+  transition: background-color 0.2s;
+}
+.ka-back:hover { background: var(--ka-night-2); }
+
+/* ---------- card ---------- */
+.ka-main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: clamp(32px, 7vw, 88px) var(--ka-gutter);
+}
+.ka-card {
+  width: min(440px, 100%);
+  display: flex;
+  flex-direction: column;
+  background: var(--ka-surface);
+  border: 1px solid var(--ka-line);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(13, 13, 18, 0.04), 0 18px 40px -24px rgba(13, 13, 18, 0.18);
+  overflow: hidden;
+}
+.ka-body { display: flex; flex-direction: column; padding: clamp(24px, 4vw, 32px); }
+
+.ka-card h1 { font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2rem); font-weight: 760; letter-spacing: -0.035em; line-height: 1.08; text-wrap: balance; }
+.ka-lede { margin-top: 10px; color: var(--ka-ink-3); font-size: 15px; line-height: 1.55; text-wrap: pretty; }
+
+.ka-note {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--ka-accent-soft);
+  color: var(--ka-accent-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ka-fields { display: flex; flex-direction: column; gap: 6px; margin-top: 24px; }
+.ka-fields label { font-size: 13.5px; font-weight: 650; color: var(--ka-ink); }
+.ka-fields label:not(:first-child) { margin-top: 10px; }
+.ka-hint { font-weight: 500; color: var(--ka-ink-3); }
+.ka-fields input {
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--ka-line-2);
+  border-radius: 10px;
+  background: var(--ka-surface);
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ka-fields input:hover { border-color: #c4c4d2; }
+.ka-fields input:focus { outline: none; border-color: var(--ka-accent-ink); box-shadow: 0 0 0 4px var(--ka-accent-soft); }
+
+.ka-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  margin-top: 20px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ka-accent);
+  color: var(--ka-on-accent);
+  font-size: 15.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s var(--ka-ease);
+}
+.ka-btn:hover:not(:disabled) { background: var(--ka-accent-hover); }
+.ka-btn:active:not(:disabled) { transform: translateY(1px); }
+.ka-btn:disabled { opacity: 0.55; cursor: default; }
+
+.ka-err {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ka-danger-soft);
+  color: var(--ka-danger);
+  font-size: 13.5px;
+}
+.ka-fine { margin-top: 14px; font-size: 13px; color: var(--ka-ink-3); line-height: 1.5; }
+.ka-mono { font-family: var(--ka-mono); font-size: 0.95em; font-variant-ligatures: none; color: var(--ka-ink); white-space: nowrap; }
+
+.ka-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 14px clamp(24px, 4vw, 32px);
+  border-top: 1px solid var(--ka-line);
+  background: var(--ka-bg);
+  font-size: 13.5px;
+}
+.ka-links a { color: var(--ka-ink-3); font-weight: 600; transition: color 0.2s; }
+.ka-links a:hover { color: var(--ka-ink); }
