@@ -15,7 +15,7 @@
 // facture au caractère et la narration en fait ~2500 : c'est la route la plus
 // chère à l'appel, donc la plus serrée. Elle reste sans authentification parce
 // que la voix se déclenche sur /demo pour un visiteur qui n'a pas connecté
-// Qonto (app/Argentier.tsx, `playVoice`).
+// Qonto (app/Kerdaxis.tsx, `playVoice`).
 // ---------------------------------------------------------------------------
 
 import { reponseTropDeRequetes, verifierDebit } from "@/lib/api/rate-limit";

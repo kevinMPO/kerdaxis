@@ -165,5 +165,8 @@
   background: var(--ka-bg);
   font-size: 13.5px;
 }
-.ka-links a { color: var(--ka-ink-3); font-weight: 600; transition: color 0.2s; }
-.ka-links a:hover { color: var(--ka-ink); }
+.ka-links a { color: var(--ka-accent-ink); font-weight: 650; text-underline-offset: 3px; }
+.ka-links a:hover { text-decoration: underline; }
+.ka-price { color: var(--ka-ink-3); font-weight: 500; }
+.ka-links .ka-links-aside { margin-left: auto; color: var(--ka-ink-3); font-weight: 600; }
+.ka-links .ka-links-aside:hover { color: var(--ka-ink); }

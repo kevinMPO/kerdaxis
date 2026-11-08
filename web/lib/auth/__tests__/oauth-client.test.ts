@@ -29,7 +29,7 @@ const PROVIDER_FICTIF: OAuthProvider = {
   authorizationEndpoint: "https://auth.example.test/authorize",
   tokenEndpoint: "https://auth.example.test/token",
   clientId: "client-public-de-test",
-  redirectUri: "https://argentier.test/api/auth/qonto/callback",
+  redirectUri: "https://kerdaxis.test/api/auth/qonto/callback",
   scopes: ["organization.read", "transaction.read"],
   readOnly: true,
   resource: "https://api.example.test/mcp",
@@ -442,12 +442,12 @@ describe("providers", () => {
 
   it("bascule vers le client dédié par simple configuration", () => {
     vi.stubEnv("QONTO_OAUTH_PROVIDER", "direct-readonly");
-    vi.stubEnv("QONTO_OAUTH_CLIENT_ID", "client-dedie-argentier");
+    vi.stubEnv("QONTO_OAUTH_CLIENT_ID", "client-dedie-kerdaxis");
 
     const provider = activeProvider();
 
     expect(provider.id).toBe("direct-readonly");
-    expect(provider.clientId).toBe("client-dedie-argentier");
+    expect(provider.clientId).toBe("client-dedie-kerdaxis");
     expect(provider.issuer).toBe("https://oauth.qonto.com");
   });
 
@@ -465,10 +465,10 @@ describe("providers", () => {
   });
 
   it("calcule la redirect_uri depuis ARGENTIER_BASE_URL", () => {
-    vi.stubEnv("ARGENTIER_BASE_URL", "https://getargentier.com/");
+    vi.stubEnv("ARGENTIER_BASE_URL", "https://kerdaxis.com/");
 
     expect(QONTO_MCP_PROXY.redirectUri).toBe(
-      "https://getargentier.com/api/auth/qonto/callback",
+      "https://kerdaxis.com/api/auth/qonto/callback",
     );
 
     vi.stubEnv("ARGENTIER_BASE_URL", "");

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copie les clés de web/.env.local dans les secrets chiffrés du Worker « argentier ».
+# Copie les clés de web/.env.local dans les secrets chiffrés du Worker de l’app.
 # À lancer UNE fois (et après chaque changement de clé) avant d'activer le déploiement automatique :
 #   cd web && ./scripts/push-secrets.sh
 # Rien n'est affiché ni écrit dans le dépôt ; le fichier temporaire est supprimé.

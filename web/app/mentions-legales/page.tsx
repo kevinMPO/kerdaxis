@@ -8,10 +8,10 @@ import type { Metadata } from "next";
 import DocumentLegal, { EDITEUR, HEBERGEUR } from "../legal/DocumentLegal";
 
 export const metadata: Metadata = {
-  title: "Mentions légales — Argentier",
+  title: "Mentions légales — Kerdaxis",
   description:
-    "Éditeur, hébergeur et informations légales du service Argentier " +
-    "(getargentier.com).",
+    "Éditeur, hébergeur et informations légales du service Kerdaxis " +
+    "(kerdaxis.com).",
 };
 
 export default function MentionsLegales() {
@@ -79,21 +79,21 @@ export default function MentionsLegales() {
 
       <h2>Nature du service et limites</h2>
       <p>
-        Argentier est un <strong>outil d’analyse en lecture seule</strong>. Il
+        Kerdaxis est un <strong>outil d’analyse en lecture seule</strong>. Il
         lit les données du compte professionnel que vous lui donnez accès,
         calcule des pistes d’économies et <strong>prépare</strong> des
         documents que vous relisez et envoyez vous-même.
       </p>
       <div className="dl-note">
         <p>
-          <strong>Argentier ne déplace jamais d’argent.</strong> Le service
+          <strong>Kerdaxis ne déplace jamais d’argent.</strong> Le service
           n’émet aucun virement, ne valide aucun paiement et n’exécute aucune
           opération bancaire. Techniquement, seules des requêtes de lecture sont
           autorisées ; toute autre requête est rejetée par le service lui-même.
         </p>
       </div>
       <p>
-        Argentier <strong>n’est pas un établissement de paiement</strong>, ni un
+        Kerdaxis <strong>n’est pas un établissement de paiement</strong>, ni un
         établissement de crédit, ni un prestataire de services d’investissement,
         et ne détient à ce titre aucun agrément de l’Autorité de contrôle
         prudentiel et de résolution (ACPR) ni de l’Autorité des marchés

@@ -1,5 +1,5 @@
 -- ---------------------------------------------------------------------------
--- Migration 0001 — socle multi-locataire (multi-tenant) d'Argentier.
+-- Migration 0001 — socle multi-locataire (multi-tenant) de Kerdaxis.
 -- Cible : Cloudflare D1 (SQLite).
 --
 -- Pourquoi : le prototype est mono-locataire (un seul data/decisions.json plat,
@@ -23,7 +23,7 @@
 -- ---------------------------------------------------------------------------
 -- Table 1/3 — organizations : une ligne par organisation Qonto connectee.
 --
---   id           identifiant interne Argentier (opaque, genere par l'app).
+--   id           identifiant interne Kerdaxis (opaque, genere par l'app).
 --                C'est LA cle de locataire referencee partout ailleurs.
 --   qonto_org_id identifiant de l'organisation cote Qonto. UNIQUE : une meme
 --                organisation Qonto ne peut pas exister en double.

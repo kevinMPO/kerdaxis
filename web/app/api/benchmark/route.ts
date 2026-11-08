@@ -6,7 +6,7 @@
 // ACCÈS : ouvert, mais PLAFONNÉ par IP (cf. lib/api/rate-limit.ts). Chaque appel
 // consomme du Linkup et de l'Anthropic facturés. Exiger une session Qonto
 // fermerait le trou plus proprement, mais casserait /demo : la page benchmarke
-// pour un visiteur qui n'a jamais connecté de compte (app/Argentier.tsx,
+// pour un visiteur qui n'a jamais connecté de compte (app/Kerdaxis.tsx,
 // `runBenchmark`). Le plafond par IP garde la démo vivante et borne la facture.
 // ---------------------------------------------------------------------------
 

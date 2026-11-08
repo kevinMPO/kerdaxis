@@ -1,13 +1,13 @@
-# Argentier dans Slack — installation (admin)
+# Kerdaxis dans Slack — installation (admin)
 
 Pour un·e admin de workspace Slack. ~15 min. À la fin, taper `@Claude` dans Slack
-et demander un audit de dépenses déclenche la skill Argentier, qui fait calculer
-le moteur déterministe d'Argentier.
+et demander un audit de dépenses déclenche la skill Kerdaxis, qui fait calculer
+le moteur déterministe de Kerdaxis.
 
 ## Prérequis
 
 - Un workspace Slack où tu peux installer/administrer l'app Claude.
-- Un déploiement Argentier joignable en HTTPS (par défaut `https://getargentier.com`).
+- Un déploiement Kerdaxis joignable en HTTPS (par défaut `https://app.kerdaxis.com`).
 - Accès aux variables d'environnement de ce déploiement (Vercel).
 
 ## 1. Installer Claude dans Slack (Claude Tag)
@@ -16,7 +16,7 @@ Suis le flux officiel d'installation de Claude pour Slack (côté Claude Code :
 `/install-slack-app`, ou l'installation depuis l'admin de ton espace). Une fois
 l'app présente, `@Claude` répond dans les canaux où elle est invitée.
 
-## 2. Armer l'API moteur (côté déploiement Argentier)
+## 2. Armer l'API moteur (côté déploiement Kerdaxis)
 
 L'API `/api/v1/engine` est **fermée par défaut** : sans jeton, elle répond `503`.
 
@@ -32,7 +32,7 @@ L'API `/api/v1/engine` est **fermée par défaut** : sans jeton, elle répond `5
    ```
 3. Vérifie que l'API répond :
    ```bash
-   curl -s https://getargentier.com/api/v1/engine/health
+   curl -s https://app.kerdaxis.com/api/v1/engine/health
    # {"ok":true,"engineVersion":"1.0.0","ts":"..."}
    ```
 
@@ -48,7 +48,7 @@ lit deux secrets, à définir dans l'environnement d'exécution de la skill :
 
 | Secret | Valeur |
 |---|---|
-| `ENGINE_API_URL` | `https://getargentier.com` (ou ton domaine) |
+| `ENGINE_API_URL` | `https://app.kerdaxis.com` (ou ton domaine) |
 | `ENGINE_API_TOKEN` | le jeton généré à l'étape 2 |
 
 Le script `scripts/call_engine.py` n'utilise que la bibliothèque standard Python
@@ -66,7 +66,7 @@ puis présenter les leviers avec les euros **du moteur** (jamais recalculés).
 
 ## 5. Qualification des accès
 
-L'accès Slack est **qualifié** : la landing (`getargentier.com`) récolte les
+L'accès Slack est **qualifié** : la landing (`kerdaxis.com`) récolte les
 demandes via le bouton « Demander l'accès Slack » (marquées `source=slack` dans
 la liste d'attente KV). Ouvre l'accès aux workspaces dont l'usage correspond
 (TPE/EI clientes Qonto qui veulent piloter leurs dépenses), pas en libre-service.

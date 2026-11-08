@@ -15,10 +15,10 @@ import type { Metadata } from "next";
 import DocumentLegal, { EDITEUR } from "../legal/DocumentLegal";
 
 export const metadata: Metadata = {
-  title: "Sous-traitants — Argentier",
+  title: "Sous-traitants — Kerdaxis",
   description:
     "Liste complète des prestataires qui traitent des données pour le compte " +
-    "d'Argentier, ce qu'ils reçoivent et où ils sont établis.",
+    "de Kerdaxis, ce qu'ils reçoivent et où ils sont établis.",
 };
 
 /** Prestataires agissant comme sous-traitants ultérieurs. */
@@ -85,7 +85,7 @@ export default function SousTraitants() {
       chapo={
         <>
           La liste complète des prestataires qui traitent des données pour le
-          compte d’Argentier, ce que chacun reçoit exactement, et où il est
+          compte de Kerdaxis, ce que chacun reçoit exactement, et où il est
           établi. Cette page fait partie de l’
           <a href="/dpa">accord de sous-traitance</a>.
         </>
@@ -138,16 +138,16 @@ export default function SousTraitants() {
         </p>
       </div>
 
-      <h2>Qonto n’est pas un sous-traitant d’Argentier</h2>
+      <h2>Qonto n’est pas un sous-traitant de Kerdaxis</h2>
       <p>
         <strong>Qonto est votre banque</strong>, et la source des données. La
-        relation vous lie directement à elle : Argentier ne fait que lire, avec
+        relation vous lie directement à elle : Kerdaxis ne fait que lire, avec
         votre autorisation, ce que vous y voyez déjà. Qonto n’agit pas pour le
-        compte d’Argentier et n’en reçoit aucune donnée.
+        compte de Kerdaxis et n’en reçoit aucune donnée.
       </p>
       <p>
         Vous retirez cette autorisation quand vous voulez, en une action, depuis
-        Argentier — ou depuis votre espace Qonto.
+        Kerdaxis — ou depuis votre espace Qonto.
       </p>
 
       <h2>Tiers sollicités par votre navigateur</h2>
@@ -187,7 +187,7 @@ export default function SousTraitants() {
         ressources afin de supprimer ces transferts.
       </p>
 
-      <h2>Ce qu’Argentier n’utilise pas</h2>
+      <h2>Ce que Kerdaxis n’utilise pas</h2>
       <p>Pour lever toute ambiguïté, le service ne recourt à :</p>
       <ul>
         <li>

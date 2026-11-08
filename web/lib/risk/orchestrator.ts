@@ -182,7 +182,7 @@ async function explainScore(
   if (!hasAnthropic()) {
     // Fallback déterministe (sans LLM).
     const band = score.band.replace("_", " ").toLowerCase();
-    return `Score Argentier ${score.combinedScore ?? score.externalSignalsScore}/20 (risque ${band}). ${
+    return `Score Kerdaxis ${score.combinedScore ?? score.externalSignalsScore}/20 (risque ${band}). ${
       strengths.length ? "Points forts : " + strengths.join(", ") + "." : ""
     } ${watchpoints.length ? "Vigilance : " + watchpoints.join(", ") + "." : ""}`.trim();
   }
@@ -191,7 +191,7 @@ async function explainScore(
     `Entreprise : ${identity.raisonSociale} (SIREN ${identity.siren}).`,
     `Score financier : ${score.financialScore ?? "non disponible"} /20.`,
     `Signaux externes : ${score.externalSignalsScore} /20.`,
-    `Score Argentier (combiné) : ${score.combinedScore ?? "non calculé (finances insuffisantes)"} /20.`,
+    `Score Kerdaxis (combiné) : ${score.combinedScore ?? "non calculé (finances insuffisantes)"} /20.`,
     `Points forts : ${strengths.join("; ") || "aucun notable"}.`,
     `Vigilance : ${watchpoints.join("; ") || "aucune notable"}.`,
     score.criticalEvent ? `ÉVÉNEMENT CRITIQUE : procédure ${score.criticalEvent.kind}.` : "",

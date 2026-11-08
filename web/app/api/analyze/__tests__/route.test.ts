@@ -108,7 +108,7 @@ async function requeteAvecSession(): Promise<Request> {
     expiresAt: Date.now() + 3_600_000,
     tokenType: "Bearer",
   });
-  return new Request("https://argentier.test/api/analyze", {
+  return new Request("https://kerdaxis.test/api/analyze", {
     headers: { cookie: `argentier_session=${await signerSession(ORG)}` },
   });
 }
@@ -116,7 +116,7 @@ async function requeteAvecSession(): Promise<Request> {
 /** Requête porteuse d'une session signée pour une organisation SANS jeton. */
 async function requeteSessionSansJeton(): Promise<Request> {
   const cookie = `argentier_session=${await signerSession("org_sans_jeton")}`;
-  return new Request("https://argentier.test/api/analyze", { headers: { cookie } });
+  return new Request("https://kerdaxis.test/api/analyze", { headers: { cookie } });
 }
 
 describe("GET /api/analyze", () => {
@@ -199,7 +199,7 @@ describe("GET /api/analyze", () => {
   // --- Visiteur ANONYME : la démo doit continuer de vivre -------------------
 
   it("sert la démo au visiteur sans session, sans appeler Qonto", async () => {
-    const reponseHttp = await GET(new Request("https://argentier.test/api/analyze"));
+    const reponseHttp = await GET(new Request("https://kerdaxis.test/api/analyze"));
     const corps = (await reponseHttp.json()) as { meta?: { source: string } };
 
     expect(reponseHttp.status).toBe(200);

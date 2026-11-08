@@ -82,7 +82,7 @@ h1,h2,h3,h4,p,dl,dd,ol,ul,figure{margin:0}
 .hero{background:var(--night);color:#f4f4f8;padding-top:clamp(56px,8vw,104px);padding-bottom:clamp(56px,7vw,88px)}
 .hero h1{font-size:clamp(2.6rem,1rem + 5vw,5.4rem);font-weight:780;letter-spacing:-.04em;line-height:1;max-width:20ch;text-wrap:balance}
 html[lang="fr"] .hero h1{font-size:clamp(2.3rem,.9rem + 4.2vw,4.5rem);max-width:19ch}
-.hero .lede{margin-top:28px;max-width:38rem;color:var(--night-ink)}
+.hero .lede{margin-top:28px;max-width:none;color:var(--night-ink);text-wrap:balance}
 .lede{font-size:clamp(1.05rem,.95rem + .45vw,1.22rem);line-height:1.55;color:var(--ink-3);text-wrap:pretty}
 .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
 .hero .btn-ghost{background:transparent;border-color:var(--night-line);color:#fff}
@@ -97,6 +97,8 @@ html[lang="fr"] .hero h1{font-size:clamp(2.3rem,.9rem + 4.2vw,4.5rem);max-width:
 .film{margin-top:clamp(48px,6vw,80px)}
 .film-frame{position:relative;max-width:1200px;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:var(--night-2);box-shadow:0 30px 80px -30px rgba(0,0,0,.6),0 0 0 1px var(--night-line)}
 .film-frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* The hero recording has a blank strip along its left edge: crop it so the portal sits flush with the frame. */
+#heroLoop{left:-2.2%;width:102.2%;max-width:none}
 .film-play{position:absolute;left:20px;bottom:20px;display:inline-flex;align-items:center;gap:12px;min-height:46px;padding:0 18px 0 8px;border-radius:999px;border:0;background:#fff;color:var(--ink);font-size:15px;font-weight:650;box-shadow:0 10px 30px rgba(0,0,0,.3);transition:transform .2s var(--ease)}
 .film-play:hover{transform:translateY(-1px)}
 .play-dot{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--on-accent)}
@@ -290,6 +292,13 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
   .ledger{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ledger li:first-child{grid-column:1 / -1}
 }
+@media (max-width:1000px){
+  /* On small screens the play button would cover the film's headline: give it its own bar under the picture. */
+  .hero .film-frame{aspect-ratio:auto;padding-bottom:calc(102.2% * 9 / 16 + 70px)}
+  #heroLoop{bottom:auto;height:auto;aspect-ratio:16/9}
+  .hero .film-play{left:50%;bottom:12px;transform:translateX(-50%);white-space:nowrap}
+  .hero .film-play:hover{transform:translate(-50%,-1px)}
+}
 @media (max-width:760px){
   body{font-size:16.5px}
   .sec-head,.ledger-head{grid-template-columns:1fr;align-items:start}
@@ -309,6 +318,7 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
   .film-frame{border-radius:12px}
   .film-play{left:12px;bottom:12px;min-height:42px;font-size:14px;padding-right:14px}
   .play-dot{width:28px;height:28px}
+  .hero .film-play{bottom:14px}
 }
 @media (max-width:440px){
   .head-row{gap:12px}
@@ -317,6 +327,8 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
   .lang button{padding:0 8px;min-width:34px}
   .cta-row .btn{flex:1 1 100%}
   .film-play{left:10px;bottom:10px;min-height:38px;gap:9px;padding:0 12px 0 5px;font-size:13.5px}
+  .hero .film-frame{padding-bottom:calc(102.2% * 9 / 16 + 58px)}
+  .hero .film-play{left:50%;bottom:10px}
   .run-head{flex-wrap:wrap}
   .steps,.run-head,.run-meta,.run-foot{padding-left:16px;padding-right:16px}
   .result dl{grid-template-columns:1fr}
@@ -354,7 +366,7 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
 <section class="hero" id="top" aria-labelledby="heroTitle">
   <div class="wrap">
     <h1 id="heroTitle" data-i="h1">AI doesn't just find savings.<br>It makes them happen.</h1>
-    <p class="lede" data-i="heroLede">Kerdaxis reads your bank account, spots the subscriptions you no longer need, and sends an agent to cancel them on the supplier's portal. It stops before the final click and waits for your green light.</p>
+    <p class="lede" data-i="heroLede">Kerdaxis finds the subscriptions you no longer use and cancels them for you. The final click stays yours.</p>
     <div class="cta-row">
       <a class="btn btn-primary" id="ctaPrimary" href="#agent" data-i="ctaPrimary">Try the interactive demo</a>
       <a class="btn btn-ghost" href="https://app.kerdaxis.com/try" data-i="ctaAccess">Try for free</a>
@@ -372,7 +384,7 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
         <span data-i="filmBtn">Watch the 51-second film</span>
       </button>
     </div>
-    <figcaption data-i="filmCaption">Recorded H Company session on our demo supplier portal (fictional supplier)</figcaption>
+    <figcaption class="sr-only" data-i="filmCaption">Recorded H Company session on our demo supplier portal (fictional supplier)</figcaption>
   </figure>
   <div class="wrap">
     <dl class="stack">
@@ -453,12 +465,12 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
   <div class="wrap">
     <header class="sec-head">
       <h2 id="proofTitle" data-i="proofTitle">Measured on real runs, including the one that went wrong.</h2>
-      <p class="lede" data-i="proofLede">On 7 November 2026 we ran the H Company agent three times on our demo supplier portal, a fictional supplier we built to test against. These are the numbers we recorded.</p>
+      <p class="lede" data-i="proofLede">Run on Stripe’s real customer portal, an interface we did not build. Each result is read from Stripe, never from the agent’s report.</p>
     </header>
     <dl class="figures">
-      <div><dt data-i="fig1t">Real runs</dt><dd class="big">3</dd><dd class="sub" data-i="fig1s">7 Nov 2026, demo supplier portal</dd></div>
-      <div><dt data-i="fig2t">For one run</dt><dd class="big" data-i="fig2v"><span class="approx">≈</span>50&nbsp;s</dd><dd class="sub" data-i="fig2s">Duration, end to end</dd></div>
-      <div><dt data-i="fig3t">Cost of one run</dt><dd class="big" data-i="fig3v"><span class="approx">≈</span>$0.02</dd><dd class="sub" data-i="fig3s">Agent usage</dd></div>
+      <div><dt data-i="fig1t">Cancellations confirmed</dt><dd class="big">5/5</dd><dd class="sub" data-i="fig1s">Confirmed by the Stripe API, 7 Nov 2026</dd></div>
+      <div><dt data-i="fig2t">Refusals respected</dt><dd class="big" data-i="fig2v">2/2</dd><dd class="sub" data-i="fig2s">Green light refused: subscription still active</dd></div>
+      <div><dt data-i="fig3t">From approval to proof</dt><dd class="big" data-i="fig3v"><span class="approx">≈</span>56&nbsp;s</dd><dd class="sub" data-i="fig3s">Median, about $0.03 of agent per run</dd></div>
     </dl>
     <div class="story">
       <article class="s-fail">
@@ -475,7 +487,7 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
       </article>
       <article class="s-after">
         <h3 data-i="s3t">Since the fix</h3>
-        <p data-i="s3">The agent stops and waits. While it waits, the portal still shows the subscription as active. After the green light it confirms, and the portal returns the same confirmation number the agent read.</p>
+        <p data-i="s3">On Stripe’s real portal the agent stopped at the final button in every run, after about 24 s. With the green light it confirmed, and the Stripe API showed the subscription cancelled. Without it, the subscription stayed active.</p>
       </article>
     </div>
   </div>
@@ -632,7 +644,7 @@ en:{
   skip:'Skip to content',navLabel:'Main',navAgent:'How it works',navProof:'Proof',navFde:'FDE',navFirms:'Accounting firms',navAccess:'Request access',navTest:'Test login',navSignin:'Sign in',navSignup:'Sign up',navTry:'Try for free',
   byline:'Powered by H Company <span class="nw">computer-use</span> agents (Holo)',
   h1:"AI doesn't just find savings.<br>It makes them happen.",
-  heroLede:"Kerdaxis reads your bank account, spots the subscriptions you no longer need, and sends an agent to cancel them on the supplier's portal. It stops before the final click and waits for your green light.",
+  heroLede:"Kerdaxis finds the subscriptions you no longer use and cancels them for you. The final click stays yours.",
   ctaPrimary:'Try the interactive demo',ctaAccess:'Try for free',
   filmBtn:'Watch the 51-second film',filmCaption:CAPTION_EN,filmCaption2:CAPTION_EN,filmCaption3:CAPTION_EN,
   stackBuilt:'Built with',stackConnects:'Connects to',stackQonto:'Qonto, read-only',stackComing:'Coming',
@@ -656,14 +668,14 @@ en:{
   resAgent:'Number read by the agent',resPortal:"Number on the supplier's portal",resText:'Same number. Status: supplier confirmed. (Example number.)',
   runFoot:'Illustration of the sequence. The film shows a real recorded run.',replay:'Replay',
   proofTitle:'Measured on real runs, including the one that went wrong.',
-  proofLede:'On 7 November 2026 we ran the H Company agent three times on our demo supplier portal, a fictional supplier we built to test against. These are the numbers we recorded.',
-  fig1t:'Real runs',fig1s:'7 Nov 2026, demo supplier portal',fig2t:'For one run',fig2v:'<span class="approx">≈</span>50&nbsp;s',fig2s:'Duration, end to end',fig3t:'Cost of one run',fig3v:'<span class="approx">≈</span>$0.02',fig3s:'Agent usage',
+  proofLede:'Run on Stripe’s real customer portal, an interface we did not build. Each result is read from Stripe, never from the agent’s report.',
+  fig1t:'Cancellations confirmed',fig1s:'Confirmed by the Stripe API, 7 Nov 2026',fig2t:'Refusals respected',fig2v:'2/2',fig2s:'Green light refused: subscription still active',fig3t:'From approval to proof',fig3v:'<span class="approx">≈</span>56&nbsp;s',fig3s:'Median, about $0.03 of agent per run',
   s1t:"Run 1: it didn't stop.",s1:'The agent clicked through the confirmation without pausing. That is exactly the failure an approval step exists to prevent, so we made the stop structural.',
   s2t:'The fix: a stop in three layers',
   l1:'<b>Two-turn mission.</b> The first turn ends at the confirmation page; the second starts only after approval.',
   l2:'<b>Automatic pause.</b> Kerdaxis halts the run itself when the confirmation page appears.',
   l3:"<b>Human green light.</b> Required to continue. Voice can't give it.",
-  s3t:'Since the fix',s3:'The agent stops and waits. While it waits, the portal still shows the subscription as active. After the green light it confirms, and the portal returns the same confirmation number the agent read.',
+  s3t:'Since the fix',s3:'On Stripe’s real portal the agent stopped at the final button in every run, after about 24 s. With the green light it confirmed, and the Stripe API showed the subscription cancelled. Without it, the subscription stayed active.',
   productTitle:'Before the agent moves, the numbers are already checked.',productLede:'The agent is the last step. Everything before it is read-only, deterministic and sourced.',
   p1t:'Read-only access',p1:'Kerdaxis reads your Qonto account through MCP. It cannot make payments or transfers.',
   p2t:'The engine counts, the model labels',p2:'Every euro comes from a deterministic engine. The language model only tags transactions.',
@@ -702,7 +714,7 @@ fr:{
   skip:'Aller au contenu',navLabel:'Principal',navAgent:'Fonctionnement',navProof:'Preuves',navFde:'FDE',navFirms:'Cabinets comptables',navAccess:'Demander un accès',navTest:'Accès test',navSignin:'Se connecter',navSignup:'S’inscrire',navTry:'Essai gratuit',
   byline:'Propulsé par les agents <span class="nw">computer-use</span> de H&nbsp;Company (Holo)',
   h1:'L’IA ne se contente pas de trouver des économies.<br>Elle les concrétise.',
-  heroLede:'Kerdaxis lit votre compte bancaire, repère les abonnements dont vous n’avez plus besoin et envoie un agent les résilier sur le portail du fournisseur. Il s’arrête avant le clic final et attend votre feu vert.',
+  heroLede:'Kerdaxis repère les abonnements que vous n’utilisez plus et les résilie pour vous. Le dernier clic reste le vôtre.',
   ctaPrimary:'Essayer la démo interactive',ctaAccess:'Essai gratuit',
   filmBtn:'Voir le film de 51 secondes',filmCaption:CAPTION_FR,filmCaption2:CAPTION_FR,filmCaption3:CAPTION_FR,
   stackBuilt:'Conçu avec',stackConnects:'Se connecte à',stackQonto:'Qonto, en lecture seule',stackComing:'Bientôt',
@@ -726,14 +738,14 @@ fr:{
   resAgent:'Numéro lu par l’agent',resPortal:'Numéro sur le portail du fournisseur',resText:'Même numéro. Statut : confirmée par le fournisseur. (Numéro d’exemple.)',
   runFoot:'Illustration du parcours. Le film montre une vraie exécution enregistrée.',replay:'Rejouer',
   proofTitle:'Mesuré sur de vraies exécutions, y compris celle qui a mal tourné.',
-  proofLede:'Le 7 novembre 2026, nous avons lancé l’agent H Company trois fois sur notre portail fournisseur de démo, un fournisseur fictif construit pour les tests. Voici ce que nous avons relevé.',
-  fig1t:'Exécutions réelles',fig1s:'7 nov. 2026, portail fournisseur de démo',fig2t:'Par exécution',fig2v:'<span class="approx">≈</span>50&nbsp;s',fig2s:'Durée, du début à la fin',fig3t:'Coût d’une exécution',fig3v:'<span class="approx">≈</span>0,02&nbsp;$',fig3s:'Utilisation de l’agent',
+  proofLede:'Exécuté sur le vrai portail client de Stripe, une interface que nous n’avons pas construite. Chaque résultat est lu chez Stripe, jamais dans le rapport de l’agent.',
+  fig1t:'Résiliations confirmées',fig1s:'Confirmées par l’API Stripe, 7 nov. 2026',fig2t:'Refus respectés',fig2v:'2/2',fig2s:'Feu vert refusé : abonnement toujours actif',fig3t:'De l’accord à la preuve',fig3v:'<span class="approx">≈</span>56&nbsp;s',fig3s:'Médiane, environ 0,03 $ d’agent par exécution',
   s1t:'Exécution 1 : il ne s’est pas arrêté.',s1:'L’agent a cliqué sur la confirmation sans marquer de pause. C’est précisément ce qu’une étape d’approbation doit empêcher : nous avons rendu l’arrêt structurel.',
   s2t:'Le correctif : un arrêt en trois couches',
   l1:'<b>Mission en deux tours.</b> Le premier tour s’arrête à la page de confirmation ; le second ne démarre qu’après approbation.',
   l2:'<b>Pause automatique.</b> Kerdaxis met lui-même la mission en pause quand la page de confirmation s’affiche.',
   l3:'<b>Feu vert humain.</b> Obligatoire pour continuer. La voix ne peut pas le donner.',
-  s3t:'Depuis le correctif',s3:'L’agent s’arrête et attend. Pendant l’attente, le portail affiche toujours l’abonnement comme actif. Après le feu vert, il confirme, et le portail renvoie le même numéro de confirmation que celui lu par l’agent.',
+  s3t:'Depuis le correctif',s3:'Sur le vrai portail Stripe, l’agent s’est arrêté devant le bouton final à chaque exécution, après environ 24 s. Avec le feu vert, il a confirmé et l’API Stripe a montré l’abonnement résilié. Sans feu vert, l’abonnement est resté actif.',
   productTitle:'Avant que l’agent agisse, les chiffres sont déjà vérifiés.',productLede:'L’agent n’est que la dernière étape. Tout ce qui précède est en lecture seule, déterministe et sourcé.',
   p1t:'Accès en lecture seule',p1:'Kerdaxis lit votre compte Qonto via MCP. Il ne peut ni payer ni faire de virement.',
   p2t:'Le moteur compte, le modèle étiquette',p2:'Chaque euro vient d’un moteur déterministe. Le modèle de langage ne fait qu’étiqueter les transactions.',

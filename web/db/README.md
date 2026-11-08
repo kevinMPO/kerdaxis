@@ -1,6 +1,6 @@
 # Base de données — socle multi-locataire (Cloudflare D1)
 
-Ce dossier contient le **schéma SQL** d'Argentier. La couche d'accès typée qui
+Ce dossier contient le **schéma SQL** de Kerdaxis. La couche d'accès typée qui
 l'exploite est dans [`../lib/db/tenant.ts`](../lib/db/tenant.ts) ; ses tests
 sont dans [`../lib/db/__tests__/tenant.test.ts`](../lib/db/__tests__/tenant.test.ts).
 
@@ -34,7 +34,7 @@ Toutes les commandes se lancent **depuis `web/`** (c'est là que vit
 
 ```bash
 cd web
-npx wrangler d1 create argentier --location weur
+npx wrangler d1 create kerdaxis --location weur
 ```
 
 Wrangler affiche l'`database_id`. Le bloc est **déjà** dans
@@ -44,7 +44,7 @@ Wrangler affiche l'`database_id`. Le bloc est **déjà** dans
 "d1_databases": [
   {
     "binding": "ARGENTIER_DB",
-    "database_name": "argentier",
+    "database_name": "kerdaxis",
     "database_id": "<à provisionner>"   // ← le uuid renvoyé ci-dessus
   }
 ]
@@ -61,14 +61,14 @@ En local (base SQLite de `wrangler dev`, dans `.wrangler/state`) :
 
 ```bash
 cd web
-npx wrangler d1 execute argentier --local --file=./db/0001_init.sql
+npx wrangler d1 execute kerdaxis --local --file=./db/0001_init.sql
 ```
 
 En production (base D1 distante) :
 
 ```bash
 cd web
-npx wrangler d1 execute argentier --remote --file=./db/0001_init.sql
+npx wrangler d1 execute kerdaxis --remote --file=./db/0001_init.sql
 ```
 
 La migration est **idempotente** (`CREATE TABLE / CREATE INDEX IF NOT EXISTS`,
@@ -86,15 +86,15 @@ aucune donnée.
 ```bash
 cd web
 # Les trois tables sont-elles là ?
-npx wrangler d1 execute argentier --remote \
+npx wrangler d1 execute kerdaxis --remote \
   --command "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"
 
 # Les trois index ?
-npx wrangler d1 execute argentier --remote \
+npx wrangler d1 execute kerdaxis --remote \
   --command "SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%'"
 
 # Le CHECK de la machine à états est-il bien posé ?
-npx wrangler d1 execute argentier --remote \
+npx wrangler d1 execute kerdaxis --remote \
   --command "SELECT sql FROM sqlite_master WHERE name = 'decisions'"
 ```
 
@@ -115,8 +115,8 @@ D1 conserve un historique (Time Travel) sur 30 jours :
 
 ```bash
 cd web
-npx wrangler d1 time-travel info argentier
-npx wrangler d1 time-travel restore argentier --timestamp <ISO 8601>
+npx wrangler d1 time-travel info kerdaxis
+npx wrangler d1 time-travel restore kerdaxis --timestamp <ISO 8601>
 ```
 
 ## Tests

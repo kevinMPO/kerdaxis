@@ -44,7 +44,7 @@ import {
   listTransactions as listTransactionsOAuth,
   type QontoAuth,
 } from "@/lib/mcp/qonto-read-client";
-import { BindingManquantError, baseD1, bindingsArgentier } from "@/lib/runtime/bindings";
+import { BindingManquantError, baseD1, bindingsKerdaxis } from "@/lib/runtime/bindings";
 import type { Localized, MerchantVerdict, Tx } from "@/lib/types";
 import { withAccessScope } from "@/lib/privacy/access-log";
 import { recordAccess } from "@/lib/privacy/access-log";
@@ -185,7 +185,7 @@ async function journaliser(
       at: Date.now(),
     });
   } catch (erreur) {
-    console.error("[argentier][audit] Écriture du journal impossible :", erreur);
+    console.error("[kerdaxis][audit] Écriture du journal impossible :", erreur);
   }
 }
 
@@ -228,7 +228,7 @@ async function analyzeAvecSession(
   orgId: string,
   windowDays: number,
 ): Promise<Awaited<ReturnType<typeof runPipeline>> | null> {
-  const bindings = bindingsArgentier();
+  const bindings = bindingsKerdaxis();
   const store = getTokenStore(bindings);
   const jetons = await jetonValide(store, orgId);
   // `null` = jeton absent, expiré sans refresh, ou rafraîchissement refusé.
@@ -265,7 +265,7 @@ async function analyzeAvecSession(
   if (!org.iban) {
     // Mieux vaut un refus explicite qu'une requête dont on sait qu'elle échouera.
     console.error(
-      "[argentier][analyze] L'organisation n'expose aucun compte bancaire " +
+      "[kerdaxis][analyze] L'organisation n'expose aucun compte bancaire " +
         "lisible : impossible de demander les opérations.",
     );
     return null;
@@ -286,7 +286,7 @@ async function analyze(requete: Request): Promise<NextResponse> {
   const windowDays = Number(process.env.ARGENTIER_WINDOW_DAYS || 60);
 
   const session = await lireSession(requete).catch((erreur) => {
-    console.error("[argentier][session] Cookie de session illisible :", erreur);
+    console.error("[kerdaxis][session] Cookie de session illisible :", erreur);
     return null;
   });
 
@@ -302,7 +302,7 @@ async function analyze(requete: Request): Promise<NextResponse> {
     return sansCache(NextResponse.json(rapport));
   } catch (erreur) {
     if (erreur instanceof BindingManquantError) {
-      console.error("[argentier][config] Binding indispensable absent :", erreur.message);
+      console.error("[kerdaxis][config] Binding indispensable absent :", erreur.message);
       return refus(503, "configuration_incomplete", {
         fr:
           "Kerdaxis est mal configuré côté serveur : une ressource indispensable " +
@@ -316,7 +316,7 @@ async function analyze(requete: Request): Promise<NextResponse> {
     // lecture) : on invite à reconnecter plutôt que d'inventer une réponse.
     if (erreur instanceof TokenExpiredError) return RECONNEXION_REQUISE();
 
-    console.error("[argentier][analyze] Lecture Qonto impossible :", erreur);
+    console.error("[kerdaxis][analyze] Lecture Qonto impossible :", erreur);
     return refus(502, "lecture_qonto_impossible", {
       fr:
         "La lecture de ton compte Qonto a échoué. Réessaie dans un instant ; " +
@@ -335,7 +335,7 @@ async function handleGet(requete: Request): Promise<NextResponse> {
     // Filet de sécurité : `analyze` traite déjà ses propres pannes. Y arriver
     // signale un bug, pas un mode de fonctionnement — on le dit, on ne badge
     // surtout pas de la démo en « live ».
-    console.error("[argentier][analyze] Échec inattendu :", err);
+    console.error("[kerdaxis][analyze] Échec inattendu :", err);
     return refus(500, "erreur_interne", {
       fr: "Erreur interne de Kerdaxis. Rien n'a été lu, rien n'a été écrit.",
       en: "Internal Kerdaxis error. Nothing was read, nothing was written.",

@@ -42,7 +42,7 @@ const { generateLetter } = await import("@/lib/letters");
 
 /** Requête anonyme — pas de cookie de session, comme un visiteur de /demo. */
 function requeteAnonyme(chemin: string, ip: string, corps: unknown): Request {
-  return new Request(`https://argentier.test${chemin}`, {
+  return new Request(`https://kerdaxis.test${chemin}`, {
     method: "POST",
     headers: { "content-type": "application/json", "cf-connecting-ip": ip },
     body: JSON.stringify(corps),
@@ -124,7 +124,7 @@ describe("POST /api/letter", () => {
 });
 
 describe("POST /api/voice", () => {
-  const CORPS = { text: "Bienvenue sur Argentier.", lang: "fr" };
+  const CORPS = { text: "Bienvenue sur Kerdaxis.", lang: "fr" };
 
   it("sert un visiteur anonyme jusqu'au plafond, puis coupe sans appeler ElevenLabs", async () => {
     const cleOrigine = process.env.ELEVENLABS_API_KEY;

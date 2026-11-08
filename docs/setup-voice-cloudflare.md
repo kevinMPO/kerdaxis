@@ -16,7 +16,7 @@
 1. **RÉGÉNÉRER la clé** `sk_f3a9…` (elle a été collée en clair → compromise). Dashboard ElevenLabs → API Keys → Regenerate. Mets la **nouvelle** clé dans `web/.env.local` (gitignoré) et en **secret Cloudflare** pour la prod.
 2. **Créer un agent conversationnel PUBLIC** (pour le Q&A vocal) :
    - elevenlabs.io → *Conversational AI* → *Create Agent*.
-   - System prompt : décris Argentier (DAF autonome read-only, run-rate, leviers, Autopilote, 4 règles). Active le multilingue.
+   - System prompt : décris Kerdaxis (DAF autonome read-only, run-rate, leviers, Autopilote, 4 règles). Active le multilingue.
    - **Authentication disabled** (le widget public l'exige).
    - Copie l'**Agent ID** → `NEXT_PUBLIC_ELEVENLABS_AGENT_ID=` dans `web/.env.local`.
 3. (Optionnel) Voix perso : `ELEVENLABS_VOICE_ID=` (sinon voix multilingue par défaut).

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Description des serveurs d'autorisation OAuth 2.1 utilisables par Argentier.
+// Description des serveurs d'autorisation OAuth 2.1 utilisables par Kerdaxis.
 //
 // Rôle : concentrer ICI, et nulle part ailleurs, tout ce qui dépend d'un
 // fournisseur donné (issuer, endpoints, client_id, scopes, redirect_uri). Le
@@ -8,7 +8,7 @@
 //
 // Pourquoi c'est structurant : on code aujourd'hui contre le proxy MCP de
 // Qonto, qui n'accorde pas de token restreint en lecture. Le jour où Qonto
-// délivre à Argentier un client OAuth dédié avec uniquement des scopes `.read`,
+// délivre à Kerdaxis un client OAuth dédié avec uniquement des scopes `.read`,
 // la bascule doit se faire par CONFIGURATION seule (une variable
 // d'environnement), sans réécrire une ligne de logique.
 // ---------------------------------------------------------------------------
@@ -54,22 +54,22 @@ export interface OAuthProvider {
  */
 export const CHEMIN_CALLBACK_OAUTH = "/api/auth/qonto/callback";
 
-/** URL de base publique d'Argentier, sans slash final. */
-export function baseUrlArgentier(): string {
+/** URL de base publique de Kerdaxis, sans slash final. */
+export function baseUrlKerdaxis(): string {
   const brut = process.env.ARGENTIER_BASE_URL?.trim();
   const base = brut && brut.length > 0 ? brut : "http://localhost:3000";
   return base.replace(/\/+$/, "");
 }
 
 /** `redirect_uri` calculée depuis l'environnement (override possible en env). */
-export function redirectUriArgentier(): string {
+export function redirectUriKerdaxis(): string {
   const explicite = process.env.QONTO_OAUTH_REDIRECT_URI?.trim();
   if (explicite) return explicite;
-  return `${baseUrlArgentier()}${CHEMIN_CALLBACK_OAUTH}`;
+  return `${baseUrlKerdaxis()}${CHEMIN_CALLBACK_OAUTH}`;
 }
 
 /**
- * Scopes de lecture dont Argentier a besoin, et rien de plus : lire
+ * Scopes de lecture dont Kerdaxis a besoin, et rien de plus : lire
  * l'organisation, les comptes et leurs transactions pour l'audit de dépenses.
  * Aucun `.write`, jamais — même si le serveur choisit de les ignorer.
  * (Liste à confirmer avec Qonto le jour du client dédié.)
@@ -119,14 +119,14 @@ const SCOPES_LECTURE_SEULE: string[] = [
  *    catalogue par défaut — 32 scopes dont 16 en écriture, `request_transfers.write`
  *    compris. Autrement dit : le silence vaut consentement à tout.
  *    → Toujours envoyer SCOPES_LECTURE_SEULE explicitement. Un jour où ce
- *      paramètre disparaîtrait de la requête, Argentier demanderait
+ *      paramètre disparaîtrait de la requête, Kerdaxis demanderait
  *      silencieusement des droits de virement.
  *
  * 2. `GET /authorize` REFUSE (400 « invalid redirect_uri ») toute URI qui
  *    n'est ni du loopback (`http://localhost:*`, `http://127.0.0.1:*`), ni
  *    inscrite dans sa liste blanche codée en dur (p. ex.
  *    `https://claude.ai/api/mcp/auth_callback`). Testé et refusé :
- *    `https://www.getargentier.com/...` et l'URL workers.dev.
+ *    notre domaine de production et l'URL workers.dev.
  *    → Ce provider fonctionne en DÉVELOPPEMENT LOCAL uniquement. Une
  *      application web hébergée ne peut pas s'y connecter, quoi qu'elle
  *      demande. C'est le blocage réel, et l'objet de la demande adressée à
@@ -151,14 +151,14 @@ export const QONTO_MCP_PROXY: OAuthProvider = {
   resource: "https://mcp.qonto.com/mcp",
   get redirectUri(): string {
     // Getter : l'environnement d'un Worker n'est lisible qu'à l'exécution.
-    return redirectUriArgentier();
+    return redirectUriKerdaxis();
   },
 };
 
 /**
- * Qonto OAuth en direct, avec un client dédié à Argentier — la CIBLE.
+ * Qonto OAuth en direct, avec un client dédié à Kerdaxis — la CIBLE.
  *
- * À activer le jour où Qonto délivre à Argentier un client OAuth propre,
+ * À activer le jour où Qonto délivre à Kerdaxis un client OAuth propre,
  * restreint aux scopes `.read`. Ce jour-là, la bascule est purement de la
  * configuration : `QONTO_OAUTH_PROVIDER=direct-readonly` et
  * `QONTO_OAUTH_CLIENT_ID=<client délivré>`. Aucun code à réécrire.
@@ -180,7 +180,7 @@ export const QONTO_DIRECT_READONLY: OAuthProvider = {
     return process.env.QONTO_OAUTH_CLIENT_ID?.trim() ?? "";
   },
   get redirectUri(): string {
-    return redirectUriArgentier();
+    return redirectUriKerdaxis();
   },
 };
 

@@ -479,7 +479,7 @@ function PlaybookBox({ playbook, t }: { playbook: PlaybookView; t: (typeof T)["e
 
 const CSS = `
 /* Panneau d'exécution — thème sombre Kerdaxis. Les variables viennent de
-   .arg-root (Argentier) ; les valeurs de repli gardent le panneau lisible seul. */
+   .arg-root (Kerdaxis) ; les valeurs de repli gardent le panneau lisible seul. */
 .kx-ov{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;color:var(--c-ink,#eef8f5);
   font-family:var(--f-text,'Inter',system-ui,sans-serif);animation:argFade .25s ease;
   background:radial-gradient(70% 50% at 50% 0%,rgba(180,247,104,.05),transparent 65%),var(--c-paper,#080d13);}

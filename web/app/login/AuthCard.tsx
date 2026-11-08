@@ -127,9 +127,17 @@ export default function AuthCard({ mode, notice }: { mode: Mode; notice?: string
         </div>
         <nav className="ka-links" aria-label="Other ways in">
           {mode !== "try" && <a href="/try">Try for free</a>}
-          {mode !== "signup" && <a href="/signup">Create an account · 5 €/mo</a>}
+          {mode !== "signup" && (
+            <a href="/signup">
+              Create an account <span className="ka-price">· 5 €/mo</span>
+            </a>
+          )}
           {mode !== "signin" && <a href="/signin">Sign in</a>}
-          {mode === "signin" && <a href="/login">Jury / test access</a>}
+          {mode === "signin" && (
+            <a className="ka-links-aside" href="/login">
+              Jury / test access
+            </a>
+          )}
         </nav>
       </form>
     </AuthShell>

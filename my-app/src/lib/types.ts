@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// Contrat d'API d'Argentier.
-// Le front (Argentier.tsx) consomme exactement cette forme ; /api/analyze la
+// Contrat d'API de Kerdaxis.
+// Le front (Kerdaxis.tsx) consomme exactement cette forme ; /api/analyze la
 // produit. Garder les clés stables : account, window, totals, natures, poles,
 // levers, flux, score, runway (cf. PRD §15).
 // ---------------------------------------------------------------------------

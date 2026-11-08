@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Filtre de sortie anti-PII — application de la règle 3 (« zéro PII vers le web »).
 //
-// Ce module est la DERNIÈRE barrière avant qu'un octet ne quitte Argentier vers
+// Ce module est la DERNIÈRE barrière avant qu'un octet ne quitte Kerdaxis vers
 // un tiers (Linkup, Bright Data, tout `fetch` sortant). Vers l'extérieur, seuls
 // le NOM DU MARCHAND et la CATÉGORIE ont le droit de sortir. Jamais d'IBAN, de
 // BIC, de `transaction_id`, de numéro de compte, d'e-mail, de téléphone, de PAN

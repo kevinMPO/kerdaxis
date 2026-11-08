@@ -4,7 +4,7 @@
 // Pur, testable, SANS dependance a Mastra ni au LLM. Il ne recoit que des
 // donnees structurees (Financials + CompanySignal[]) et rend des notes /20.
 //
-// Regles Argentier :
+// Regles Kerdaxis :
 //   • Le LLM ne calcule JAMAIS un score ici — il fournit seulement les donnees.
 //   • Donnee manquante = null → la dimension SORT du calcul (jamais 0 par defaut).
 //   • Un signal externe ne modifie le score que s'il a une SOURCE et une

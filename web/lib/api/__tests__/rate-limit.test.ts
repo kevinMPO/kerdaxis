@@ -47,13 +47,13 @@ class FauxKv {
 
 /** Requête minimale portant l'IP telle que la pose l'edge Cloudflare. */
 function requeteDepuis(ip: string): Request {
-  return new Request("https://argentier.test/api/voice", {
+  return new Request("https://kerdaxis.test/api/voice", {
     method: "POST",
     headers: { "cf-connecting-ip": ip },
   });
 }
 
-/** Pose (ou retire) le binding KV vu par `bindingsArgentier()`. */
+/** Pose (ou retire) le binding KV vu par `bindingsKerdaxis()`. */
 function poserKv(kv: FauxKv | null): void {
   const global = globalThis as { ARGENTIER_TOKENS?: unknown };
   if (kv) global.ARGENTIER_TOKENS = kv;
@@ -75,7 +75,7 @@ afterEach(() => {
 
 describe("ipDemandeur", () => {
   it("préfère CF-Connecting-IP, la seule source non falsifiable", () => {
-    const requete = new Request("https://argentier.test/api/voice", {
+    const requete = new Request("https://kerdaxis.test/api/voice", {
       headers: {
         "cf-connecting-ip": "203.0.113.7",
         "x-real-ip": "198.51.100.1",
@@ -86,19 +86,19 @@ describe("ipDemandeur", () => {
   });
 
   it("retombe sur x-real-ip puis sur le premier x-forwarded-for", () => {
-    const reel = new Request("https://argentier.test/", {
+    const reel = new Request("https://kerdaxis.test/", {
       headers: { "x-real-ip": "198.51.100.1", "x-forwarded-for": "192.0.2.1" },
     });
     expect(ipDemandeur(reel)).toBe("198.51.100.1");
 
-    const transmis = new Request("https://argentier.test/", {
+    const transmis = new Request("https://kerdaxis.test/", {
       headers: { "x-forwarded-for": " 192.0.2.1 , 10.0.0.1" },
     });
     expect(ipDemandeur(transmis)).toBe("192.0.2.1");
   });
 
   it("range les requêtes sans en-tête dans un seau commun, jamais hors limite", () => {
-    expect(ipDemandeur(new Request("https://argentier.test/"))).toBe("inconnue");
+    expect(ipDemandeur(new Request("https://kerdaxis.test/"))).toBe("inconnue");
   });
 });
 

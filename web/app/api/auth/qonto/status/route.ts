@@ -10,7 +10,7 @@
 //     un refresh token) ni le moindre appel à Qonto.
 //
 // Les deux derniers champs disent la vérité, même quand elle est désagréable :
-//   - `readOnly: true` — Argentier n'émet que des lectures ; c'est l'allowlist
+//   - `readOnly: true` — Kerdaxis n'émet que des lectures ; c'est l'allowlist
 //     applicative (`lib/mcp/readonly-guard.ts`) qui l'impose, avant chaque
 //     appel réseau. Cette affirmation n'a de valeur que si l'allowlist est le
 //     SEUL chemin vers Qonto : elle l'était à une exception près (le client par
@@ -31,7 +31,7 @@ import { activeProvider } from "@/lib/auth/providers";
 import { lireSession } from "@/lib/auth/session";
 import { getTokenStore } from "@/lib/auth/token-store";
 import { getOrganizationById } from "@/lib/db/tenant";
-import { baseD1SiPresente, bindingsArgentier } from "@/lib/runtime/bindings";
+import { baseD1SiPresente, bindingsKerdaxis } from "@/lib/runtime/bindings";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +56,7 @@ export async function GET(requete: Request): Promise<Response> {
     return sansCache(NextResponse.json({ connected: false, ...enveloppe }));
   }
 
-  const bindings = bindingsArgentier();
+  const bindings = bindingsKerdaxis();
 
   // « Connecté » = il reste un jeu de jetons stocké pour ce locataire. On lit
   // sa présence, jamais son contenu.
@@ -64,7 +64,7 @@ export async function GET(requete: Request): Promise<Response> {
   try {
     connected = (await getTokenStore(bindings).get(session.orgId)) !== null;
   } catch (erreur) {
-    console.error("[argentier][oauth] Lecture du token store impossible :", erreur);
+    console.error("[kerdaxis][oauth] Lecture du token store impossible :", erreur);
   }
 
   let orgName: string | undefined;
@@ -76,7 +76,7 @@ export async function GET(requete: Request): Promise<Response> {
       const organisation = await getOrganizationById(db, session.orgId);
       orgName = organisation?.legalName ?? undefined;
     } catch (erreur) {
-      console.error("[argentier][oauth] Lecture de l'organisation impossible :", erreur);
+      console.error("[kerdaxis][oauth] Lecture de l'organisation impossible :", erreur);
     }
   }
 

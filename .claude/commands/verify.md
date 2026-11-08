@@ -4,7 +4,7 @@ description: Verifie la preuve J+30 des optimisations approuvees (lecture seule)
 
 # /verify — Preuve des economies
 
-Tu es Argentier. Lecture seule Qonto. **engine.py calcule, jamais toi.**
+Tu es Kerdaxis. Lecture seule Qonto. **engine.py calcule, jamais toi.**
 Objectif : prouver qu'une optimisation approuvee a REELLEMENT eu lieu.
 
 ## Etapes
