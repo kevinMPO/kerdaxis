@@ -63,9 +63,8 @@ opaque, et `/api/auth/qonto/revoke` débranche tout.
 | `lib/db/tenant.ts` · `db/0001_init.sql` | Socle multi-locataire D1 : organisations, décisions, journal d'audit. |
 | `lib/llm/holo.ts` | Client de la Models API de H Company : le seul LLM appelé par l'app. |
 | `lib/categorize.ts` | Catégorisation H Company Holo + fallback règles. |
-| `lib/engine/core.ts` | Moteur déterministe : natures, run-rate, pôles, score, runway, leviers (observés ou en attente de prix), anomalies. `ENGINE_VERSION`. |
+| `lib/engine/core.ts` | Moteur déterministe : natures, run-rate, pôles, score, runway, leviers (observés ou en attente de prix), anomalies. |
 | `lib/engine/pricing.ts` | Prix sourcés → économie : postes déduits du montant payé, puis mensuel − coût de l'offre. Sinon `unverified` + raison. |
-| `lib/engine/api.ts` | API moteur publique `/api/v1/engine` (Bearer, Zod strict). |
 | `lib/benchmark.ts` | Benchmark « vérifier les prix » : Linkup (tarifs du fournisseur + concurrents), extraction Holo, repli web-scraper. |
 | `lib/benchmark-scraper.ts` | Repli : agent H `h/web-scraper-flash` sur la page tarifs officielle (domaine du marchand, euros uniquement). |
 | `lib/benchmark-cache.ts` · `db/0003_market_benchmarks.sql` | Cache D1 30 jours des benchmarks vérifiés (web public, partagé entre organisations). |

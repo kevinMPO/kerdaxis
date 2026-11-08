@@ -36,18 +36,11 @@ import type {
 import { classifyEI, type MerchantInput } from "@/lib/categorize";
 import { isMarketPriced } from "./pricing";
 
-/**
- * Version du contrat de calcul. Exposée par l'API moteur (/api/v1/engine) et
- * jointe à chaque réponse : un client peut détecter qu'une règle a changé.
- * À incrémenter dès qu'une règle métier modifie un chiffre produit.
- */
-export const ENGINE_VERSION = "2.0.0";
-
 const DAY = 86_400_000;
 const DAYS_PER_MONTH = 30;
 const MONTHS_PER_YEAR = 12;
 
-// Règles métier chiffrées, alignées sur engine.py (qui fait foi).
+// Règles métier chiffrées.
 /** Intervalle médian (jours) entre deux prélèvements pour une cadence mensuelle. */
 const MONTHLY_CADENCE_MIN_DAYS = 20;
 const MONTHLY_CADENCE_MAX_DAYS = 45;
@@ -427,8 +420,7 @@ export function build(input: BuildInput): AnalyzeResult {
   }
 
   // Économie ANNUELLE par levier = mensuel × 12, calculée PAR LE MOTEUR (jamais
-  // par un client / un LLM). Un consommateur — l'API, Claude Tag — reprend ce
-  // chiffre verbatim au lieu de multiplier lui-même (règle #2).
+  // par l'interface ni par un LLM) : l'écran reprend ce chiffre verbatim (règle #2).
   for (const l of levers) l.savingYearly = l.saving * MONTHS_PER_YEAR;
 
   // --- score /100 : grille transparente ------------------------------------
@@ -493,8 +485,7 @@ export function build(input: BuildInput): AnalyzeResult {
   const flux = detectFlux(merchantDebits, aggs, verdictOf, monthCutoff);
 
   // --- TVA déductible perdue : dépenses PRO sans justificatif ---------------
-  // PÉRIMÈTRE ALIGNÉ SUR engine.py (règle #2, engine.py fait foi) : on ne compte
-  // QUE les marchands classés PRO par mots-clés (classifyEI, whitelist
+  // On ne compte QUE les marchands classés PRO par mots-clés (classifyEI, whitelist
   // PRO_KEYWORDS) — jamais A-CLARIFIER, structurel, voyage… On agrège les
   // transactions où un justificatif était requis mais absent. TVA = base × 20/120.
   // Levier fiscal indicatif : à confirmer avec un comptable.

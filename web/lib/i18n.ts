@@ -11,7 +11,6 @@ export const LANGS: Lang[] = ["fr", "en", "de", "es", "it"];
 /** Nom affiché du modèle qui a catégorisé, `null` quand ce sont les règles. */
 export function categorizerName(categorizer: Categorizer | undefined): string | null {
   if (categorizer === "hcompany") return "H Company Holo";
-  if (categorizer === "claude") return "Claude";
   return null;
 }
 

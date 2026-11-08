@@ -1,5 +1,5 @@
 # Déploie l'app (web/ → Worker de l’app, app.kerdaxis.com) quand la CI de main est verte,
-# pour exactement le commit testé. Garde-fous : CI verte (moteur, types, tests, build, sécurité),
+# pour exactement le commit testé. Garde-fous : CI verte (types, tests, build, sécurité),
 # build Cloudflare OK, et tous les secrets runtime présents sur le Worker — sinon on n'écrase pas
 # la production. Prérequis GitHub : secret CLOUDFLARE_API_TOKEN.
 name: Deploy web (app.kerdaxis.com)

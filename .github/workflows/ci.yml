@@ -1,7 +1,6 @@
 # ---------------------------------------------------------------------------
-# CI Kerdaxis — trois portes indépendantes, toutes bloquantes :
-#   moteur    : le calcul déterministe reste juste (règle 2)
-#   web       : types, tests unitaires, build de production
+# CI Kerdaxis — deux portes indépendantes, toutes bloquantes :
+#   web       : types, tests unitaires (dont le moteur déterministe), build de production
 #   securite  : aucun secret ni donnée bancaire commité (règles 1 et 3)
 # ---------------------------------------------------------------------------
 name: CI
@@ -21,24 +20,6 @@ permissions:
   contents: read
 
 jobs:
-  moteur:
-    name: Moteur déterministe (Python)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Tests du moteur
-        run: python3 -m unittest discover -s tests -v
-
-      - name: Rendu sur l'échantillon de démonstration
-        # Garde-fou de non-régression : le moteur doit tourner de bout en bout
-        # sur le jeu d'exemple sans lever d'exception.
-        run: python3 engine.py tests/fixtures/exemple-demo.json > /dev/null
-
   web:
     name: Application web (Next.js)
     runs-on: ubuntu-latest
