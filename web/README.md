@@ -70,7 +70,8 @@ npm run dev                  # http://localhost:3000
 **Avec les clés** (`.env.local`), elle analyse un vrai compte :
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-...          # sans : catégorisation par règles (mots-clés)
+HAI_API_KEY=...                      # catégorisation par H Company Holo ; sans : règles (mots-clés)
+ANTHROPIC_API_KEY=sk-ant-...          # lettres + repli du benchmark
 
 # Connexion OAuth du visiteur — le SEUL chemin vers un vrai compte
 QONTO_OAUTH_PROVIDER=mcp-proxy        # ou direct-readonly, le jour du client dédié
@@ -166,8 +167,12 @@ npm run build
   (résiliation / renégociation / consolidation selon l'action), éditable, avec bouton *Copier*.
   Kerdaxis prépare, **tu envoies** : aucun envoi automatique, `[crochets]` à compléter.
 
-## Modèle Claude
+## Modèle de catégorisation
 
-La catégorisation utilise `claude-sonnet-5` (configurable via `ARGENTIER_MODEL`),
-conformément au PRD §6. Structured outputs (`output_config.format`) garantissent un
-JSON valide ; le LLM ne renvoie que des étiquettes, jamais des euros.
+La catégorisation des marchands utilise un modèle Holo de H Company (`holo4-27b` par
+défaut, configurable via `HAI_CATEGORIZE_MODEL`) par la Models API de H, avec la même
+clé `HAI_API_KEY` que l'agent. Un schéma JSON (`response_format: json_schema`) contraint
+la sortie, puis Zod la revalide ; le LLM ne renvoie que des étiquettes, jamais des euros.
+Sans clé ou en cas d'échec, les règles par mots-clés prennent le relais.
+
+Les lettres et le repli du benchmark utilisent toujours Claude (`ARGENTIER_MODEL`).
