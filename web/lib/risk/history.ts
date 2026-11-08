@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // Historique des analyses — mémoire de l'entreprise.
 //
-// Persiste chaque score dans LibSQL (même base que la mémoire Mastra) : permet
+// Persiste chaque score dans LibSQL (fichier risk.db, ou RISK_DB_URL) : permet
 // "cette société avait 15.8 lors de la dernière analyse" (§16) et pose le socle
 // de la surveillance périodique (§17).
 //

@@ -55,7 +55,7 @@ export interface BenchResult {
   sources: { title: string; url: string; date: string }[];
   bestSaving: number;
   bestAlternative: string | null;
-  provider?: "linkup" | "claude";
+  provider?: "linkup";
 }
 
 interface LetterSource {

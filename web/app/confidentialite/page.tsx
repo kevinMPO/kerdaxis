@@ -221,8 +221,8 @@ export default function Confidentialite() {
           de données. La base est en région <strong>Europe de l’Ouest</strong>.
         </li>
         <li>
-          <strong>Anthropic</strong> — classement des dépenses et rédaction des
-          courriers.
+          <strong>H Company</strong> — classement des dépenses, rédaction des
+          courriers et agent de navigation pour les résiliations approuvées.
         </li>
         <li>
           <strong>Linkup</strong> — recherche des prix publics du marché.
@@ -235,7 +235,7 @@ export default function Confidentialite() {
       <div className="dl-note">
         <p>
           <strong>Ce qui sort vers ces prestataires est délibérément pauvre.</strong>{" "}
-          Vers Anthropic et Linkup, seuls le <strong>nom du marchand</strong> et
+          Vers H Company et Linkup, seuls le <strong>nom du marchand</strong> et
           la <strong>catégorie</strong> sont transmis. Ni IBAN, ni identifiant de
           transaction, ni numéro de compte, ni solde, ni donnée nominative. Un
           filtre s’exécute <strong>avant chaque envoi</strong> et interrompt
@@ -246,11 +246,11 @@ export default function Confidentialite() {
 
       <h3>Transferts hors Union européenne</h3>
       <p>
-        Anthropic et ElevenLabs sont établis aux <strong>États-Unis</strong>.
-        Ces transferts s’appuient sur les{" "}
-        <strong>clauses contractuelles types</strong> de la Commission
-        européenne. S’agissant d’Anthropic et de Linkup, le contenu transmis ne
-        comporte, par construction, aucune donnée personnelle identifiante.
+        ElevenLabs est établi aux <strong>États-Unis</strong>. Ce transfert
+        s’appuie sur les <strong>clauses contractuelles types</strong> de la
+        Commission européenne. H Company et Linkup sont établis en France ; le
+        contenu qui leur est transmis ne comporte, par construction, aucune
+        donnée personnelle identifiante.
       </p>
 
       <h3>Deux appels tiers depuis votre navigateur</h3>

@@ -134,12 +134,12 @@ flowchart TB
     subgraph IN["Read and research · zero PII out"]
       direction LR
       Q[("Bank account<br/>read-only · e.g. Qonto")]
-      AN["LLM<br/>labels merchants · e.g. H Company Holo"]
+      AN["LLM · H Company Holo<br/>labels · letters · prices · risk text"]
       LK["Linkup"]
       GOV["Public company registries<br/>e.g. BODACC"]
     end
 
-    subgraph APP["Kerdaxis app · Next.js 15 · web/"]
+    subgraph APP["Kerdaxis app · Next.js 15 on Cloudflare Workers · web/"]
       LBL["Categorize<br/>LLM returns labels only<br/>rules as fallback"]
       BM["Benchmark<br/>source + date or dropped"]
       RISK["Supplier risk agent<br/>LLM explains · engine scores"]
@@ -164,9 +164,11 @@ flowchart TB
     AN <-->|merchant + category| LBL
     LBL -->|nature · motif · action| ENG
     LK <-->|merchant + category only| BM
+    AN <-->|public price text| BM
     BM -->|sourced prices| ENG
     LK --> RISK
     GOV --> RISK
+    AN <-->|signals · explanation| RISK
     ENG --> AP
     U -->|approve| AP
     AP --> EX
@@ -204,7 +206,7 @@ flowchart LR
 | Piece | Stack | Where it runs |
 |---|---|---|
 | Site, `kerdaxis.com` | Static HTML, EN/FR, the film | Cloudflare Worker, assets only (`site/`) |
-| App, `app.kerdaxis.com` | Next.js 15, React 19, TypeScript | Demo machine, exposed through a Cloudflare Tunnel (`web/`) |
+| App, `app.kerdaxis.com` | Next.js 15, React 19, TypeScript, built with OpenNext. D1 for executions, accounts, trial emails and the access log; KV for OAuth tokens | Cloudflare Workers (`web/`, `npm run cf:deploy`) |
 | Demo supplier portal | TypeScript Worker, server-rendered HTML, SQLite Durable Object | `portal.kerdaxis.com` (`portal/`) |
 | Agent | H Company Agents API (`agp.eu.hcompany.ai/api/v2`) | H Company cloud |
 | Voice | Gladia live STT (`@gladiaio/sdk`). The server opens the session, so the key never reaches the browser. | Browser and app server |
@@ -232,10 +234,14 @@ The H Company agent runs in H's cloud browser, so it can only reach a **public**
 at `https://portal.kerdaxis.com` or at your own deployment (`cd portal && npx wrangler deploy`). From
 `localhost` the app is open without login. From the internet it requires one of the access levels above.
 
-To expose the app the way the demo does:
+Locally, without the Cloudflare bindings, executions live in process memory and accounts and trial emails in
+JSON files under `web/data/` (gitignored).
+
+To deploy the app the way `app.kerdaxis.com` runs (Cloudflare Workers, D1 and KV bound in `web/wrangler.jsonc`;
+secrets set with `npx wrangler secret put`):
 
 ```bash
-cloudflared tunnel --config ~/.cloudflared/kerdaxis-app.yml run   # app.kerdaxis.com → localhost:3001
+cd web && npm run cf:deploy
 ```
 
 `next dev` reads `.env.local` once at start. Restart it after changing a key, because the middleware keeps the old values.
@@ -330,8 +336,6 @@ The tests cover the gate in both directions: a replay never confirms without the
 
 This is a hackathon build. Here is what that means today:
 
-- **The app runs on the demo laptop**, exposed through a Cloudflare Tunnel. If the laptop sleeps, `app.kerdaxis.com` is down. The site and the portal are on Cloudflare and stay up.
-- **Storage is local.** Executions live in process memory, and accounts and trial emails are JSON files in `web/data/`. The target is Cloudflare D1, with the interface already in `web/lib/db/tenant.ts`.
 - **Two suppliers.** Nuvio (our portal) and Lumen (Stripe's real portal, test mode). The research layer finds the path for any supplier, but sites that need the customer to sign in still need a login hand-off, which is not built yet.
 - **One agent at a time.** Our H Company account only moves one agent at a time, so Kerdaxis refuses a second run while one is active (`agent_deja_actif`). Do not run `agent:runs` while someone uses the interface.
 - **Watchdog on unknown sites.** Layer 2 needs the final page's URL. For a researched supplier without a known URL, layers 1 and 3 and the supplier-side proof still apply.

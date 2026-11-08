@@ -75,7 +75,6 @@ beforeEach(() => {
     "QONTO_LOGIN",
     "QONTO_SECRET_KEY",
     "QONTO_IBAN",
-    "ANTHROPIC_API_KEY",
     "HAI_API_KEY",
   ]) {
     envInitial[cle] = process.env[cle];

@@ -3,7 +3,7 @@
 // /api/voice).
 //
 // Le problème qu'elle ferme : ces trois routes déclenchent des appels facturés
-// (Linkup, Anthropic, ElevenLabs) et sont ouvertes au public — la page /demo
+// (Linkup, H Company, ElevenLabs) et sont ouvertes au public — la page /demo
 // doit rester utilisable par un visiteur qui n'a JAMAIS connecté Qonto. Exiger
 // une session casserait la démo, donc la porte reste ouverte ; ce module se
 // contente d'en border le débit. Sans lui, une boucle `curl` anonyme vide le
@@ -69,17 +69,17 @@ export const PLAFONDS: Readonly<Record<string, readonly Fenetre[]>> = Object.fre
     { max: 3, secondes: 60 },
     { max: 20, secondes: 3600 },
   ]),
-  // Linkup + Anthropic, plusieurs secondes de recherche web par appel.
+  // Linkup + H Company, plusieurs secondes de recherche web par appel.
   benchmark: Object.freeze([
     { max: 5, secondes: 60 },
     { max: 40, secondes: 3600 },
   ]),
-  // Anthropic seul, réponse courte : la plus tolérante des trois.
+  // H Company seul, réponse courte : la plus tolérante des trois.
   letter: Object.freeze([
     { max: 8, secondes: 60 },
     { max: 60, secondes: 3600 },
   ]),
-  // CompanyRiskAgent : plusieurs recherches Linkup + 2 appels Anthropic par
+  // CompanyRiskAgent : plusieurs recherches Linkup + 2 appels H Company par
   // analyse d'entreprise — la plus lourde, donc serrée.
   risk: Object.freeze([
     { max: 3, secondes: 60 },

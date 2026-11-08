@@ -435,11 +435,11 @@ export default function Landing({ onDemo }: { onDemo: () => void }) {
         )}
         <p className="lp-disclaimer">
           {L(lang, {
-            fr: "Données de démonstration — configure Qonto + Anthropic dans .env pour brancher ton vrai compte. Données traitées en Europe, jamais utilisées pour entraîner un modèle. Conseils fiscaux à valider avec ton comptable.",
-            en: "Demo data — set up Qonto + Anthropic in .env to connect your real account. Data processed in Europe, never used to train a model. Tax advice to confirm with your accountant.",
-            de: "Demo-Daten — Qonto + Anthropic in .env einrichten, um dein echtes Konto zu verbinden. Daten in Europa verarbeitet, nie zum Modelltraining genutzt. Steuertipps mit deinem Buchhalter prüfen.",
-            es: "Datos de demostración — configura Qonto + Anthropic en .env para conectar tu cuenta real. Datos tratados en Europa, nunca usados para entrenar un modelo. Consejos fiscales a validar con tu contable.",
-            it: "Dati dimostrativi — configura Qonto + Anthropic in .env per collegare il tuo conto reale. Dati trattati in Europa, mai usati per addestrare un modello. Consigli fiscali da validare con il commercialista.",
+            fr: "Données de démonstration — configure Qonto + H Company dans .env pour brancher ton vrai compte. Données traitées en Europe, jamais utilisées pour entraîner un modèle. Conseils fiscaux à valider avec ton comptable.",
+            en: "Demo data — set up Qonto + H Company in .env to connect your real account. Data processed in Europe, never used to train a model. Tax advice to confirm with your accountant.",
+            de: "Demo-Daten — Qonto + H Company in .env einrichten, um dein echtes Konto zu verbinden. Daten in Europa verarbeitet, nie zum Modelltraining genutzt. Steuertipps mit deinem Buchhalter prüfen.",
+            es: "Datos de demostración — configura Qonto + H Company en .env para conectar tu cuenta real. Datos tratados en Europa, nunca usados para entrenar un modelo. Consejos fiscales a validar con tu contable.",
+            it: "Dati dimostrativi — configura Qonto + H Company in .env per collegare il tuo conto reale. Dati trattati in Europa, mai usati per addestrare un modello. Consigli fiscali da validare con il commercialista.",
           })}
         </p>
         <p className="lp-proto">

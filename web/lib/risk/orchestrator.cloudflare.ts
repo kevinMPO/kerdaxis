@@ -7,6 +7,6 @@
 // une erreur explicite au lieu de faire échouer tout le build.
 // ---------------------------------------------------------------------------
 
-export async function analyzeCompany(_siren: string, _opts?: { orgId?: string }): Promise<never> {
+export async function analyzeCompany(_siren: string, _opts?: unknown): Promise<never> {
   throw new Error("Analyse de risque indisponible sur cette instance (Cloudflare Workers).");
 }

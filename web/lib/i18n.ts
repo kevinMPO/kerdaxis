@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // i18n légère (FR / EN), sans dépendance. Le dictionnaire de l'UI statique +
-// des helpers de formatage. Les textes produits par engine.ts / Claude sont,
+// des helpers de formatage. Les textes produits par engine.ts / Holo sont,
 // eux, renvoyés bilingues (type Localized) ou générés dans la langue demandée.
 // ---------------------------------------------------------------------------
 
@@ -92,7 +92,7 @@ export const UI = {
     exportCsv: "Exporter le plan (CSV)",
     leverHint: "✎ à côté d'un levier = Kerdaxis te prépare le courrier prêt à envoyer. Tu relis, tu envoies.",
     anomTitle: "Flux nouveaux et anomalies",
-    footMock: "Données de démonstration — configure Qonto + Anthropic dans .env pour brancher ton vrai compte. ",
+    footMock: "Données de démonstration — configure Qonto + H Company dans .env pour brancher ton vrai compte. ",
     footReal: (n: number, model: string | null) =>
       `Analyse sur ${n} transactions${model ? ` · catégorisation ${model}` : ""}. `,
     footPrivacy: "Données traitées en Europe, jamais utilisées pour entraîner un modèle. Conseils fiscaux à valider avec ton comptable.",
@@ -107,7 +107,7 @@ export const UI = {
     benchSource: "Sourcer le prix (web)",
     benchRerun: "Relancer",
     benchSearching: "Linkup cherche des alternatives sourcées…",
-    benchVia: (p: string) => `via ${p === "linkup" ? "Linkup" : "la recherche web de Claude"}`,
+    benchVia: (p: string) => `via ${p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ ${s} €/mois d'écart avec ${alt} (calcul engine)`,
     benchSourceLink: (d: string) => `source${d ? ` · ${d}` : ""}`,
     benchInject: "Régénérer la lettre en citant ces prix",
@@ -158,7 +158,7 @@ export const UI = {
     exportCsv: "Export plan (CSV)",
     leverHint: "✎ next to a lever = Kerdaxis drafts the ready-to-send letter. You review, you send.",
     anomTitle: "New flows & anomalies",
-    footMock: "Demo data — set up Qonto + Anthropic in .env to connect your real account. ",
+    footMock: "Demo data — set up Qonto + H Company in .env to connect your real account. ",
     footReal: (n: number, model: string | null) =>
       `Analysis over ${n} transactions${model ? ` · ${model} categorization` : ""}. `,
     footPrivacy: "Data processed in Europe, never used to train a model. Tax advice to be confirmed with your accountant.",
@@ -173,7 +173,7 @@ export const UI = {
     benchSource: "Source the price (web)",
     benchRerun: "Rerun",
     benchSearching: "Linkup is searching for sourced alternatives…",
-    benchVia: (p: string) => `via ${p === "linkup" ? "Linkup" : "Claude web search"}`,
+    benchVia: (p: string) => `via ${p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ €${s}/mo gap vs ${alt} (engine maths)`,
     benchSourceLink: (d: string) => `source${d ? ` · ${d}` : ""}`,
     benchInject: "Regenerate the letter citing these prices",
@@ -224,7 +224,7 @@ export const UI = {
     exportCsv: "Plan exportieren (CSV)",
     leverHint: "✎ neben einem Hebel = Kerdaxis verfasst das versandfertige Schreiben. Du prüfst, du sendest.",
     anomTitle: "Neue Flüsse & Auffälligkeiten",
-    footMock: "Demodaten — richte Qonto + Anthropic in .env ein, um dein echtes Konto zu verbinden. ",
+    footMock: "Demodaten — richte Qonto + H Company in .env ein, um dein echtes Konto zu verbinden. ",
     footReal: (n: number, model: string | null) =>
       `Analyse über ${n} Transaktionen${model ? ` · Kategorisierung durch ${model}` : ""}. `,
     footPrivacy: "Daten werden in Europa verarbeitet und nie zum Training eines Modells verwendet. Steuerhinweise mit deinem Steuerberater abstimmen.",
@@ -239,7 +239,7 @@ export const UI = {
     benchSource: "Preis belegen (Web)",
     benchRerun: "Erneut ausführen",
     benchSearching: "Linkup sucht nach belegten Alternativen…",
-    benchVia: (p: string) => `über ${p === "linkup" ? "Linkup" : "die Websuche von Claude"}`,
+    benchVia: (p: string) => `über ${p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ ${s} €/Monat Differenz zu ${alt} (Engine-Berechnung)`,
     benchSourceLink: (d: string) => `Quelle${d ? ` · ${d}` : ""}`,
     benchInject: "Schreiben mit diesen Preisen neu generieren",
@@ -290,7 +290,7 @@ export const UI = {
     exportCsv: "Exportar el plan (CSV)",
     leverHint: "✎ junto a una palanca = Kerdaxis prepara la carta lista para enviar. Tú revisas, tú envías.",
     anomTitle: "Flujos nuevos y anomalías",
-    footMock: "Datos de demostración — configura Qonto + Anthropic en .env para conectar tu cuenta real. ",
+    footMock: "Datos de demostración — configura Qonto + H Company en .env para conectar tu cuenta real. ",
     footReal: (n: number, model: string | null) =>
       `Análisis sobre ${n} transacciones${model ? ` · categorización con ${model}` : ""}. `,
     footPrivacy: "Datos procesados en Europa, nunca usados para entrenar un modelo. Consejos fiscales a validar con tu asesor.",
@@ -305,7 +305,7 @@ export const UI = {
     benchSource: "Buscar el precio (web)",
     benchRerun: "Reintentar",
     benchSearching: "Linkup busca alternativas con fuente…",
-    benchVia: (p: string) => `vía ${p === "linkup" ? "Linkup" : "la búsqueda web de Claude"}`,
+    benchVia: (p: string) => `vía ${p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ ${s} €/mes de diferencia con ${alt} (cálculo del engine)`,
     benchSourceLink: (d: string) => `fuente${d ? ` · ${d}` : ""}`,
     benchInject: "Regenerar la carta citando estos precios",
@@ -356,7 +356,7 @@ export const UI = {
     exportCsv: "Esporta il piano (CSV)",
     leverHint: "✎ accanto a una leva = Kerdaxis prepara la lettera pronta da inviare. Tu rileggi, tu invii.",
     anomTitle: "Nuovi flussi e anomalie",
-    footMock: "Dati dimostrativi — configura Qonto + Anthropic in .env per collegare il tuo conto reale. ",
+    footMock: "Dati dimostrativi — configura Qonto + H Company in .env per collegare il tuo conto reale. ",
     footReal: (n: number, model: string | null) =>
       `Analisi su ${n} transazioni${model ? ` · categorizzazione ${model}` : ""}. `,
     footPrivacy: "Dati trattati in Europa, mai usati per addestrare un modello. Consigli fiscali da validare con il tuo commercialista.",
@@ -371,7 +371,7 @@ export const UI = {
     benchSource: "Verifica il prezzo (web)",
     benchRerun: "Riprova",
     benchSearching: "Linkup cerca alternative con fonte…",
-    benchVia: (p: string) => `tramite ${p === "linkup" ? "Linkup" : "la ricerca web di Claude"}`,
+    benchVia: (p: string) => `tramite ${p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ ${s} €/mese di scarto con ${alt} (calcolo engine)`,
     benchSourceLink: (d: string) => `fonte${d ? ` · ${d}` : ""}`,
     benchInject: "Rigenera la lettera citando questi prezzi",

@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// POST /api/benchmark — déclenché SUR ACCORD (règle 3). Claude cherche des
-// alternatives moins chères sur le web (sourcé + daté) ; ICI on calcule
+// POST /api/benchmark — déclenché SUR ACCORD (règle 3). Linkup cherche des
+// alternatives moins chères sur le web (sourcé + daté), Holo en extrait les prix ; ICI on calcule
 // l'économie potentielle par soustraction — le LLM ne chiffre jamais l'euro.
 //
 // ACCÈS : ouvert, mais PLAFONNÉ par IP (cf. lib/api/rate-limit.ts). Chaque appel
-// consomme du Linkup et de l'Anthropic facturés. Exiger une session Qonto
+// consomme du Linkup et du H Company facturés. Exiger une session Qonto
 // fermerait le trou plus proprement, mais casserait /demo : la page benchmarke
 // pour un visiteur qui n'a jamais connecté de compte (app/Kerdaxis.tsx,
 // `runBenchmark`). Le plafond par IP garde la démo vivante et borne la facture.

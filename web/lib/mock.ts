@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// Jeu de démonstration — servi par /api/analyze quand ni Qonto ni Anthropic ne
-// sont configurés, et donc EXPOSÉ PUBLIQUEMENT, sans authentification.
+// Jeu de démonstration — servi par /api/analyze quand Qonto n'est pas
+// configuré, et donc EXPOSÉ PUBLIQUEMENT, sans authentification.
 //
 // À ce titre : société FICTIVE, montants FICTIFS. Aucune donnée d'un compte
 // bancaire réel n'a sa place ici — ni raison sociale, ni solde, ni ligne

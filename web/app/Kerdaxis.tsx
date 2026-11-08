@@ -2,9 +2,9 @@
 
 /**
  * Kerdaxis — front d'entrée, bilingue FR / EN.
- * Au montage, il fetch /api/analyze (Qonto → Claude → engine.ts). Tant que la
+ * Au montage, il fetch /api/analyze (Qonto → Holo → engine.ts). Tant que la
  * réponse n'arrive pas — ou si l'API échoue — il affiche les données mock.
- * La langue est persistée (localStorage) et transmise à Claude (lettres, benchmark).
+ * La langue est persistée (localStorage) et transmise à Holo (lettres, benchmark).
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -458,7 +458,7 @@ export default function Kerdaxis() {
     sources: { title: string; url: string; date: string }[];
     bestSaving: number;
     bestAlternative: string | null;
-    provider?: "linkup" | "claude";
+    provider?: "linkup";
   };
 
   const [letterFor, setLetterFor] = useState<Lever | null>(null);

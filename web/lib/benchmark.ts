@@ -1,12 +1,10 @@
 // ---------------------------------------------------------------------------
 // Benchmark web (web app — surface de démo).
 //
-// Ici, Claude pilote l'outil serveur `web_search_20260209` : il choisit les
-// requêtes, lit des sources publiques et renvoie des citations (URL + date).
-//
-// NB : la recherche Linkup « pour de vrai » (protocole MCP) vit dans le SKILL
-// (`mcp__linkup__linkup-search`) — c'est la soumission jugée. Le web app est une
-// vitrine et utilise la recherche web hébergée d'Anthropic.
+// Passe 1, la recherche : Linkup (le même fournisseur que le MCP Linkup du
+// skill) renvoie une réponse synthétisée et ses sources. Passe 2, l'extraction :
+// H Company Holo transforme ce texte public en prix structurés. Sans clé
+// Linkup, aucune recherche : le benchmark reste « non vérifié » (règle 4).
 //
 // Deux règles respectées :
 //   • Zéro PII (règle 3) : on n'envoie QUE le nom du marchand + sa catégorie,
@@ -25,13 +23,14 @@
 // prix. Le LLM ne fournit que de la donnée sourcée.
 // ---------------------------------------------------------------------------
 
-import Anthropic from "@anthropic-ai/sdk";
+import { z } from "zod";
+import { holoChat, holoConfigured } from "@/lib/llm/holo";
 import { assertNoPii, redactForLogs, sanitizeMerchantQuery } from "@/lib/privacy/egress";
 import type { Lang } from "./types";
 import { recordAccess } from "@/lib/privacy/access-log";
 
-const MODEL = process.env.ARGENTIER_MODEL || "claude-sonnet-5";
-const WEB_SEARCH = { type: "web_search_20260209", name: "web_search", max_uses: 5 };
+const EXTRACT_TIMEOUT_MS = 30_000;
+const EXTRACT_MAX_TOKENS = 1500;
 
 export interface BenchSource {
   title: string;
@@ -55,12 +54,8 @@ export interface BenchmarkResult {
   sources: BenchSource[];
   alternatives: BenchAlternative[];
   note?: string;
-  /** Qui a fait la recherche : Linkup (réel) ou la recherche web de Claude. */
-  provider?: "linkup" | "claude";
-}
-
-export function hasAnthropicKey(): boolean {
-  return !!process.env.ANTHROPIC_API_KEY;
+  /** Qui a fait la recherche. */
+  provider?: "linkup";
 }
 
 export function hasLinkupKey(): boolean {
@@ -125,59 +120,6 @@ async function searchLinkup(
   return { summary, sources };
 }
 
-const SYSTEM: Record<Lang, string> = {
-  fr: `Tu es le module de benchmark de Kerdaxis. On te donne UNIQUEMENT le nom d'un
-outil/service et sa catégorie — jamais de données personnelles, et tu n'en réclames pas.
-
-Ta mission : trouver 2 à 3 alternatives moins chères à usage équivalent, avec leur
-PRIX PUBLIC ACTUEL et la date de la source. Utilise la recherche web. Cite tes sources.
-Donne des tarifs officiels (pages pricing, comparateurs récents), pas des estimations.
-Si tu ne trouves pas de prix sourcé et daté, dis-le clairement — n'invente aucun chiffre.
-
-Réponds en français, de façon concise : pour chaque alternative, son nom, le prix
-(en précisant l'unité : /utilisateur/mois, /mois…) et d'où vient l'info.`,
-  en: `You are Kerdaxis's benchmark module. You are given ONLY a tool/service name and its
-category — never any personal data, and you must not ask for any.
-
-Your task: find 2–3 cheaper alternatives at equal usage, with their CURRENT PUBLIC PRICE
-and the source date. Use web search. Cite your sources. Give official pricing (pricing
-pages, recent comparison sites), not estimates. If you cannot find a sourced, dated price,
-say so clearly — invent no figure.
-
-Answer in English, concisely: for each alternative, its name, the price (state the unit:
-/user/month, /month…) and where the information comes from.`,
-  de: `Du bist das Benchmark-Modul von Kerdaxis. Du erhältst AUSSCHLIESSLICH den Namen eines
-Tools/Dienstes und seine Kategorie — nie personenbezogene Daten, und du forderst auch keine an.
-
-Deine Aufgabe: 2 bis 3 günstigere Alternativen mit gleichwertigem Nutzen finden, mit ihrem
-AKTUELLEN ÖFFENTLICHEN PREIS und dem Datum der Quelle. Nutze die Websuche. Zitiere deine Quellen.
-Gib offizielle Preise an (Preisseiten, aktuelle Vergleichsportale), keine Schätzungen. Findest
-du keinen belegten, datierten Preis, sage es klar — erfinde keine Zahl.
-
-Antworte auf Deutsch, prägnant: für jede Alternative den Namen, den Preis (mit Einheit:
-/Nutzer/Monat, /Monat…) und woher die Information stammt.`,
-  es: `Eres el módulo de benchmark de Kerdaxis. Se te da ÚNICAMENTE el nombre de una
-herramienta/servicio y su categoría — nunca datos personales, y no debes pedirlos.
-
-Tu misión: encontrar de 2 a 3 alternativas más baratas de uso equivalente, con su PRECIO
-PÚBLICO ACTUAL y la fecha de la fuente. Usa la búsqueda web. Cita tus fuentes. Da tarifas
-oficiales (páginas de precios, comparadores recientes), no estimaciones. Si no encuentras un
-precio con fuente y fecha, dilo claramente — no inventes ninguna cifra.
-
-Responde en español, de forma concisa: para cada alternativa, su nombre, el precio (indicando
-la unidad: /usuario/mes, /mes…) y de dónde viene la información.`,
-  it: `Sei il modulo di benchmark di Kerdaxis. Ti viene fornito SOLO il nome di uno
-strumento/servizio e la sua categoria — mai dati personali, e non devi chiederne.
-
-Il tuo compito: trovare 2-3 alternative più economiche a uso equivalente, con il loro PREZZO
-PUBBLICO ATTUALE e la data della fonte. Usa la ricerca web. Cita le tue fonti. Fornisci tariffe
-ufficiali (pagine dei prezzi, comparatori recenti), non stime. Se non trovi un prezzo con fonte
-e data, dillo chiaramente — non inventare alcuna cifra.
-
-Rispondi in italiano, in modo conciso: per ogni alternativa, il nome, il prezzo (indicando
-l'unità: /utente/mese, /mese…) e da dove proviene l'informazione.`,
-};
-
 const EXTRACT_SCHEMA = {
   type: "object",
   properties: {
@@ -200,6 +142,18 @@ const EXTRACT_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+/** Ce qui revient du modèle est une donnée externe : revalidé avant usage. */
+const ExtractSchema = z.object({
+  alternatives: z.array(
+    z.object({
+      name: z.string(),
+      monthlyPrice: z.number().nullable(),
+      unit: z.string(),
+      sourceIndex: z.number().int(),
+    }),
+  ),
+});
+
 const NOTE: Record<"noKey" | "webDown" | "noSource" | "noMerchant", Record<Lang, string>> = {
   noMerchant: {
     fr: "Non vérifié — libellé inexploitable après filtrage anti-PII : aucune recherche lancée.",
@@ -209,11 +163,11 @@ const NOTE: Record<"noKey" | "webDown" | "noSource" | "noMerchant", Record<Lang,
     it: "Non verificato — etichetta inutilizzabile dopo il filtro anti-PII: nessuna ricerca avviata.",
   },
   noKey: {
-    fr: "Non vérifié — clé Anthropic absente (benchmark désactivé).",
-    en: "Not verified — Anthropic key missing (benchmark disabled).",
-    de: "Nicht verifiziert — Anthropic-Schlüssel fehlt (Benchmark deaktiviert).",
-    es: "No verificado — falta la clave de Anthropic (benchmark desactivado).",
-    it: "Non verificato — chiave Anthropic assente (benchmark disattivato).",
+    fr: "Non vérifié — clé Linkup absente (benchmark désactivé).",
+    en: "Not verified — Linkup key missing (benchmark disabled).",
+    de: "Nicht verifiziert — Linkup-Schlüssel fehlt (Benchmark deaktiviert).",
+    es: "No verificado — falta la clave de Linkup (benchmark desactivado).",
+    it: "Non verificato — chiave Linkup assente (benchmark disattivato).",
   },
   webDown: {
     fr: "Non vérifié — recherche web indisponible.",
@@ -263,7 +217,7 @@ export async function benchmark(
     alternatives: [],
   };
 
-  if (!hasAnthropicKey()) {
+  if (!hasLinkupKey()) {
     return { ...base, note: NOTE.noKey[lang] };
   }
 
@@ -282,48 +236,12 @@ export async function benchmark(
     return { ...base, note: NOTE.noMerchant[lang] };
   }
 
-  const client = new Anthropic();
-
-  // --- Passe 1 : recherche des prix ----------------------------------------
-  // Linkup (réel) si LINKUP_API_KEY est présent, sinon la recherche web
-  // hébergée de Claude. Le provider est renvoyé pour un affichage honnête.
-  const provider: "linkup" | "claude" = hasLinkupKey() ? "linkup" : "claude";
+  // --- Passe 1 : recherche des prix (Linkup) --------------------------------
+  const provider = "linkup" as const;
   let summary: string;
   let sources: BenchSource[];
   try {
-    if (provider === "linkup") {
-      ({ summary, sources } = await searchLinkup(marchandSortant, categorieSortante, lang));
-    } else {
-      // Marchand + catégorie, sans le montant : ce message pilote une recherche
-      // web dont le modèle choisit lui-même les requêtes. Un montant réel
-      // attaché à un marchand nommé pourrait donc se retrouver dans une
-      // requête exécutée côté serveur (règle 3).
-      const messages = [
-        {
-          role: "user" as const,
-          content:
-            lang === "fr"
-              ? `Outil actuel : "${marchandSortant}" (catégorie : ${categorieSortante}). Trouve des alternatives moins chères à usage équivalent, avec prix public sourcé et daté.`
-              : `Current tool: "${marchandSortant}" (category: ${categorieSortante}). Find cheaper alternatives at equal usage, with a sourced, dated public price.`,
-        },
-      ];
-      assertNoPii(messages, "recherche web Anthropic (passe 1)");
-      void recordAccess({ service: "anthropic", operation: "price search", direction: "sent", sent: `${marchandSortant} · ${categorieSortante}` });
-
-      const search = (await client.messages.create({
-        model: MODEL,
-        max_tokens: 2000,
-        tools: [WEB_SEARCH as unknown as Anthropic.Tool],
-        system: [{ type: "text", text: SYSTEM[lang] }],
-        messages,
-      } as unknown as Anthropic.MessageCreateParamsNonStreaming)) as Anthropic.Message;
-      summary = search.content
-        .filter((b): b is Anthropic.TextBlock => b.type === "text")
-        .map((b) => b.text)
-        .join("\n")
-        .trim();
-      sources = extractSources(search);
-    }
+    ({ summary, sources } = await searchLinkup(marchandSortant, categorieSortante, lang));
   } catch (err) {
     console.error("Benchmark (passe 1) échoué :", err);
     return { ...base, provider, note: NOTE.webDown[lang] };
@@ -334,7 +252,11 @@ export async function benchmark(
   }
 
   // --- Passe 2 : extraction structurée (le prix devient de la donnée) ------
+  // Sans clé H Company, le résumé sourcé reste affiché, sans prix structurés.
   let alternatives: BenchAlternative[] = [];
+  if (!holoConfigured()) {
+    return { merchant, verified: true, summary, sources, alternatives, provider };
+  }
   try {
     const sourceList = sources
       .map((s, i) => `[${i}] ${s.title} — ${s.url} (${s.date || "date n.c."})`)
@@ -349,7 +271,6 @@ export async function benchmark(
     const contenu = redactForLogs(
       `TEXTE :\n${summary}\n\nSOURCES :\n${sourceList}`,
     ) as string;
-    const messagesExtraction = [{ role: "user" as const, content: contenu }];
     const systemeExtraction =
       "Tu extrais des prix depuis un texte de benchmark et une liste de sources numérotées. " +
       "Pour chaque alternative citée, donne le prix mensuel en euros (null si non chiffré), " +
@@ -357,75 +278,35 @@ export async function benchmark(
       `IMPORTANT : ne retiens QUE des produits CONCURRENTS différents. Exclus totalement « ${marchandSortant} » ` +
       "et ses propres formules/paliers de prix (Free, Pro, Business, annuel…) — on cherche à le remplacer, pas à le lister.";
     assertNoPii(
-      { system: systemeExtraction, messages: messagesExtraction },
-      "extraction de prix Anthropic (passe 2)",
+      { system: systemeExtraction, user: contenu },
+      "extraction de prix H Company (passe 2)",
     );
-    void recordAccess({ service: "anthropic", operation: "price extraction", direction: "sent", sent: `public web results about ${marchandSortant}'s alternatives` });
+    void recordAccess({ service: "hcompany", operation: "price extraction", direction: "sent", sent: `public web results about ${marchandSortant}'s alternatives` });
 
-    const extract = (await client.messages.create({
-      model: MODEL,
-      max_tokens: 1500,
-      output_config: { effort: "low", format: { type: "json_schema", schema: EXTRACT_SCHEMA } },
-      system: [{ type: "text", text: systemeExtraction }],
-      messages: messagesExtraction,
-    } as unknown as Anthropic.MessageCreateParamsNonStreaming)) as Anthropic.Message;
-
-    const txt = extract.content.find((b) => b.type === "text");
-    if (txt && txt.type === "text") {
-      const parsed = JSON.parse(txt.text) as {
-        alternatives: Array<{ name: string; monthlyPrice: number | null; unit: string; sourceIndex: number }>;
-      };
-      alternatives = parsed.alternatives
-        .filter((a) => !sameBrand(a.name, merchant))
-        .map((a) => {
+    const brut = await holoChat({
+      system: systemeExtraction,
+      user: contenu,
+      jsonSchema: { name: "price_alternatives", schema: EXTRACT_SCHEMA },
+      maxTokens: EXTRACT_MAX_TOKENS,
+      timeoutMs: EXTRACT_TIMEOUT_MS,
+    });
+    const parsed = ExtractSchema.parse(JSON.parse(brut));
+    alternatives = parsed.alternatives
+      .filter((a) => !sameBrand(a.name, merchant))
+      .map((a) => {
         const src = sources[a.sourceIndex] ?? sources[0];
         return {
           name: a.name,
-          monthlyPrice: typeof a.monthlyPrice === "number" ? a.monthlyPrice : null,
+          monthlyPrice: a.monthlyPrice,
           unit: a.unit || "/mois",
           sourceUrl: src?.url ?? "",
           sourceDate: src?.date ?? "",
         };
       });
-    }
   } catch (err) {
     console.error("Benchmark (passe 2, extraction) échoué :", err);
     // On garde le résumé sourcé même sans extraction structurée.
   }
 
   return { merchant, verified: true, summary, sources, alternatives, provider };
-}
-
-// --- Extraction des sources (URL + date) depuis les blocs web_search -------
-function extractSources(msg: Anthropic.Message): BenchSource[] {
-  const byUrl = new Map<string, BenchSource>();
-
-  for (const block of msg.content as unknown as Array<Record<string, unknown>>) {
-    // Bloc résultat de recherche serveur
-    if (block.type === "web_search_tool_result" && Array.isArray(block.content)) {
-      for (const r of block.content as Array<Record<string, unknown>>) {
-        const url = typeof r.url === "string" ? r.url : "";
-        if (!url) continue;
-        byUrl.set(url, {
-          url,
-          title: typeof r.title === "string" ? r.title : url,
-          date: typeof r.page_age === "string" ? r.page_age : "",
-        });
-      }
-    }
-    // Citations attachées aux blocs de texte
-    if (block.type === "text" && Array.isArray(block.citations)) {
-      for (const c of block.citations as Array<Record<string, unknown>>) {
-        const url = typeof c.url === "string" ? c.url : "";
-        if (!url || byUrl.has(url)) continue;
-        byUrl.set(url, {
-          url,
-          title: typeof c.title === "string" ? c.title : url,
-          date: "",
-        });
-      }
-    }
-  }
-
-  return [...byUrl.values()].slice(0, 6);
 }

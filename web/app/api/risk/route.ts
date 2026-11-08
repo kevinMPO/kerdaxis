@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------
 // POST /api/risk — CompanyRiskAgent : SIREN → score de risque /20 + explication.
 //
-//   Mastra orchestre · Linkup MCP cherche · engine.ts score · Claude explique.
+//   Linkup MCP cherche · engine.ts score · H Company Holo lit et explique.
 //
 // READ-ONLY : aucune action externe, aucune écriture. Le score vient
 // EXCLUSIVEMENT de `computeRisk` (le LLM ne calcule rien). Sans clés
-// Anthropic/Linkup, l'analyse tourne quand même sur identité + finances + BODACC.
+// H Company/Linkup, l'analyse tourne quand même sur identité + finances + BODACC.
 // ---------------------------------------------------------------------------
 
 import { NextResponse } from "next/server";
@@ -16,7 +16,7 @@ import {
 } from "@/lib/api/rate-limit";
 import { analyzeCompany } from "@/lib/risk/orchestrator";
 
-// Mastra + LibSQL sont natifs Node : cette route ne tourne pas sur l'edge.
+// LibSQL (historique) est natif Node : cette route ne tourne pas sur l'edge.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // plusieurs recherches web possibles
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await analyzeCompany(siren, { orgId: "demo" });
+    const result = await analyzeCompany(siren);
     return NextResponse.json(result);
   } catch (err) {
     console.error("/api/risk a échoué", err);
