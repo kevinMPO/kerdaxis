@@ -1,0 +1,33 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0d0d12; font-family: "Plus Jakarta Sans", sans-serif; color: #f4f4f8; }
+    #eye { position: absolute; left: 60px; top: 90px; font-family: "Fira Code", monospace; font-size: 30px; letter-spacing: 0.12em; color: #d4f53c; white-space: nowrap; }
+    #ttl { position: absolute; left: 60px; top: 140px; font-weight: 800; font-size: 68px; letter-spacing: -0.04em; white-space: nowrap; }
+    .card { position: absolute; left: 60px; width: 960px; height: 130px; border-radius: 22px; border: 2px solid #2a2a36; background: #1a1a23; opacity: 0; }
+    .card b { position: absolute; left: 34px; top: 22px; font-weight: 800; font-size: 50px; letter-spacing: -0.03em; white-space: nowrap; }
+    .card span { position: absolute; left: 36px; top: 84px; font-size: 30px; color: #a9a9bb; white-space: nowrap; }
+    .badge { position: absolute; right: 30px; top: 38px; height: 54px; padding: 0 22px; border-radius: 27px; font-family: "Fira Code", monospace; font-size: 30px; line-height: 54px; white-space: nowrap; }
+    .live { background: #d4f53c; color: #0d0d12; }
+    .next { border: 2px solid #3a3a48; color: #a9a9bb; line-height: 50px; }
+    #k1 { top: 270px; } #k2 { top: 420px; } #k3 { top: 570px; }
+    #k4 { top: 740px; border-color: #d4f53c; background: #1f2410; } #k4 b { color: #d4f53c; }
+  </style>
+  <div id="root" data-composition-id="connect" data-width="1080" data-height="1080">
+    <div id="eye">CONNECTS TO YOUR TOOLS</div>
+    <div id="ttl">Bank and books, read-only.</div>
+    <div id="k1" class="card"><b>Qonto</b><span>bank · read-only via MCP</span><div class="badge live">LIVE</div></div>
+    <div id="k2" class="card"><b>Sage · Pennylane</b><span>accounting</span><div class="badge next">NEXT</div></div>
+    <div id="k3" class="card"><b>Has an API?</b><span>connected through it</span></div>
+    <div id="k4" class="card"><b>No API? Computer use.</b><span>an H Company agent reads the interface</span></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 27.6. Voice 8 at 27.9: "Qonto" 1.29, "Sage" 2.29, "Pennylane" 2.78, "API" 4.74, "computer use" 5.19.
+      tl.fromTo(["#eye", "#ttl"], { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out", stagger: 0.06 }, 0.1);
+      [["#k1", 1.29], ["#k2", 2.29], ["#k3", 4.6], ["#k4", 5.19]].forEach(([k, t]) => tl.fromTo(k, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.3, ease: "expo.out" }, t));
+      tl.set({}, {}, 6.3);
+      window.__timelines["connect"] = tl;
+    })();
+  </script>
+</template>

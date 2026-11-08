@@ -1,0 +1,86 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0d0d12; font-family: "Plus Jakarta Sans", sans-serif; }
+    #cam { position: absolute; left: 0; top: 0; width: 2880px; height: 1800px; transform-origin: 0 0; }
+    #cam img { position: absolute; left: 0; top: 0; width: 2880px; height: 1800px; opacity: 0; }
+    .box { position: absolute; border: 8px solid #d4f53c; border-radius: 22px; opacity: 0; box-shadow: 0 0 0 4000px rgba(13, 13, 18, 0.45); }
+    #bx-head { left: 528px; top: 180px; width: 1500px; height: 220px; box-shadow: none; }
+    #bx-btn { left: 2396px; top: 870px; width: 386px; height: 102px; }
+    #bx-log { left: 2316px; top: 1480px; width: 500px; height: 186px; }
+    #bx-num { left: 1316px; top: 848px; width: 336px; height: 92px; box-shadow: none; }
+    #bx-foot { left: 2140px; top: 1696px; width: 420px; height: 84px; box-shadow: none; }
+    .chip { position: absolute; left: 36px; top: 36px; height: 58px; padding: 0 22px; border-radius: 29px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 28px; line-height: 58px; white-space: nowrap; opacity: 0; }
+    .chip i { display: inline-block; width: 12px; height: 12px; margin-right: 10px; border-radius: 6px; background: #d4f53c; vertical-align: 2px; }
+    .chip.rec i { background: #ef4444; }
+    #you { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .cur-svg { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .pill { position: absolute; left: 56px; top: 56px; height: 46px; padding: 0 18px; border-radius: 23px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 28px; line-height: 46px; white-space: nowrap; border: 2px solid #f4f4f8; }
+  </style>
+  <div id="root" data-composition-id="app" data-width="1080" data-height="1080">
+    <div id="cam">
+      <img id="i-dash" src="assets/app/dash.png" alt="Kerdaxis app, Today: You can recover 156 € a year (demo data)" />
+      <img id="i-acc" src="assets/app/s012.png" alt="Kerdaxis Cancellations: the H Company agent on the supplier's portal, account page" />
+      <img id="i-bil" src="assets/app/s020.png" alt="Kerdaxis Cancellations: agent on the billing page" />
+      <img id="i-rea" src="assets/app/s030.png" alt="Kerdaxis Cancellations: agent on the cancellation reason page" />
+      <img id="i-off" src="assets/app/s037.png" alt="Kerdaxis Cancellations: agent on the retention offer" />
+      <img id="i-ign" src="assets/app/s041.png" alt="Kerdaxis agent log: retention offer with a hidden note, ignored, clicked No thanks" />
+      <img id="i-cfm" src="assets/app/s043.png" alt="Kerdaxis Cancellations: final confirmation page reached" />
+      <img id="i-wait" src="assets/app/s044b-before-click.png" alt="Kerdaxis: the agent is waiting at Confirm cancellation, Give the green light or Refuse" />
+      <img id="i-go1" src="assets/app/s046.png" alt="Kerdaxis: agent resumes after the green light" />
+      <img id="i-go2" src="assets/app/s052.png" alt="Kerdaxis: agent ticks the box and confirms" />
+      <img id="i-done" src="assets/app/z3.png" alt="Kerdaxis: Cancellation confirmed by the supplier, NUV-RW3L2Y, 10 steps, $0.027 of agent" />
+      <div id="bx-head" class="box" data-layout-allow-overlap></div>
+      <div id="bx-btn" class="box" data-layout-allow-overlap></div>
+      <div id="bx-log" class="box" data-layout-allow-overlap></div>
+      <div id="bx-num" class="box" data-layout-allow-overlap></div>
+      <div id="bx-foot" class="box" data-layout-allow-overlap></div>
+    </div>
+    <div id="c1" class="chip"><i></i>app.kerdaxis.com · demo data</div>
+    <div id="c2" class="chip rec"><i></i>Replay of the real recorded H Company session</div>
+    <div id="c3" class="chip"><i></i>The irreversible step</div>
+    <div id="you" data-layout-allow-occlusion data-layout-allow-overflow data-layout-allow-overlap><svg viewBox="0 0 26 37" class="cur-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#F4F4F8" stroke="#0D0D12" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="pill">You</div></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 2.9. Real captures of app.kerdaxis.com (retina 2880x1800), a camera moving across them.
+      const L = (abs) => +(abs - 2.9).toFixed(3);
+      const cam = (k, x, y) => ({ scale: k, x, y });
+      const DASH = cam(0.375, 0, 200), HEAD = cam(0.7, -351, 164), ROWS = cam(0.7, -351, -335), BTN = cam(0.5, -330, 30);
+      const WORK = cam(0.6, -618, -156), SCREEN = cam(0.95, -961, -630), LOG = cam(1.0, -1800, -936), CARD = cam(0.95, -961, -486), FOOT = cam(0.9, -1512, -540);
+      const frame = (id, abs) => { tl.set("#cam img", { opacity: 0 }, L(abs)); tl.set(id, { opacity: 1 }, L(abs)); };
+      const chip = (id, a, b) => { tl.fromTo(id, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.25 }, L(a)); tl.to(id, { opacity: 0, duration: 0.2 }, L(b)); };
+      const box = (id, a, b) => { tl.fromTo(id, { opacity: 0, scale: 1.06, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.25, ease: "expo.out" }, L(a)); if (b) tl.to(id, { opacity: 0, duration: 0.2 }, L(b)); };
+      const click = (abs) => { tl.to("#you", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.07 }, L(abs)); tl.to("#you", { scale: 1, duration: 0.12 }, L(abs) + 0.07); };
+      // Today: the real dashboard, then the headline, then what needs you, then "Replay the real session"
+      frame("#i-dash", 2.9); gsap.set("#cam", DASH); chip("#c1", 3.0, 8.85);
+      tl.to("#cam", { ...HEAD, duration: 0.8, ease: "power3.inOut" }, L(3.3)); box("#bx-head", 4.0, 5.5);
+      tl.to("#cam", { ...ROWS, duration: 0.8, ease: "power3.inOut" }, L(5.4));
+      tl.to("#cam", { ...BTN, duration: 0.6, ease: "power3.inOut" }, L(6.5)); box("#bx-btn", 6.95, 8.85);
+      gsap.set("#you", { x: 1120, y: 1150 });
+      tl.to("#you", { x: 960, y: 486, duration: 0.6, ease: "power3.out" }, L(6.7)); click(7.45);
+      tl.to("#you", { opacity: 0, duration: 0.2 }, L(8.6));
+      // Cancellations: the agent at work on the supplier's portal, its log filling up
+      frame("#i-acc", 8.9); tl.set("#cam", WORK, L(8.9)); chip("#c2", 9.0, 18.3);
+      frame("#i-bil", 11.4); frame("#i-rea", 12.2);
+      frame("#i-off", 13.0); tl.to("#cam", { ...SCREEN, duration: 0.6, ease: "power3.inOut" }, L(13.0));
+      frame("#i-ign", 14.3); tl.to("#cam", { ...LOG, duration: 0.6, ease: "power3.inOut" }, L(14.2)); box("#bx-log", 14.82, 16.2);
+      frame("#i-cfm", 16.3); tl.set("#cam", SCREEN, L(16.3));
+      // The stop: the lime card, Give the green light / Refuse; the human click on "green light"
+      frame("#i-wait", 18.45); tl.set("#cam", CARD, L(18.45)); chip("#c3", 18.5, 21.0);
+      tl.fromTo("#cam", { ...CARD }, { scale: 0.97, x: -985, y: -500, duration: 2.4, ease: "none" }, L(18.46));
+      tl.set("#you", { opacity: 1, x: 1100, y: 1150 }, L(19.3));
+      tl.to("#you", { x: 300, y: 500, duration: 0.8, ease: "power3.out" }, L(19.6)); click(20.92);
+      tl.to("#you", { opacity: 0, duration: 0.2 }, L(21.15));
+      frame("#i-go1", 21.1); tl.set("#cam", WORK, L(21.1)); frame("#i-go2", 21.65);
+      // Confirmed by the supplier, with its own number; then 10 steps, $0.027 of agent
+      frame("#i-done", 22.2); tl.set("#cam", CARD, L(22.2)); box("#bx-num", 24.1, 24.75);
+      tl.to("#cam", { ...FOOT, duration: 0.6, ease: "power3.inOut" }, L(24.7)); box("#bx-foot", 25.3);
+      tl.to("#bx-foot", { scale: 1.06, duration: 0.18, yoyo: true, repeat: 1, transformOrigin: "50% 50%" }, L(26.07));
+      tl.set({}, {}, 24.7);
+      window.__timelines["app"] = tl;
+    })();
+  </script>
+</template>

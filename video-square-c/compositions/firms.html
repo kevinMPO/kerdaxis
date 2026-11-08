@@ -1,0 +1,28 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0d0d12; font-family: "Plus Jakarta Sans", sans-serif; color: #f4f4f8; }
+    #eye { position: absolute; left: 70px; top: 200px; font-family: "Fira Code", monospace; font-size: 32px; letter-spacing: 0.12em; color: #d4f53c; white-space: nowrap; }
+    .ln { position: absolute; left: 70px; font-weight: 800; font-size: 104px; line-height: 1; letter-spacing: -0.05em; white-space: nowrap; opacity: 0; }
+    #l1 { top: 300px; } #l2 { top: 430px; } #l3 { top: 560px; }
+    #l3 em { font-style: normal; color: #0d0d12; background: #d4f53c; padding: 0 12px; }
+    #foot { position: absolute; left: 74px; top: 760px; font-size: 38px; color: #a9a9bb; white-space: nowrap; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="firms" data-width="1080" data-height="1080">
+    <div id="eye">FOR ACCOUNTING FIRMS</div>
+    <div id="l1" class="ln">Your brand.</div>
+    <div id="l2" class="ln">Your clients.</div>
+    <div id="l3" class="ln">Their <em>AI CFO.</em></div>
+    <div id="foot">Services as Software · kerdaxis.com/partners</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 33.9. Voice 9 at 34.1: "firms" 0.78, "every client" 1.84, "own brand" 3.18.
+      tl.fromTo("#eye", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 0.1);
+      [["#l1", 0.3], ["#l2", 1.5], ["#l3", 2.7]].forEach(([l, t]) => tl.fromTo(l, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, t));
+      tl.fromTo("#foot", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.2);
+      tl.set({}, {}, 3.9);
+      window.__timelines["firms"] = tl;
+    })();
+  </script>
+</template>
