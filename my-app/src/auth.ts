@@ -18,7 +18,7 @@ interface Env {
   RESEND_API_KEY?: string;
   /** Expéditeur, ex. « Kerdaxis <noreply@kerdaxis.com> ». Défaut : bac à sable Resend. */
   RESEND_FROM?: string;
-  /** Base publique pour le lien de confirmation. Défaut : www.getargentier.com. */
+  /** Base publique pour le lien de confirmation (page /verify de l'app). Défaut : DEFAULT_APP_BASE_URL. */
   APP_BASE_URL?: string;
 }
 
@@ -30,6 +30,11 @@ interface Env {
 const ITERATIONS = 100_000;
 const SESSION_TTL = 60 * 60 * 24 * 30; // 30 jours
 const VERIFY_TTL = 60 * 60 * 24; // lien de confirmation valable 24 h
+
+const DEFAULT_APP_BASE_URL = "https://app.kerdaxis.com";
+/** Bac à sable Resend : n'envoie qu'à l'adresse du compte Resend. */
+const DEFAULT_RESEND_FROM = "Kerdaxis <onboarding@resend.dev>";
+const RESEND_EMAILS_URL = "https://api.resend.com/emails";
 
 const CORS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -146,9 +151,9 @@ async function sendVerificationEmail(
   token: string,
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) return false;
-  const base = (env.APP_BASE_URL || "https://www.getargentier.com").replace(/\/$/, "");
+  const base = (env.APP_BASE_URL || DEFAULT_APP_BASE_URL).replace(/\/$/, "");
   const link = `${base}/verify?token=${token}`;
-  const from = env.RESEND_FROM || "Kerdaxis <onboarding@resend.dev>";
+  const from = env.RESEND_FROM || DEFAULT_RESEND_FROM;
   const nom = escapeHtml(prenom || "");
   const html = `<!doctype html><html><body style="margin:0;background:#111110;font-family:Inter,Arial,sans-serif;color:#fff;padding:32px">
     <div style="max-width:480px;margin:0 auto;background:#1b1b19;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:32px">
@@ -158,7 +163,7 @@ async function sendVerificationEmail(
       <p style="color:#7d7b76;font-size:12px;line-height:1.6;margin:24px 0 0">Ou copie ce lien : ${link}<br/>Ce lien expire dans 24 h. Si tu n'es pas à l'origine de cette inscription, ignore cet email.</p>
     </div></body></html>`;
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await fetch(RESEND_EMAILS_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.RESEND_API_KEY}`,
