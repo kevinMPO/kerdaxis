@@ -111,6 +111,8 @@ export interface Execution {
   sessionStartedAt?: string | null;
   sessionAttempts?: number;
   sessionActed?: boolean;
+  /** La pause devant la confirmation finale a échoué au moins une fois (signalé une seule fois au journal). */
+  pauseFailed?: boolean;
 }
 
 interface Db {
