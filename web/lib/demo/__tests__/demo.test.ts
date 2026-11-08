@@ -7,11 +7,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { __resetDemoCacheForTests, analyzeDemo } from "@/lib/demo/analysis";
-import { DEMO_LABELS, DEMO_WINDOW_DAYS, demoTransactions } from "@/lib/demo/transactions";
+import { analyzeDemo } from "@/lib/demo/analysis";
+import { DEMO_WINDOW_DAYS, demoTransactions } from "@/lib/demo/transactions";
 
 const TODAY = new Date("2026-11-08T10:00:00Z");
-const HOLO_URL = "https://api.hcompany.ai/v1/chat/completions";
 const ENV_KEYS = ["HAI_API_KEY", "HAI_MODELS_BASE_URL", "HAI_LLM_MODEL", "HAI_CATEGORIZE_MODEL"] as const;
 /** Identité réelle du fondateur : interdite dans le code servi publiquement. */
 const FORBIDDEN_IDENTITIES = [/mamforma/i];
@@ -20,7 +19,6 @@ const envBefore: Record<string, string | undefined> = {};
 let fetchBefore: typeof fetch;
 
 beforeEach(() => {
-  __resetDemoCacheForTests();
   for (const key of ENV_KEYS) {
     envBefore[key] = process.env[key];
     delete process.env[key];
@@ -80,33 +78,14 @@ describe("demo built by the real pipeline", () => {
     expect(result.tvaPerdue?.transactions).toBeGreaterThan(0);
   });
 
-  it("should never send the fictional suppliers to the model", async () => {
+  it("should answer without calling Holo, even with a key configured", async () => {
     process.env.HAI_API_KEY = "hai-test-key";
-    const bodies: string[] = [];
-    globalThis.fetch = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
-      expect(String(url)).toBe(HOLO_URL);
-      bodies.push(String(init?.body ?? ""));
-      const content = JSON.stringify({ verdicts: [] });
-      return new Response(JSON.stringify({ choices: [{ message: { role: "assistant", content } }] }), { status: 200 });
-    }) as unknown as typeof fetch;
+    const network = vi.fn();
+    globalThis.fetch = network as unknown as typeof fetch;
 
-    await analyzeDemo(TODAY);
+    const result = await analyzeDemo(TODAY);
 
-    expect(bodies).toHaveLength(1);
-    for (const label of DEMO_LABELS) expect(bodies[0]).not.toContain(`"${label.name}"`);
-  });
-
-  it("should categorize once per day for every visitor", async () => {
-    process.env.HAI_API_KEY = "hai-test-key";
-    const holo = vi.fn(async () => {
-      const content = JSON.stringify({ verdicts: [] });
-      return new Response(JSON.stringify({ choices: [{ message: { role: "assistant", content } }] }), { status: 200 });
-    });
-    globalThis.fetch = holo as unknown as typeof fetch;
-
-    await Promise.all([analyzeDemo(TODAY), analyzeDemo(TODAY)]);
-    await analyzeDemo(new Date(TODAY.getTime() + 60_000));
-
-    expect(holo).toHaveBeenCalledTimes(1);
+    expect(network).not.toHaveBeenCalled();
+    expect(result.meta?.categorized).toBe("rules");
   });
 });

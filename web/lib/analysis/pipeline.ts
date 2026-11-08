@@ -25,10 +25,18 @@ export interface AnalysisInput {
   labels?: MerchantVerdict[];
   /** Jour de référence de la fenêtre affichée (injectable pour les tests). */
   now?: Date;
+  /**
+   * Catégorise par mots-clés sans appeler Holo. La démo s'en sert : son relevé
+   * est fixe, et un appel Holo de 30 à 40 s n'y apprendrait rien.
+   */
+  rulesOnly?: boolean;
 }
 
-async function categorize(inputs: MerchantInput[]): Promise<{ verdicts: MerchantVerdict[]; categorized: Categorizer }> {
-  if (!hasHoloKey() || inputs.length === 0) return { verdicts: categorizeByRules(inputs), categorized: "rules" };
+async function categorize(
+  inputs: MerchantInput[],
+  rulesOnly: boolean,
+): Promise<{ verdicts: MerchantVerdict[]; categorized: Categorizer }> {
+  if (rulesOnly || !hasHoloKey() || inputs.length === 0) return { verdicts: categorizeByRules(inputs), categorized: "rules" };
   try {
     return { verdicts: await categorizeWithHolo(inputs), categorized: "hcompany" };
   } catch (error) {
@@ -47,7 +55,7 @@ export async function runAnalysis(input: AnalysisInput): Promise<AnalyzeResult> 
     months,
   ).filter((m) => !labelled.has(m.name.toLowerCase()));
 
-  const { verdicts, categorized } = await categorize(inputs);
+  const { verdicts, categorized } = await categorize(inputs, input.rulesOnly ?? false);
 
   return build({
     account: input.account,

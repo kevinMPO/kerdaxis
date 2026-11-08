@@ -52,8 +52,3 @@ jobs:
             code=$(curl -s -o /dev/null -w "%{http_code}" "https://app.kerdaxis.com$p")
             echo "$p $code"; [ "$code" = "200" ] || exit 1
           done
-      # The public demo runs the real pipeline (Holo, 30 to 40 s). One call here
-      # stores today's result in D1, so no visitor waits. Never blocks the deploy.
-      - name: Warm the demo
-        continue-on-error: true
-        run: curl -s -o /dev/null -w "demo %{http_code} in %{time_total}s\n" --max-time 120 "https://app.kerdaxis.com/api/analyze"

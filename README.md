@@ -23,7 +23,7 @@ supplier's portal shows the confirmation number.
 - [Access: free trial, subscription, jury](#access-free-trial-subscription-jury)
 - [Architecture](#architecture)
   - [Pricing a lever: observed or sourced](#pricing-a-lever-observed-or-sourced)
-  - [The public demo runs the real pipeline](#the-public-demo-runs-the-real-pipeline)
+  - [The public demo runs the real engine](#the-public-demo-runs-the-real-engine)
   - [Deploy: `main` is production](#deploy-main-is-production)
 - [Run it locally](#run-it-locally)
 - [Repository layout](#repository-layout)
@@ -156,7 +156,7 @@ flowchart TB
       CC["Cancel channel<br/>online → agent · else → letter"]
       RISK["Supplier risk agent<br/>LLM explains · engine scores"]
       ENG["Deterministic engine<br/>lib/engine · every euro"]
-      CACHE[("D1 caches 30 days<br/>prices · cancel channels<br/>+ demo result per day")]
+      CACHE[("D1 caches 30 days<br/>prices · cancel channels")]
       AP["Autopilot<br/>approval = action hash · 10 min · single use"]
       LET["Letter<br/>drafted by Holo · sent by the human"]
       RS["Path research<br/>Linkup article + H reads its screenshots"]
@@ -181,7 +181,6 @@ flowchart TB
     PIPE --> LBL
     AN <-->|merchant + category| LBL
     LBL -->|nature · motif · action| ENG
-    PIPE <-->|demo result of the day| CACHE
     LK <-->|merchant + category only| BM
     AN <-->|public price text| BM
     SCR <-->|merchant + category · only if no own price| BM
@@ -247,16 +246,16 @@ flowchart LR
 - Verified results are cached 30 days in D1 (`market_benchmarks`). The table holds public web data only, so it is
   shared between organizations.
 
-### The public demo runs the real pipeline
+### The public demo runs the real engine
 
 A visitor without a connected bank account (free trial, jury) gets a fictional 60-day statement
 (`lib/demo/transactions.ts`, transactions only, dated relative to the visit). It goes through the same pipeline as a
-real account (`lib/analysis/pipeline.ts`): Holo labels, the engine computes. No figure in the demo is written by hand.
+real account (`lib/analysis/pipeline.ts`): labels, then the engine computes. No figure in the demo is written by hand.
 The two fictional suppliers, Nuvio and Lumen, carry fixed labels so the cancellation agent always has its targets.
 
-Holo takes 30 to 40 s on the demo statement, so the result is cached twice: in the isolate's memory, and for the
-day in D1 (`demo_results`) so every Cloudflare isolate reads the same result. A result that fell back to the
-keyword rules is never stored, so the next visit retries Holo.
+The demo is labelled by the keyword rules (`rulesOnly`), never by Holo. Its statement is fixed, so a 30 to 40 s Holo
+call on every visit taught nothing and kept the visitor waiting. The rules answer in milliseconds, the same way every
+time, so the demo needs no cache. Prices and cancel channels are still checked live, on request.
 
 ### Deploy: `main` is production
 
@@ -267,7 +266,6 @@ flowchart LR
     M --> CI2["CI on main"]
     CI2 -->|green| D["Deploy web<br/>Worker secrets check · OpenNext build · wrangler deploy"]
     D --> S["Smoke test<br/>/ · /signup · /signin · /try"]
-    S --> W["Warm the demo<br/>never blocks the deploy"]
 ```
 
 Every push to `main` that passes CI goes to `app.kerdaxis.com` (`.github/workflows/deploy-web.yml`), for exactly the
@@ -278,7 +276,7 @@ commit CI tested. D1 migrations are not part of the deploy: they are applied by 
 | Piece | Stack | Where it runs |
 |---|---|---|
 | Site, `kerdaxis.com` | Static HTML, EN/FR, the film | Cloudflare Worker, assets only (`site/`) |
-| App, `app.kerdaxis.com` | Next.js 15, React 19, TypeScript, built with OpenNext. D1 for executions, accounts, trial emails, the access log, price benchmarks and cancellation channels (30 days each) and the day's demo result; KV for OAuth tokens | Cloudflare Workers (`web/`), deployed from `main` by CI |
+| App, `app.kerdaxis.com` | Next.js 15, React 19, TypeScript, built with OpenNext. D1 for executions, accounts, trial emails, the access log, price benchmarks and cancellation channels (30 days each); KV for OAuth tokens | Cloudflare Workers (`web/`), deployed from `main` by CI |
 | Demo supplier portal | TypeScript Worker, server-rendered HTML, SQLite Durable Object | `portal.kerdaxis.com` (`portal/`) |
 | Accounts and waitlist | TypeScript Worker, KV | Cloudflare Workers (`my-app/`) |
 | Agents | H Company Agents API (`agp.eu.hcompany.ai/api/v2`): our cancellation agent (visual browser), a screenshot reader, and the pre-built `h/web-scraper-flash` for pricing pages | H Company cloud |
@@ -333,7 +331,7 @@ web/                  the Kerdaxis app (Next.js)
                       auth/qonto/* · try · signup · signin · signout · me · billing/* · voice/*
   lib/analysis/       the one pipeline for a real account and the demo: categorize, then engine
   lib/engine/         the deterministic engine: every euro (core) and sourced prices (pricing)
-  lib/demo/           fictional demo statement, its analysis and the D1 cache of the day's result
+  lib/demo/           fictional demo statement and its analysis (keyword rules, no Holo)
   lib/benchmark*.ts   Linkup search, Holo extraction, web-scraper fallback, D1 price cache
   lib/execution/      policy (action hash) · runner (gate) · replay (trial) · suppliers ·
                       stripe-portal · store · run-copy (localized run log) ·
@@ -427,8 +425,7 @@ This is a hackathon build. Here is what that means today:
 - **Watchdog on unknown sites.** Layer 2 needs the final page's URL. For a researched supplier without a known URL, layers 1 and 3 and the supplier-side proof still apply.
 - **Only Qonto is connected.** Sage, Pennylane and SaaS/CRM tools are shown as "coming", not live.
 - **Stripe is in test mode.** No real money moves.
-- **D1 migrations are manual.** Until `0003_market_benchmarks.sql`, `0004_demo_results.sql` and `0005_cancel_channels.sql` are applied, the price and cancel-channel caches and the shared demo result are off: every *Verify prices* searches the web again, and the first demo visit on each isolate waits for Holo.
-- **The demo warm-up is not authenticated yet.** Production only serves `/api/analyze` to a signed-in visitor, so the deploy's warm-up call gets a 401 until it signs in with the test password.
+- **D1 migrations are manual.** Until `0003_market_benchmarks.sql` and `0005_cancel_channels.sql` are applied, the price and cancel-channel caches are off: every *Verify prices* searches the web again.
 - **The pricing fallback reads the current supplier only.** The web-scraper agent fills the supplier's own plans (needed to count seats), not the competitors' prices, and only euro prices are kept.
 
 ## Ground rules

@@ -9,8 +9,9 @@
 //      indisponible, la réponse est un 401 « reconnecte ton compte » — JAMAIS
 //      les données d'un autre, JAMAIS un chiffre de démonstration badgé « live ».
 //   2. VISITEUR ANONYME (aucun cookie) → démo (`lib/demo/`) : des transactions
-//      FICTIVES passées dans le MÊME pipeline (Holo puis moteur). Aucun chiffre
-//      de la démo n'est écrit à la main. C'est ce qui fait vivre /demo.
+//      FICTIVES passées dans le MÊME pipeline (mots-clés puis moteur, sans Holo :
+//      le relevé est fixe). Aucun chiffre de la démo n'est écrit à la main.
+//      C'est ce qui fait vivre /demo.
 //
 // Ce qui a DISPARU, et ne doit pas revenir : le repli n°2 historique sur la clé
 // API statique « login:secret_key » du fondateur (`lib/qonto.ts`, supprimé).
