@@ -5,6 +5,7 @@ import { startReplay } from "@/lib/execution/replay";
 import { checkApproval } from "@/lib/execution/policy";
 import { getApproval, publicView, putApproval, putExecution } from "@/lib/execution/store";
 import { DEMO_ORG, noStore, execGuard } from "@/lib/execution/http";
+import { withAccessScope } from "@/lib/privacy/access-log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
 const Body = z.object({ approvalId: z.string().uuid() }).strict();
 
 /** Lance l'agent H Company pour un accord donné (usage unique). */
-export async function POST(req: Request): Promise<Response> {
+async function handlePost(req: Request): Promise<Response> {
   const g = execGuard(req);
   if ("denied" in g) return g.denied;
   const parsed = Body.safeParse(await req.json().catch(() => null));
@@ -39,4 +40,8 @@ export async function POST(req: Request): Promise<Response> {
     const message = err instanceof Error ? err.message : "erreur";
     return noStore(NextResponse.json({ error: message }, { status: 409 }));
   }
+}
+
+export async function POST(req: Request): Promise<Response> {
+  return withAccessScope(req, () => handlePost(req));
 }

@@ -20,11 +20,13 @@
 
 import { reponseTropDeRequetes, verifierDebit } from "@/lib/api/rate-limit";
 import { assertNoPii, redactForLogs } from "@/lib/privacy/egress";
+import { withAccessScope } from "@/lib/privacy/access-log";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 // Voix multilingue par défaut (« Rachel ») — surchargée par ELEVENLABS_VOICE_ID.
 const DEFAULT_VOICE = "21m00Tcm4TlvDq8ikWAM";
 
-export async function POST(req: Request): Promise<Response> {
+async function handlePost(req: Request): Promise<Response> {
   // Avant TOUT travail payant : le contrôle de débit.
   const debit = await verifierDebit(req, "voice");
   if (!debit.autorise) return reponseTropDeRequetes(debit);
@@ -56,6 +58,7 @@ export async function POST(req: Request): Promise<Response> {
   };
   try {
     assertNoPii(corps, "synthèse vocale ElevenLabs");
+    void recordAccess({ service: "elevenlabs", operation: "text to speech", direction: "sent", sent: `narration text, ${corps.text.length} characters` });
   } catch (err) {
     console.error("Voix : texte rejeté par le filtre anti-PII :", err);
     return Response.json({ error: "pii_detected" }, { status: 400 });
@@ -86,4 +89,8 @@ export async function POST(req: Request): Promise<Response> {
     console.error("Voix (réseau) échouée :", err);
     return Response.json({ error: "network" }, { status: 502 });
   }
+}
+
+export async function POST(req: Request): Promise<Response> {
+  return withAccessScope(req, () => handlePost(req));
 }

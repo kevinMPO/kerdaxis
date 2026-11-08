@@ -17,6 +17,7 @@ import {
   verifierDebit,
 } from "@/lib/api/rate-limit";
 import type { Lang, LeverAction } from "@/lib/types";
+import { withAccessScope } from "@/lib/privacy/access-log";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ const ACTIONS: LeverAction[] = [
 
 const LANGS: Lang[] = ["fr", "en", "de", "es", "it"];
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   // Avant TOUT travail payant : le contrôle de débit. `letter` est repris dans
   // le corps du 429 parce que l'écran de la démo affiche ce champ tel quel.
   const debit = await verifierDebit(request, "letter");
@@ -66,4 +67,8 @@ export async function POST(request: Request) {
 
   const letter = await generateLetter(req);
   return NextResponse.json({ letter });
+}
+
+export async function POST(request: Request) {
+  return withAccessScope(request, () => handlePost(request));
 }

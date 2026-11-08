@@ -83,6 +83,10 @@ export interface DashboardCopy {
   anomalies: string;
   auditLog: string;
   auditNote: string;
+  auditEmpty: string;
+  auditFailed: string;
+  auditRead: string;
+  auditSent: string;
   drawerTitle: string;
   drawerLoading: string;
   copy: string;
@@ -194,7 +198,11 @@ const fr: DashboardCopy = {
   byArea: "Pilotable par domaine",
   anomalies: "Nouveaux flux et anomalies",
   auditLog: "Journal d'accès",
-  auditNote: "Aucun IBAN, numéro de transaction ni donnée perso ne sort. Seuls le nom du marchand et la catégorie partent sur le web.",
+  auditNote: "Chaque appel à un tiers fait pour toi, avec exactement ce qui est sorti. Aucun IBAN, numéro de transaction ni donnée perso : tout passe par le filtre anti-PII avant le réseau.",
+  auditEmpty: "Aucun appel à un tiers pour l'instant dans cette session. Lectures Qonto, recherches Linkup et sessions H Company apparaîtront ici dès qu'elles ont lieu.",
+  auditFailed: "Journal indisponible pour le moment.",
+  auditRead: "lecture, rien n'est envoyé",
+  auditSent: "envoyé :",
   drawerTitle: "Lettre prête à envoyer",
   drawerLoading: "Rédaction de la lettre…",
   copy: "Copier",
@@ -296,7 +304,11 @@ const en: DashboardCopy = {
   byArea: "Controllable by area",
   anomalies: "New flows and anomalies",
   auditLog: "Access log",
-  auditNote: "No IBAN, transaction id or personal data leaves. Only the merchant name and category go to the web.",
+  auditNote: "Every call made to a third party on your behalf, with exactly what left. No IBAN, transaction id or personal data: everything goes through the anti-PII filter before the network.",
+  auditEmpty: "No third-party call in this session yet. Qonto reads, Linkup searches and H Company sessions will show up here as they happen.",
+  auditFailed: "Log unavailable right now.",
+  auditRead: "read, nothing sent",
+  auditSent: "sent:",
   drawerTitle: "Ready-to-send letter",
   drawerLoading: "Writing the letter…",
   copy: "Copy",

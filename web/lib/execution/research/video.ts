@@ -8,6 +8,7 @@
 import { z } from "zod";
 import { searchTutorialVideos } from "./linkup";
 import { ResearchError, type VideoTutorial } from "./types";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 const GLADIA_URL = "https://api.gladia.io/v2/pre-recorded";
 const REQUEST_TIMEOUT_MS = 60_000;
@@ -64,6 +65,7 @@ export function parseNumberedSteps(answer: string): string[] {
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function transcribe(merchant: string, title: string, url: string): Promise<VideoTutorial> {
+  void recordAccess({ service: "gladia", operation: "video transcription", direction: "sent", sent: `public video: ${title}` });
   const headers = { "x-gladia-key": gladiaKey(), "content-type": "application/json" };
   const created = await fetch(GLADIA_URL, {
     method: "POST",

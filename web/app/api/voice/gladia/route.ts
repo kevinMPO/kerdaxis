@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { noStore, operatorGuard } from "@/lib/execution/http";
+import { withAccessScope } from "@/lib/privacy/access-log";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +18,7 @@ const Body = z.object({ lang: z.string().max(5).default("fr") }).strict();
 
 const VOCABULARY = ["Kerdaxis", "Nuvio", "Qonto", "Instantly", "ChatGPT", "Waalaxy", "Autopilote", "H Company", "Linkup"];
 
-export async function POST(req: Request): Promise<Response> {
+async function handlePost(req: Request): Promise<Response> {
   const denied = operatorGuard(req);
   if (denied) return denied;
   const key = process.env.GLADIA_API_KEY;
@@ -26,6 +28,7 @@ export async function POST(req: Request): Promise<Response> {
   if (!parsed.success) return noStore(NextResponse.json({ error: "invalid_body" }, { status: 400 }));
   const primary = parsed.data.lang === "en" ? "en" : "fr";
 
+  void recordAccess({ service: "gladia", operation: "live transcription", direction: "sent", sent: "microphone audio of this voice command" });
   const res = await fetch("https://api.gladia.io/v2/live", {
     method: "POST",
     headers: { "x-gladia-key": key, "content-type": "application/json" },
@@ -53,4 +56,8 @@ export async function POST(req: Request): Promise<Response> {
   }
   const session = (await res.json()) as { id: string; url: string; created_at?: string };
   return noStore(NextResponse.json({ id: session.id, url: session.url, created_at: session.created_at }));
+}
+
+export async function POST(req: Request): Promise<Response> {
+  return withAccessScope(req, () => handlePost(req));
 }
