@@ -74,9 +74,13 @@ export function Dashboard({ fontClassName }: { fontClassName: string }): React.R
 
       <div className="kd-main">
         <header className="kd-topbar">
-          <span className="kd-account">{data.account.name}</span>
-          <span className="kd-muted">{loc(data.window.label)}</span>
-          <span className={`kd-source ${isLive ? "is-live" : ""}`}>{isLive ? copy.liveData : copy.demoData}</span>
+          {d.loaded && (
+            <>
+              <span className="kd-account">{data.account.name}</span>
+              <span className="kd-muted">{loc(data.window.label)}</span>
+              <span className={`kd-source ${isLive ? "is-live" : ""}`}>{isLive ? copy.liveData : copy.demoData}</span>
+            </>
+          )}
           <span className="kd-topbar-spacer" />
           {d.qontoConnected ? (
             <button className="kd-btn kd-btn-quiet" onClick={() => void d.disconnectQonto()}>
@@ -95,11 +99,21 @@ export function Dashboard({ fontClassName }: { fontClassName: string }): React.R
           </p>
         )}
 
-        <main className="kd-content">
-          {view === "today" && <TodayView d={d} />}
-          {view === "subscriptions" && <SubscriptionsView d={d} />}
-          {view === "runs" && <RunsView d={d} />}
-          {view === "ledger" && <LedgerView d={d} />}
+        {/* Until /api/analyze answers, no amount is drawn: the sample data must never flash as if it were the account's. */}
+        <main className="kd-content" aria-busy={!d.loaded}>
+          {!d.loaded ? (
+            <div className="kd-analyzing" role="status">
+              <span className="kd-analyzing-dot" aria-hidden="true" />
+              {copy.analyzing}
+            </div>
+          ) : (
+            <>
+              {view === "today" && <TodayView d={d} />}
+              {view === "subscriptions" && <SubscriptionsView d={d} />}
+              {view === "runs" && <RunsView d={d} />}
+              {view === "ledger" && <LedgerView d={d} />}
+            </>
+          )}
         </main>
       </div>
 
