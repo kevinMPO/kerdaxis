@@ -21,7 +21,7 @@ final reste toujours a toi.
 
 ## Methode (une execution dans l'app)
 
-OBSERVE (Qonto, lecture seule) → ANALYSE (`web/lib/engine`) → BENCHMARK (sur accord, Linkup)
+OBSERVE (Qonto, lecture seule, ou releve PDF lu dans le navigateur) → ANALYSE (`web/lib/engine`) → BENCHMARK (sur accord, Linkup)
 → RECOMMANDER (carte sourcee + datee) → GATE HUMAIN (tu approuves) → EXECUTION (agent
 H Company sur le portail, arret avant le clic final, ou lettre) → TRACE (D1).
 
@@ -71,6 +71,8 @@ H Company sur le portail, arret avant le clic final, ou lettre) → TRACE (D1).
 | `web/lib/engine/core.ts` | Le moteur deterministe : leviers, motif, risque, chaque euro. |
 | `web/lib/engine/pricing.ts` | Prix sources → economie (postes deduits, switch / downgrade / renego). |
 | `web/lib/categorize.ts` | Classifieur par mots-cles et classification EI. |
+| `web/lib/statement/parse.ts` | Releve PDF → lignes (date, libelle nettoye, montant), par regles fixes, dans le navigateur. Sans IBAN ni numero de carte. |
+| `web/lib/statement/import-analysis.ts` | Lignes importees → validation Zod → meme pipeline que Qonto (`source: "import"`). Rien n'est stocke. |
 | `web/lib/benchmark.ts` | Linkup (tarifs publics) + extraction Holo, cache D1 (`lib/benchmark-cache.ts`). |
 | `web/lib/mcp/readonly-guard.ts` | La frontiere read-only Qonto (regle #1). |
 | `web/lib/execution/` | Gate humain, runner de l'agent H Company, replay. |

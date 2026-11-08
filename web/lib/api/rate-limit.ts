@@ -76,7 +76,7 @@ export const PLAFONDS: Readonly<Record<string, readonly Fenetre[]>> = Object.fre
     { max: 15, secondes: 60 },
     { max: 60, secondes: 3600 },
   ]),
-  // Linkup seul, une recherche « standard » par fournisseur à résilier. Même
+  // Linkup seul, une recherche « standard » par abonnement (résiliable en ligne ?). Même
   // clic que les prix : une quinzaine au plus ; le cache D1 ne compte pas.
   cancel_channel: Object.freeze([
     { max: 15, secondes: 60 },
@@ -86,6 +86,12 @@ export const PLAFONDS: Readonly<Record<string, readonly Fenetre[]>> = Object.fre
   letter: Object.freeze([
     { max: 8, secondes: 60 },
     { max: 60, secondes: 3600 },
+  ]),
+  // Import d'un relevé PDF : une catégorisation H Company (30 à 40 s) par
+  // relevé. Un utilisateur importe un ou deux fichiers, pas une rafale.
+  statement_import: Object.freeze([
+    { max: 4, secondes: 60 },
+    { max: 20, secondes: 3600 },
   ]),
   // CompanyRiskAgent : plusieurs recherches Linkup + 2 appels H Company par
   // analyse d'entreprise — la plus lourde, donc serrée.

@@ -256,8 +256,9 @@ describe("reponseTropDeRequetes", () => {
 
 describe("plafonds déclarés", () => {
   it("couvre exactement les routes limitées", () => {
-    // `engine` : API moteur publique (par jeton). Les autres : routes payantes.
-    expect(Object.keys(PLAFONDS).sort()).toEqual(["benchmark", "cancel_channel", "letter", "risk", "voice"]);
+    // `engine` : API moteur publique (par jeton). Les autres : routes payantes
+    // (`statement_import` : une catégorisation H Company par relevé importé).
+    expect(Object.keys(PLAFONDS).sort()).toEqual(["benchmark", "cancel_channel", "letter", "risk", "statement_import", "voice"]);
   });
 
   it("garde des plafonds finis et strictement positifs", () => {

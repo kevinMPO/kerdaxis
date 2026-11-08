@@ -209,10 +209,13 @@ export interface AnalyzeResult {
   /** TVA déductible perdue (justificatifs PRO manquants) — présent seulement si > 0. */
   tvaPerdue?: TvaPerdue;
   /** Métadonnées non affichées : d'où viennent les données. */
-  meta?: { source: "qonto" | "mock"; categorized: Categorizer; txCount: number };
+  meta?: { source: AnalysisSource; categorized: Categorizer; txCount: number };
 }
 
 // --- Transaction normalisée (interne, entre qonto.ts et engine.ts) ----------
+/** qonto: live read-only account; mock: the demo company; import: a PDF statement read in the browser. */
+export type AnalysisSource = "qonto" | "mock" | "import";
+
 export interface Tx {
   id: string;
   merchant: string;        // clean_counterparty_name || label

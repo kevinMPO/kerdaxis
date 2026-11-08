@@ -12,6 +12,7 @@ import { RunsView, RunWatcher } from "./RunsView";
 import { LedgerView } from "./LedgerView";
 import { LetterDrawer } from "./LetterDrawer";
 import { BrandMark, Icon, type IconName } from "./Icon";
+import { ImportStatementButton, SAMPLE_STATEMENT_URL } from "./ImportStatementButton";
 import "./dashboard.css";
 
 const NAV: { id: ViewId; icon: IconName }[] = [
@@ -32,7 +33,8 @@ export function Dashboard({ fontClassName, mode = "demo" }: DashboardProps): Rea
   const d = useDashboard(mode);
   const { copy, view, setView, data, loc, runs, runViews } = d;
   const waitingCount = runs.filter((r) => runViews[r.id]?.status === "awaiting_final_approval").length;
-  const isLive = data.meta?.source === "qonto";
+  const source = data.meta?.source;
+  const sourceLabel = source === "qonto" ? copy.liveData : source === "import" ? copy.importedData : copy.demoData;
 
   return (
     <div className={`kd-root ${fontClassName}`}>
@@ -83,10 +85,11 @@ export function Dashboard({ fontClassName, mode = "demo" }: DashboardProps): Rea
             <>
               <span className="kd-account">{data.account.name}</span>
               <span className="kd-muted">{loc(data.window.label)}</span>
-              <span className={`kd-source ${isLive ? "is-live" : ""}`}>{isLive ? copy.liveData : copy.demoData}</span>
+              <span className={`kd-source ${source === "qonto" || source === "import" ? "is-live" : ""}`}>{sourceLabel}</span>
             </>
           )}
           <span className="kd-topbar-spacer" />
+          <ImportStatementButton d={d} className="kd-btn kd-btn-quiet" />
           {d.qontoConnected ? (
             <button className="kd-btn kd-btn-quiet" onClick={() => void d.disconnectQonto()}>
               {copy.disconnect}
@@ -105,6 +108,15 @@ export function Dashboard({ fontClassName, mode = "demo" }: DashboardProps): Rea
         {d.qontoConnectBlocked && (
           <p className="kd-banner" role="status">
             {copy.connectClosed}
+          </p>
+        )}
+
+        {d.importState.status === "error" && d.importState.error && (
+          <p className="kd-banner" role="alert">
+            {copy.importErrors[d.importState.error]}{" "}
+            <a href={SAMPLE_STATEMENT_URL} download>
+              {copy.importSample}
+            </a>
           </p>
         )}
 
@@ -161,6 +173,16 @@ function ConnectQontoPanel({ d }: { d: DashboardState }): React.ReactElement {
           {copy.connectQonto}
         </a>
       )}
+      <div className="kd-connect-import">
+        <p className="kd-h2">{copy.importAlternative}</p>
+        <div className="kd-connect-actions">
+          <ImportStatementButton d={d} className={`kd-btn kd-btn-lg ${closed ? "kd-btn-accent" : "kd-btn-quiet"}`} />
+          <a className="kd-btn kd-btn-quiet kd-btn-lg" href={SAMPLE_STATEMENT_URL} download>
+            {copy.importSample}
+          </a>
+        </div>
+        <p className="kd-lede">{copy.importPrivacy}</p>
+      </div>
     </section>
   );
 }

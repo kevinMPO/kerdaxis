@@ -1,5 +1,6 @@
 import type { CancelChannel, Lang, Risk, UnverifiedReason } from "@/lib/types";
 import type { FinalLabelSource } from "@/lib/execution/research/compare";
+import type { ImportErrorCode } from "./use-dashboard";
 
 export type ViewId = "today" | "subscriptions" | "runs" | "ledger";
 
@@ -18,6 +19,14 @@ export interface DashboardCopy {
   connectClosedHint: string;
   connectTitle: string;
   connectLede: string;
+  importPdf: string;
+  importReading: string;
+  importAnalyzing: string;
+  importedData: string;
+  importAlternative: string;
+  importPrivacy: string;
+  importSample: string;
+  importErrors: Record<ImportErrorCode, string>;
   headline: (recoverable: string, confirmed: string | null) => string;
   headlineSub: (monthly: string, count: number) => string;
   ledgerSteps: [string, string, string, string, string];
@@ -135,6 +144,21 @@ const fr: DashboardCopy = {
   navClassic: "Ancienne vue",
   navPitch: "Le pitch",
   demoData: "Données de démonstration",
+  importPdf: "Importer un relevé PDF",
+  importReading: "Lecture du relevé dans ton navigateur…",
+  importAnalyzing: "Le moteur analyse le relevé…",
+  importedData: "Relevé PDF importé",
+  importAlternative: "Pas de compte Qonto ? Importe un relevé bancaire PDF, de n'importe quelle banque.",
+  importPrivacy: "Le PDF est lu dans ton navigateur et n'est jamais envoyé : seules les lignes (date, libellé nettoyé, montant) partent au moteur, sans IBAN ni numéro de carte, et rien n'est conservé.",
+  importSample: "Télécharger un relevé d'exemple",
+  importErrors: {
+    not_pdf: "Ce fichier n'est pas un PDF.",
+    too_large: "PDF trop lourd (15 Mo maximum).",
+    unreadable: "Impossible de lire ce PDF. S'il s'agit d'un scan (image), exporte plutôt le relevé en PDF texte depuis ta banque.",
+    no_transactions: "Aucune opération reconnue dans ce PDF : il faut des lignes avec une date et un montant.",
+    rate_limited: "Trop d'imports d'affilée, réessaie dans une minute.",
+    failed: "L'analyse du relevé a échoué, réessaie.",
+  },
   connectTitle: "Connecte ton compte Qonto",
   connectLede: "Kerdaxis lit ton compte en lecture seule : aucun virement, aucune carte, aucune écriture. Tant qu'il n'est pas connecté, ce tableau de bord reste vide, jamais rempli de chiffres de démonstration.",
   liveData: "Compte Qonto réel · lecture seule",
@@ -270,6 +294,21 @@ const en: DashboardCopy = {
   navClassic: "Previous view",
   navPitch: "The pitch",
   demoData: "Demo data",
+  importPdf: "Import a PDF statement",
+  importReading: "Reading the statement in your browser…",
+  importAnalyzing: "The engine is analysing the statement…",
+  importedData: "Imported PDF statement",
+  importAlternative: "No Qonto account? Import a PDF bank statement from any bank.",
+  importPrivacy: "The PDF is read in your browser and never uploaded: only the rows (date, cleaned label, amount) go to the engine, with no IBAN or card number, and nothing is stored.",
+  importSample: "Download a sample statement",
+  importErrors: {
+    not_pdf: "This file isn't a PDF.",
+    too_large: "PDF too large (15 MB max).",
+    unreadable: "This PDF can't be read. If it's a scan (an image), export the statement as a text PDF from your bank instead.",
+    no_transactions: "No transactions recognised in this PDF: it needs rows with a date and an amount.",
+    rate_limited: "Too many imports in a row, try again in a minute.",
+    failed: "Analysing the statement failed, please try again.",
+  },
   connectTitle: "Connect your Qonto account",
   connectLede: "Kerdaxis reads your account read-only: no transfers, no cards, no writes. Until it is connected, this dashboard stays empty, never filled with demo figures.",
   liveData: "Real Qonto account · read-only",
@@ -411,6 +450,21 @@ const de: DashboardCopy = {
   navClassic: "Vorherige Ansicht",
   navPitch: "Der Pitch",
   demoData: "Demodaten",
+  importPdf: "PDF-Kontoauszug importieren",
+  importReading: "Auszug wird in deinem Browser gelesen…",
+  importAnalyzing: "Die Engine analysiert den Auszug…",
+  importedData: "Importierter PDF-Auszug",
+  importAlternative: "Kein Qonto-Konto? Importiere einen PDF-Kontoauszug von einer beliebigen Bank.",
+  importPrivacy: "Das PDF wird in deinem Browser gelesen und nie hochgeladen: Nur die Zeilen (Datum, bereinigter Text, Betrag) gehen an die Engine, ohne IBAN oder Kartennummer, und nichts wird gespeichert.",
+  importSample: "Beispielauszug herunterladen",
+  importErrors: {
+    not_pdf: "Diese Datei ist kein PDF.",
+    too_large: "PDF zu groß (max. 15 MB).",
+    unreadable: "Dieses PDF kann nicht gelesen werden. Ist es ein Scan (Bild), exportiere den Auszug lieber als Text-PDF bei deiner Bank.",
+    no_transactions: "Keine Buchungen in diesem PDF erkannt: Es braucht Zeilen mit Datum und Betrag.",
+    rate_limited: "Zu viele Importe hintereinander, versuche es in einer Minute erneut.",
+    failed: "Die Analyse des Auszugs ist fehlgeschlagen, bitte erneut versuchen.",
+  },
   connectTitle: "Verbinde dein Qonto-Konto",
   connectLede: "Kerdaxis liest dein Konto nur lesend: keine Überweisungen, keine Karten, keine Schreibzugriffe. Solange es nicht verbunden ist, bleibt dieses Dashboard leer, nie mit Demozahlen gefüllt.",
   liveData: "Echtes Qonto-Konto · nur Lesen",
@@ -456,6 +510,21 @@ const es: DashboardCopy = {
   navClassic: "Vista anterior",
   navPitch: "El pitch",
   demoData: "Datos de demostración",
+  importPdf: "Importar un extracto PDF",
+  importReading: "Leyendo el extracto en tu navegador…",
+  importAnalyzing: "El motor está analizando el extracto…",
+  importedData: "Extracto PDF importado",
+  importAlternative: "¿Sin cuenta Qonto? Importa un extracto bancario PDF de cualquier banco.",
+  importPrivacy: "El PDF se lee en tu navegador y nunca se sube: solo las líneas (fecha, concepto limpio, importe) van al motor, sin IBAN ni número de tarjeta, y no se guarda nada.",
+  importSample: "Descargar un extracto de ejemplo",
+  importErrors: {
+    not_pdf: "Este archivo no es un PDF.",
+    too_large: "PDF demasiado pesado (15 MB máximo).",
+    unreadable: "No se puede leer este PDF. Si es un escaneo (imagen), exporta el extracto como PDF de texto desde tu banco.",
+    no_transactions: "No se reconoció ninguna operación en este PDF: necesita líneas con fecha e importe.",
+    rate_limited: "Demasiadas importaciones seguidas, inténtalo de nuevo en un minuto.",
+    failed: "El análisis del extracto falló, inténtalo de nuevo.",
+  },
   connectTitle: "Conecta tu cuenta Qonto",
   connectLede: "Kerdaxis lee tu cuenta en solo lectura: sin transferencias, sin tarjetas, sin escrituras. Mientras no esté conectada, este panel queda vacío, nunca con cifras de demostración.",
   liveData: "Cuenta Qonto real · solo lectura",
@@ -501,6 +570,21 @@ const it: DashboardCopy = {
   navClassic: "Vista precedente",
   navPitch: "Il pitch",
   demoData: "Dati dimostrativi",
+  importPdf: "Importa un estratto conto PDF",
+  importReading: "Lettura dell'estratto nel tuo browser…",
+  importAnalyzing: "Il motore sta analizzando l'estratto…",
+  importedData: "Estratto conto PDF importato",
+  importAlternative: "Nessun conto Qonto? Importa un estratto conto PDF di qualsiasi banca.",
+  importPrivacy: "Il PDF viene letto nel tuo browser e mai caricato: solo le righe (data, descrizione pulita, importo) vanno al motore, senza IBAN né numero di carta, e nulla viene conservato.",
+  importSample: "Scarica un estratto di esempio",
+  importErrors: {
+    not_pdf: "Questo file non è un PDF.",
+    too_large: "PDF troppo pesante (massimo 15 MB).",
+    unreadable: "Impossibile leggere questo PDF. Se è una scansione (immagine), esporta l'estratto come PDF di testo dalla tua banca.",
+    no_transactions: "Nessuna operazione riconosciuta in questo PDF: servono righe con data e importo.",
+    rate_limited: "Troppe importazioni di fila, riprova tra un minuto.",
+    failed: "L'analisi dell'estratto non è riuscita, riprova.",
+  },
   connectTitle: "Collega il tuo conto Qonto",
   connectLede: "Kerdaxis legge il tuo conto in sola lettura: nessun bonifico, nessuna carta, nessuna scrittura. Finché non è collegato, questa dashboard resta vuota, mai riempita con cifre dimostrative.",
   liveData: "Conto Qonto reale · sola lettura",
