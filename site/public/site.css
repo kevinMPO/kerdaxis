@@ -434,3 +434,6 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
   .steps3{grid-template-columns:1fr}
   .req-form .row2{grid-template-columns:1fr}
 }
+
+/* Highlighted word in hero titles: ink on lime block, like a marker. */
+.hl{background:linear-gradient(var(--lime),var(--lime)) 0 100%/100% 1.08em no-repeat;color:var(--ink);padding:0 .06em;margin:0 -.02em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
