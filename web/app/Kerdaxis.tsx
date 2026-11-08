@@ -14,6 +14,7 @@ import { EMPTY_ANALYSIS } from "@/lib/analysis/empty";
 import { WAITLIST_URL } from "@/lib/site";
 import { categorizerName, detectLang, eur as eurFmt, LANGS, LOCALE, natureLabel, PITCH, riskLabel, tr } from "@/lib/i18n";
 import { EUROPE_PATHS, EUROPE_VIEWBOX, EU_CITY_XY } from "@/lib/europeMap";
+import { leverName, leverProposal } from "@/lib/lever-text";
 import ExecutionPanel, { launchCancellation } from "./ExecutionPanel";
 import VoiceCommand from "./VoiceCommand";
 import { parseIntent } from "@/lib/voice/intents";
@@ -502,7 +503,7 @@ export default function Kerdaxis() {
         body: JSON.stringify({
           merchant: l.label,
           action: l.action ?? "renegotiate",
-          alternative: l.to,
+          alternative: leverProposal(l, lang),
           savingMonthly: l.saving,
           savingAnnual: l.saving * 12,
           lang,
@@ -850,7 +851,7 @@ export default function Kerdaxis() {
                   {l.active ? "✓" : ""}
                 </span>
                 <span className="arg-lever-txt">
-                  {l.label} <span className="arg-muted">→ {l.to}</span>
+                  {leverName(l, lang)} <span className="arg-muted">→ {leverProposal(l, lang)}</span>
                   {l.hausse && (
                     <span
                       className="arg-hausse"
@@ -1580,7 +1581,7 @@ export default function Kerdaxis() {
                       {L({ fr: "Économie", en: "Saving", de: "Einsparung", es: "Ahorro", it: "Risparmio" })} · <b className="arg-mono">{eur(apLever.saving)}{L({ fr: "/mois", en: "/mo", de: "/Monat", es: "/mes", it: "/mese" })}</b> →{" "}
                       <b className="arg-mono">{eur(apLever.saving * 12)}/{L({ fr: "an", en: "yr", de: "Jahr", es: "año", it: "anno" })}</b>
                     </p>
-                    <p className="arg-ap-card-line">{L({ fr: "Action", en: "Action", de: "Aktion", es: "Acción", it: "Azione" })} · {apLever.to}</p>
+                    <p className="arg-ap-card-line">{L({ fr: "Action", en: "Action", de: "Aktion", es: "Acción", it: "Azione" })} · {leverProposal(apLever, lang)}</p>
                     {executable(apLever.id) && (
                       <p className="arg-ap-card-line arg-ap-agent">
                         <span className="arg-ap-agent-tag">H Company · computer-use agent</span>

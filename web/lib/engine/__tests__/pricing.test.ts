@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { inferCurrentPlan, priceLever, type MarketAlternative } from "@/lib/engine/pricing";
+import { describeEvidence, inferCurrentPlan, priceLever, type MarketAlternative } from "@/lib/engine/pricing";
 import type { SourcedOffer } from "@/lib/types";
 
 function offer(name: string, monthlyPrice: number, perSeat: boolean): SourcedOffer {
@@ -95,6 +95,15 @@ describe("priceLever", () => {
     expect(priceLever({ action: "cancel", monthly: 40, ownPlans: [], alternatives: [alt("X", 1, false)] })).toEqual({
       status: "unverified",
       reason: "no_price",
+    });
+  });
+});
+
+describe("describeEvidence", () => {
+  it("should describe a sourced switch in French and English", () => {
+    expect(describeEvidence("switch", { offer: offer("Pipedrive", 14, true), seats: 3 })).toEqual({
+      fr: "passer à Pipedrive (14 €/poste/mois × 3)",
+      en: "switch to Pipedrive (€14/seat/mo × 3)",
     });
   });
 });
