@@ -290,13 +290,10 @@ export function categorizeByRules(merchants: MerchantInput[]): MerchantVerdict[]
 }
 
 // ---------------------------------------------------------------------------
-// Classification EI PRO / PERSO / A-CLARIFIER — MIROIR EXACT de engine.py.
+// Classification EI PRO / PERSO / A-CLARIFIER, par mots-clés (déterministe).
 //
-// Règle #2 du projet : engine.py fait foi. Le périmètre « TVA perdue » ne
-// compte QUE les dépenses classées PRO (whitelist PRO_KEYWORDS, jamais
-// A-CLARIFIER ni « perso »). On réplique ici la même liste de mots-clés et la
-// même fonction classify() pour que engine.ts produise le MÊME résultat
-// qu'engine.py sur les mêmes transactions.
+// Le périmètre « TVA perdue » ne compte QUE les dépenses classées PRO
+// (whitelist PRO_KEYWORDS, jamais A-CLARIFIER ni « perso »).
 // ---------------------------------------------------------------------------
 export const PRO_KEYWORDS = [
   "hubspot", "apollo", "ringover", "google workspace", "google gsuite",
@@ -320,7 +317,7 @@ export const PERSO_KEYWORDS = [
 export type EiClass = "PRO" | "PERSO" | "A-CLARIFIER";
 
 /**
- * Miroir de engine.py:classify() — PRO l'emporte sur PERSO, défaut A-CLARIFIER.
+ * PRO l'emporte sur PERSO, défaut A-CLARIFIER.
  * Source de vérité partagée pour le périmètre de la TVA perdue (règle #2).
  */
 export function classifyEI(name: string): EiClass {

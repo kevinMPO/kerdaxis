@@ -6,9 +6,11 @@
 	"observability": {
 		"enabled": true,
 	},
-	"durable_objects": {
-		"bindings": [{ "name": "ArgentierMCP", "class_name": "ArgentierMCP" }],
-	},
-	"migrations": [{ "tag": "v1", "new_sqlite_classes": ["ArgentierMCP"] }],
+	// The MCP server (Durable Object ArgentierMCP) was removed: v2 deletes the
+	// deployed class so the next `wrangler deploy` accepts the change.
+	"migrations": [
+		{ "tag": "v1", "new_sqlite_classes": ["ArgentierMCP"] },
+		{ "tag": "v2", "deleted_classes": ["ArgentierMCP"] },
+	],
 	"kv_namespaces": [{ "binding": "WAITLIST", "id": "2654f9c6be0d425a921a5d732b8ce518" }],
 }

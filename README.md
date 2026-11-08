@@ -182,32 +182,12 @@ flowchart TB
     ST --- APP
 ```
 
-The same engine is reachable outside the app, always with the same split: Claude labels or explains, the engine computes.
-
-```mermaid
-flowchart LR
-    subgraph CC["Claude Code skill · /audit · /verify"]
-      direction TB
-      QM[("Bank MCP<br/>write tools hard-denied · e.g. Qonto")]
-      PY["engine.py"]
-      LM["Linkup MCP"]
-      OUT["drafts/ · data/decisions.json<br/>ready for you to send"]
-      QM --> PY --> OUT
-      LM --> OUT
-    end
-
-    SL(["Team chat<br/>e.g. Slack · @Claude"]) -->|Claude Tag skill labels| CE["claude-tag/scripts/call_engine.py"]
-    CE -->|Bearer · Zod strict · 60/min| API["/api/v1/engine<br/>analyze · simulate · health"]
-    API --> ENGW["web/lib/engine<br/>deterministic, no LLM, no writes"]
-
-    MC(["Any MCP client"]) --> MCP["my-app/<br/>engine as a remote MCP server<br/>Cloudflare Workers"]
-```
-
 | Piece | Stack | Where it runs |
 |---|---|---|
 | Site, `kerdaxis.com` | Static HTML, EN/FR, the film | Cloudflare Worker, assets only (`site/`) |
 | App, `app.kerdaxis.com` | Next.js 15, React 19, TypeScript, built with OpenNext. D1 for executions, accounts, trial emails and the access log; KV for OAuth tokens | Cloudflare Workers (`web/`, `npm run cf:deploy`) |
 | Demo supplier portal | TypeScript Worker, server-rendered HTML, SQLite Durable Object | `portal.kerdaxis.com` (`portal/`) |
+| Accounts and waitlist | TypeScript Worker, KV | Cloudflare Workers (`my-app/`) |
 | Agent | H Company Agents API (`agp.eu.hcompany.ai/api/v2`) | H Company cloud |
 | Voice | Gladia live STT (`@gladiaio/sdk`). The server opens the session, so the key never reaches the browser. | Browser and app server |
 | Billing | Stripe REST API (no SDK) | Stripe |
@@ -259,13 +239,13 @@ web/                  the Kerdaxis app (Next.js)
   lib/auth/           signed session cookies, test access
   lib/accounts/       local accounts and trial leads (scrypt passwords; data/ is gitignored)
   lib/billing/        Stripe Checkout, subscription check, customer portal
+  lib/engine/         the deterministic engine: every euro (core) and sourced prices (pricing)
   middleware.ts       access levels and internal headers
   public/replay/      the 10 captures of the recorded run
 portal/               fictional supplier portal (Cloudflare Worker + Durable Object)
-my-app/               Kerdaxis engine as a remote MCP server (Cloudflare Workers)
+my-app/               accounts and waitlist Worker (/auth/*, /waitlist) called by the app
 video/                the 69 s film as code (HyperFrames): SPEC.md, compositions/, recorded
                       H session captures, voiceover script (VOICEOVER.md) and voice lines
-engine.py, tests/     Kerdaxis deterministic engine (Python) and its tests
 docs/, PRD + Claude Code/   product docs, the Kerdaxis PRD
 ```
 
@@ -284,8 +264,7 @@ npm run render -- -o renders/kerdaxis.mp4
 ## Tests and CI
 
 ```bash
-cd web && npx tsc --noEmit && npx vitest run     # 683 tests
-python3 -m unittest discover -s tests            # 32 engine and ledger tests
+cd web && npx tsc --noEmit && npx vitest run     # 741 tests, engine included
 bash scripts/check-secrets.sh                    # no secret or bank data in tracked files
 cd portal && npm run typecheck && npm run smoke  # full portal path + API (resets the demo account)
 ```
@@ -346,14 +325,12 @@ This is a hackathon build. Here is what that means today:
 
 Four rules apply everywhere in the codebase:
 
-1. **Read-only Qonto.** Every write, transfer and card tool is hard-denied (`.claude/settings.json`).
-2. **The engine computes, never the LLM.** Every euro comes from `engine.py` / `web/lib/engine`.
+1. **Read-only Qonto.** Every write, transfer and card call is rejected by `web/lib/mcp/readonly-guard.ts`.
+2. **The engine computes, never the LLM.** Every euro comes from `web/lib/engine`.
 3. **No personal data to the web.** Only a merchant name and category leave for price benchmarks.
 4. **A price needs a source and a date**, otherwise it is shown as "not verified".
 
-The Claude Code skill (`/audit`, `/verify`), the MCP server (`my-app/`), the Company Risk agent (`/risk`)
-and the North Star metric are documented in [`SKILL.md`](SKILL.md), [`docs/product-metrics.md`](docs/product-metrics.md)
-and [`docs/`](docs/).
+The Company Risk agent (`/risk`) and the deployment notes are documented in [`docs/`](docs/).
 
 ---
 
