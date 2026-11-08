@@ -116,13 +116,15 @@ export default function AuthCard({ mode, notice }: { mode: Mode; notice?: string
         <button type="submit" disabled={busy}>{busy ? "…" : c.cta}</button>
         {err && <p className="kl-err" role="alert">{err}</p>}
         {mode === "signup" && <p className="kl-fine">Test mode: no real charge. Use card 4242 4242 4242 4242, any future date, any CVC.</p>}
-        <nav className="kl-links">
+        <nav className="kl-links" aria-label="Other ways in">
           {mode !== "try" && <a href="/try">Try for free</a>}
-          {mode !== "signup" && <a href="/signup">Create an account · 5 €/mo</a>}
+          {mode !== "signup" && <a href="/signup">Create an account <span className="kl-price">· 5 €/mo</span></a>}
           {mode !== "signin" && <a href="/signin">Sign in</a>}
-          {mode === "signin" && <a href="/login">Jury / test access</a>}
-          <a href="https://kerdaxis.com">← kerdaxis.com</a>
         </nav>
+        <footer className="kl-foot">
+          <a href="https://kerdaxis.com">← kerdaxis.com</a>
+          {mode === "signin" && <a href="/login">Jury / test access</a>}
+        </footer>
       </form>
     </main>
   );
@@ -142,7 +144,11 @@ const CSS = `
 .kl-err{color:#ff9b8a!important;}
 .kl-note{color:#eef8f5!important;background:#0b1218;border:1px solid #26343d;border-radius:11px;padding:10px 12px;}
 .kl-fine{font-size:12.5px!important;}
-.kl-links{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:6px;}
+.kl-links{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 20px;margin-top:4px;}
+.kl .kl-links a{color:#b4f768;font-size:14px;font-weight:600;}
+.kl .kl-links a:hover{text-decoration:underline;text-underline-offset:3px;}
+.kl-price{color:#a3b4b9;font-weight:400;}
+.kl-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;margin-top:8px;padding-top:16px;border-top:1px solid #26343d;}
 .kl a{color:#a3b4b9;font-size:13px;text-decoration:none;}
-.kl a:hover{color:#eef8f5;}
+.kl-foot a:hover{color:#eef8f5;}
 `;
