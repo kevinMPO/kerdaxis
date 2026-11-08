@@ -1,0 +1,57 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; color: #0d0d12; }
+    #d-cam { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; transform-origin: 0 0; }
+    #d-cam img { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; }
+    .mk { position: absolute; border-radius: 8px; background: rgba(212, 245, 60, 0.55); mix-blend-mode: multiply; transform-origin: 0 50%; }
+    #d-row { position: absolute; left: 380px; top: 592px; width: 1565px; height: 100px; border: 5px solid #0d0d12; border-radius: 14px; opacity: 0; }
+    #d-m1 { left: 536px; top: 643px; width: 270px; height: 28px; }
+    #d-m2 { left: 910px; top: 643px; width: 102px; height: 28px; }
+    #d-m3 { left: 372px; top: 128px; width: 1030px; height: 72px; }
+    #d-m4 { left: 372px; top: 287px; width: 878px; height: 30px; }
+    #d-chip { position: absolute; left: 64px; top: 52px; height: 58px; padding: 0 24px; border-radius: 29px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 28px; line-height: 58px; white-space: nowrap; }
+    #d-chip span { color: #a9a9bb; font-weight: 500; }
+    #d-in, #d-out { position: absolute; inset: 0; background: #ffffff; }
+    #d-out { opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="dash" data-width="1920" data-height="1080">
+    <div id="d-cam">
+      <img src="assets/media/dashboard.jpg" alt="Kerdaxis dashboard, ACME Conseil (demo data): You can recover 5,388 € a year; Needs you: Cancel Nuvio CRM" />
+      <div id="d-m3" class="mk"></div>
+      <div id="d-m4" class="mk"></div>
+      <div id="d-m1" class="mk"></div>
+      <div id="d-m2" class="mk"></div>
+      <div id="d-row" data-layout-allow-overflow></div>
+    </div>
+    <div id="d-chip">app.kerdaxis.com/demo <span>· ACME Conseil · demo data</span></div>
+    <div id="d-in"></div>
+    <div id="d-out"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 16.6. VO5 at 16.9: "here" 1.14, "CRM" 4.56, "no login in 90 days" 5.28-6.95.
+      // VO6 at 23.8: "5,388" local 9.16, "Every euro" 12.16, "deterministic engine" 14.37-15.27.
+      gsap.set(".mk", { scaleX: 0 });
+      gsap.set("#d-cam", { x: -150, y: -420, scale: 1.5 });
+      tl.to("#d-in", { opacity: 0, duration: 0.35, ease: "power2.out" }, 0);
+      tl.to("#d-cam", { x: -170, y: -430, scale: 1.52, duration: 6.4, ease: "none" }, 0.35);
+      tl.fromTo("#d-row", { opacity: 0, scale: 1.04, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "expo.out" }, 1.1);
+      tl.to("#d-m1", { scaleX: 1, duration: 0.45, ease: "power2.out" }, 5.28);
+      tl.to("#d-m2", { scaleX: 1, duration: 0.3, ease: "power2.out" }, 6.2);
+      // Pull back: the whole AI CFO behind that one line.
+      tl.to("#d-row", { opacity: 0, duration: 0.25, ease: "power2.in" }, 6.9);
+      tl.to("#d-cam", { x: 0, y: 53, scale: 0.96, duration: 0.8, ease: "power3.inOut" }, 7.0);
+      tl.to("#d-cam", { x: -420, y: 113, scale: 1.55, duration: 0.7, ease: "power3.inOut" }, 8.6);
+      tl.to("#d-m3", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 9.16);
+      tl.to("#d-cam", { x: -581, y: -30, scale: 1.9, duration: 0.7, ease: "power3.inOut" }, 11.6);
+      tl.to("#d-m4", { scaleX: 1, duration: 0.6, ease: "power2.out" }, 12.3);
+      tl.to("#d-cam", { x: -620, y: -40, scale: 1.94, duration: 3.0, ease: "none" }, 12.3);
+      tl.to("#d-cam", { x: "-=700", duration: 0.4, ease: "power3.in" }, 15.9);
+      tl.to("#d-out", { opacity: 1, duration: 0.25, ease: "power2.in" }, 16.05);
+      tl.set({}, {}, 16.5);
+      window.__timelines["dash"] = tl;
+    })();
+  </script>
+</template>

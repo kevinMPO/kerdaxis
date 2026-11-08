@@ -1,0 +1,72 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; color: #0d0d12; }
+    #f-eye { position: absolute; left: 120px; top: 150px; font-family: "Fira Code", monospace; font-size: 26px; letter-spacing: 0.14em; color: #2f7d12; }
+    #f-h { position: absolute; left: 120px; top: 196px; font-weight: 800; font-size: 76px; letter-spacing: -0.04em; line-height: 1.05; white-space: nowrap; }
+    #f-rail0, #f-rail { position: absolute; left: 158px; top: 518px; width: 1450px; height: 4px; border-radius: 2px; background: #d6d6e0; }
+    #f-rail { background: #0d0d12; transform-origin: 0 50%; }
+    .n { position: absolute; top: 482px; width: 260px; }
+    .n .dot { position: absolute; left: 0; top: 0; width: 76px; height: 76px; border-radius: 38px; border: 4px solid #d6d6e0; background: #f7f7f9;
+      font-family: "Fira Code", monospace; font-size: 28px; line-height: 68px; text-align: center; color: #5f5f70; }
+    .n .on { position: absolute; left: 0; top: 0; width: 76px; height: 76px; border-radius: 38px; background: #0d0d12; color: #ffffff;
+      font-family: "Fira Code", monospace; font-size: 28px; line-height: 76px; text-align: center; opacity: 0; }
+    .n h3 { position: absolute; left: 0; top: 108px; margin: 0; font-weight: 800; font-size: 34px; letter-spacing: 0.06em; color: #0d0d12; opacity: 0.28; white-space: nowrap; }
+    .n .k { position: absolute; left: 0; top: 162px; height: 44px; padding: 0 16px; border-radius: 22px; background: #f0f0f4; color: #4a4a58;
+      font-weight: 700; font-size: 28px; line-height: 44px; white-space: nowrap; opacity: 0.28; }
+    #n4 .on { background: #d4f53c; color: #0d0d12; }
+    #n4 .k { background: #f0fadb; color: #2f7d12; }
+    #n4-halo { position: absolute; left: -14px; top: -14px; width: 104px; height: 104px; border-radius: 52px; background: #f0fadb; opacity: 0; }
+    #f-you { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .cur-svg { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .pill { position: absolute; left: 56px; top: 56px; height: 46px; padding: 0 18px; border-radius: 23px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 26px; line-height: 46px; white-space: nowrap; }
+    #f-out { position: absolute; inset: 0; background: #0d0d12; transform-origin: 0 50%; }
+  </style>
+  <div id="root" data-composition-id="flow" data-width="1920" data-height="1080">
+    <div id="f-eye">HOW IT WORKS</div>
+    <div id="f-h">From bank feed to confirmed saving.</div>
+    <div id="f-rail0"></div>
+    <div id="f-rail"></div>
+    <div id="n1" class="n" data-layout-allow-overlap data-layout-allow-occlusion style="left: 120px"><div class="dot" data-layout-allow-occlusion>01</div><div class="on">01</div><h3>CONNECT</h3><div class="k">Qonto · read-only</div></div>
+    <div id="n2" class="n" data-layout-allow-overlap data-layout-allow-occlusion style="left: 410px"><div class="dot" data-layout-allow-occlusion>02</div><div class="on">02</div><h3>ANALYZE</h3><div class="k">Rule engine</div></div>
+    <div id="n3" class="n" data-layout-allow-overlap data-layout-allow-occlusion style="left: 700px"><div class="dot" data-layout-allow-occlusion>03</div><div class="on">03</div><h3>COMPARE</h3><div class="k">Linkup prices</div></div>
+    <div id="n4" class="n" data-layout-allow-overlap data-layout-allow-occlusion style="left: 990px"><div id="n4-halo"></div><div class="dot" data-layout-allow-occlusion>04</div><div class="on">04</div><h3>APPROVE</h3><div class="k">You</div></div>
+    <div id="n5" class="n" data-layout-allow-overlap data-layout-allow-occlusion style="left: 1280px"><div class="dot" data-layout-allow-occlusion>05</div><div class="on">05</div><h3>EXECUTE</h3><div class="k">H Company</div></div>
+    <div id="n6" class="n" data-layout-allow-overlap data-layout-allow-occlusion style="left: 1570px"><div class="dot" data-layout-allow-occlusion>06</div><div class="on">06</div><h3>VERIFY</h3><div class="k">Supplier + bank</div></div>
+    <div id="f-you" data-layout-allow-occlusion data-layout-allow-overflow data-layout-allow-overlap><svg viewBox="0 0 26 37" class="cur-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="pill">You</div></div>
+    <div id="f-out"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 33.1. VO7 at 33.4: Connect 0.34, analyze 1.34, compare 2.38, "then it waits" 3.35, "you" 4.33,
+      // Execute 4.81, verify 5.88. The rail runs from dot 1 (x 158) to dot 6 (x 1608): 290 px per step = 0.2 of its width.
+      gsap.set("#f-out", { scaleX: 1 });
+      tl.to("#f-out", { scaleX: 0, transformOrigin: "100% 50%", duration: 0.4, ease: "power3.inOut" }, 0);
+      tl.fromTo(["#f-eye", "#f-h"], { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out", stagger: 0.06 }, 0.15);
+      gsap.set("#f-rail", { scaleX: 0 });
+      const lit = (id, t) => {
+        tl.to(id + " .on", { opacity: 1, duration: 0.2, ease: "power2.out" }, t);
+        tl.fromTo(id + " .on", { scale: 0.7, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.3, ease: "back.out(1.8)" }, t);
+        tl.to([id + " h3", id + " .k"], { opacity: 1, duration: 0.25, ease: "power2.out" }, t);
+      };
+      lit("#n1", 0.34);
+      tl.to("#f-rail", { scaleX: 0.2, duration: 0.6, ease: "power2.inOut" }, 0.7); lit("#n2", 1.34);
+      tl.to("#f-rail", { scaleX: 0.4, duration: 0.6, ease: "power2.inOut" }, 1.75); lit("#n3", 2.38);
+      tl.to("#f-rail", { scaleX: 0.6, duration: 0.6, ease: "power2.inOut" }, 2.75); lit("#n4", 3.35);
+      // The human gate: the line waits, the halo breathes once, then "You" gives the green light.
+      tl.fromTo("#n4-halo", { opacity: 0, scale: 0.8, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1.25, duration: 0.6, ease: "sine.out" }, 3.35);
+      tl.to("#n4-halo", { scale: 1, opacity: 0.85, duration: 0.6, ease: "sine.inOut" }, 3.95);
+      gsap.set("#f-you", { x: 1250, y: 1120 });
+      tl.to("#f-you", { x: 1040, y: 540, duration: 0.7, ease: "power2.inOut" }, 3.65);
+      tl.to("#f-you", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.07 }, 4.4);
+      tl.to("#f-you", { scale: 1, duration: 0.16, ease: "power3.out" }, 4.47);
+      tl.to("#f-you", { x: 1130, y: 1120, duration: 0.5, ease: "power2.in" }, 4.75);
+      tl.to("#f-rail", { scaleX: 0.8, duration: 0.45, ease: "power2.inOut" }, 4.5); lit("#n5", 4.81);
+      tl.to("#f-rail", { scaleX: 1, duration: 0.6, ease: "power2.inOut" }, 5.3); lit("#n6", 5.88);
+      tl.to("#f-out", { scaleX: 1, transformOrigin: "0% 50%", duration: 0.4, ease: "power3.inOut" }, 8.0);
+      tl.set({}, {}, 8.5);
+      window.__timelines["flow"] = tl;
+    })();
+  </script>
+</template>

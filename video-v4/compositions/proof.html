@@ -1,0 +1,42 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0d0d12; font-family: "Plus Jakarta Sans", sans-serif; color: #f4f4f8; }
+    #p-chips { position: absolute; left: 0; top: 150px; width: 1920px; text-align: center; white-space: nowrap; }
+    .chip { display: inline-block; height: 60px; margin: 0 8px; padding: 0 26px; border-radius: 30px; border: 2px solid #2a2a36; background: #1a1a23;
+      font-weight: 700; font-size: 28px; line-height: 56px; color: #f4f4f8; opacity: 0; }
+    .chip.test { background: #f0fadb; border-color: #f0fadb; color: #2f7d12; }
+    #p-big { position: absolute; left: 0; top: 270px; width: 1920px; text-align: center; font-weight: 800; font-size: 360px; line-height: 1; letter-spacing: -0.05em; white-space: nowrap; }
+    #p-big span { display: inline-block; opacity: 0; }
+    #p-a { color: #d4f53c; }
+    #p-lab { position: absolute; left: 0; top: 660px; width: 1920px; text-align: center; font-weight: 700; font-size: 52px; letter-spacing: -0.02em; white-space: nowrap; opacity: 0; }
+    .st { position: absolute; top: 790px; white-space: nowrap; font-size: 32px; color: #a9a9bb; opacity: 0; }
+    .st b { color: #ffffff; font-weight: 800; font-size: 40px; margin-right: 10px; }
+    #ps1 { left: 520px; } #ps2 { left: 1010px; }
+    #p-out { position: absolute; inset: 0; background: #0d0d12; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="proof" data-width="1920" data-height="1080">
+    <div id="p-chips"><span id="pc1" class="chip">Stripe customer portal</span><span id="pc2" class="chip test">Test mode</span><span id="pc3" class="chip">7 Nov 2026</span></div>
+    <div id="p-big"><span id="p-a">5</span><span id="p-b">/5</span></div>
+    <div id="p-lab">cancellations confirmed by the Stripe API</div>
+    <div id="ps1" class="st"><b>2/2</b>refusals respected</div><div id="ps2" class="st"><b>≈56 s</b>approval to proof</div>
+    <div id="p-out"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 41.6. VO8 at 41.9: "Stripe's real customer portal" 0.36-1.95, "test mode" 2.57-3.19,
+      // "5 cancellations" 3.63, "out of 5" 4.81-5.04, "confirmed" 5.45, "Stripe itself" 5.96.
+      tl.fromTo("#pc1", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 0.4);
+      tl.fromTo("#pc2", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 2.6);
+      tl.fromTo("#pc3", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 2.8);
+      tl.fromTo("#p-a", { opacity: 0, scale: 1.8, transformOrigin: "50% 60%" }, { opacity: 1, scale: 1, duration: 0.22, ease: "back.out(1.5)" }, 3.63);
+      tl.fromTo("#p-b", { opacity: 0, scale: 1.8, transformOrigin: "30% 60%" }, { opacity: 1, scale: 1, duration: 0.22, ease: "back.out(1.5)" }, 4.81);
+      tl.fromTo("#p-lab", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 5.45);
+      tl.fromTo("#ps1", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 5.5);
+      tl.fromTo("#ps2", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 5.55);
+      tl.to("#p-out", { opacity: 1, duration: 0.15, ease: "power2.in" }, 7.45);
+      tl.set({}, {}, 7.6);
+      window.__timelines["proof"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,64 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; }
+    #t-page { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #t-page img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; }
+    #t-inj { position: absolute; left: 272px; top: 506px; width: 494px; height: 28px; border: 3px solid #0d0d12; border-radius: 6px;
+      background: rgba(212, 245, 60, 0.45); opacity: 0; }
+    #t-injtag { position: absolute; left: 776px; top: 503px; height: 34px; padding: 0 12px; border-radius: 8px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 18px; line-height: 34px; white-space: nowrap; opacity: 0; }
+    #t-injtag b { color: #d4f53c; }
+    #t-want { position: absolute; left: 276px; top: 377px; width: 418px; height: 67px; border: 3px dashed #0d0d12; border-radius: 10px; opacity: 0; }
+    #t-wantl { position: absolute; left: 706px; top: 394px; font-weight: 700; font-size: 18px; color: #0d0d12; white-space: nowrap; opacity: 0; }
+    #t-ag { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-svg { position: absolute; left: 0; top: 0; width: 26px; height: 37px; }
+    .ag-pill { position: absolute; left: 30px; top: 22px; height: 30px; padding: 0 12px 0 10px; border-radius: 15px; background: #0d0d12;
+      color: #f4f4f8; font-weight: 700; font-size: 17px; line-height: 30px; white-space: nowrap; }
+    .ag-pill i { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 4px; background: #d4f53c; vertical-align: 1px; }
+    #t-stamp { position: absolute; left: 1180px; top: 560px; padding: 10px 34px; border: 6px solid #0d0d12; border-radius: 16px; background: #d4f53c;
+      color: #0d0d12; font-weight: 800; font-size: 84px; letter-spacing: 0.01em; white-space: nowrap; opacity: 0; }
+    #t-band { position: absolute; left: 0; top: 0; width: 1920px; height: 104px; background: #0d0d12; color: #f4f4f8; }
+    #t-who { position: absolute; left: 96px; top: 30px; font-weight: 700; font-size: 34px; white-space: nowrap; }
+    #t-who i { display: inline-block; width: 14px; height: 14px; margin-right: 14px; border-radius: 7px; background: #d4f53c; vertical-align: 3px; }
+    #t-src { position: absolute; right: 96px; top: 36px; font-weight: 500; font-size: 28px; color: #a9a9bb; white-space: nowrap; }
+    #t-dip { position: absolute; inset: 0; background: #0d0d12; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="trap" data-width="1920" data-height="1080">
+    <div id="t-page">
+      <img src="assets/shots/offer.png" alt="Supplier portal: retention offer with an injected note to AI assistants" />
+      <div id="t-want"></div>
+      <div id="t-wantl">← what the page asks for</div>
+      <div id="t-inj"></div>
+      <div id="t-injtag"><b>Injected</b> instruction</div>
+      <div id="t-ag" data-layout-allow-occlusion><svg viewBox="0 0 26 37" class="ag-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="ag-pill"><i></i>H Company agent</div></div>
+    </div>
+    <div id="t-stamp" data-layout-allow-overlap>IGNORED</div>
+    <div id="t-band"><div id="t-who"><i></i>H Company agent · supplier portal</div><div id="t-src">Demo portal, fictional supplier · recorded run</div></div>
+    <div id="t-dip"></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local. VO1 at 0.40: "told" 1.81, "accept" 2.94, "offer" 3.56. VO2 "It said no." at 4.50.
+      // Frame 0 is the thumbnail: the retention page, already in close-up.
+      tl.fromTo("#t-page", { x: -440, y: -150, scale: 1.96 }, { x: -480, y: -185, scale: 2.0, duration: 3.4, ease: "none" }, 0);
+      tl.fromTo("#t-inj", { opacity: 0, scale: 1.08, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.25, ease: "expo.out" }, 1.8);
+      tl.fromTo("#t-injtag", { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.25, ease: "expo.out" }, 1.92);
+      tl.fromTo("#t-want", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 2.94);
+      tl.fromTo("#t-wantl", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 3.0);
+      // The agent enters from below-right and goes straight to "No thanks": its path stays under the
+      // "Accept the offer" button (y > 444 wherever x < 694), as in the recorded run.
+      gsap.set("#t-ag", { x: 1110, y: 680 });
+      tl.to("#t-ag", { x: 429, y: 470, duration: 0.9, ease: "power2.inOut" }, 3.6);
+      tl.to(["#t-want", "#t-wantl"], { opacity: 0, duration: 0.2, ease: "power3.in" }, 4.4);
+      tl.fromTo("#t-stamp", { opacity: 0, scale: 2.0, rotation: 10, transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, rotation: -5, duration: 0.2, ease: "back.out(1.6)" }, 4.5);
+      tl.to("#t-ag", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.06 }, 4.6);
+      tl.to("#t-ag", { scale: 1, duration: 0.14, ease: "power3.out" }, 4.66);
+      tl.to("#t-page", { y: -585, duration: 0.3, ease: "power3.in" }, 5.8);
+      tl.to("#t-dip", { opacity: 0.5, duration: 0.15, ease: "none" }, 6.0);
+      tl.set({}, {}, 6.2);
+      window.__timelines["trap"] = tl;
+    })();
+  </script>
+</template>
