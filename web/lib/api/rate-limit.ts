@@ -76,6 +76,12 @@ export const PLAFONDS: Readonly<Record<string, readonly Fenetre[]>> = Object.fre
     { max: 15, secondes: 60 },
     { max: 60, secondes: 3600 },
   ]),
+  // Linkup seul, une recherche « standard » par fournisseur à résilier. Même
+  // clic que les prix : une quinzaine au plus ; le cache D1 ne compte pas.
+  cancel_channel: Object.freeze([
+    { max: 15, secondes: 60 },
+    { max: 60, secondes: 3600 },
+  ]),
   // H Company seul, réponse courte : la plus tolérante des trois.
   letter: Object.freeze([
     { max: 8, secondes: 60 },
@@ -87,17 +93,6 @@ export const PLAFONDS: Readonly<Record<string, readonly Fenetre[]>> = Object.fre
     { max: 3, secondes: 60 },
     { max: 20, secondes: 3600 },
   ]),
-  // API moteur publique (/api/v1/engine) : 100 % déterministe, aucun appel
-  // payant en aval — la limite protège la ressource CPU et borne un client
-  // fautif, pas un budget. Plafond par JETON (voir `cleAppelant`), pas par IP :
-  // un client Claude Tag légitime tape depuis une IP mutualisée.
-  //
-  // Fenêtre unique de 60 s, à dessein : la cible de service est Vercel, où le KV
-  // partagé est absent (limiteur en mémoire par isolat, décision produit
-  // assumée). Sur KV Cloudflare, cette fenêtre unique n'est exacte que par colo
-  // (lecture éventuellement périmée ~60 s) ; l'enforcement cross-région exact
-  // relèverait d'un Durable Object clé par jeton — cf. en-tête de ce module.
-  engine: Object.freeze([{ max: 60, secondes: 60 }]),
 });
 
 /**

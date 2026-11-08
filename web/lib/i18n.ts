@@ -11,7 +11,6 @@ export const LANGS: Lang[] = ["fr", "en", "de", "es", "it"];
 /** Nom affiché du modèle qui a catégorisé, `null` quand ce sont les règles. */
 export function categorizerName(categorizer: Categorizer | undefined): string | null {
   if (categorizer === "hcompany") return "H Company Holo";
-  if (categorizer === "claude") return "Claude";
   return null;
 }
 
@@ -107,7 +106,7 @@ export const UI = {
     benchSource: "Sourcer le prix (web)",
     benchRerun: "Relancer",
     benchSearching: "Linkup cherche des alternatives sourcées…",
-    benchVia: (p: string) => `via ${p === "linkup" ? "Linkup" : p}`,
+    benchVia: (p: string) => `via ${p === "linkup+scraper" ? "Linkup + H web-scraper" : p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ ${s} €/mois d'écart avec ${alt} (calcul engine)`,
     benchSourceLink: (d: string) => `source${d ? ` · ${d}` : ""}`,
     benchInject: "Régénérer la lettre en citant ces prix",
@@ -173,7 +172,7 @@ export const UI = {
     benchSource: "Source the price (web)",
     benchRerun: "Rerun",
     benchSearching: "Linkup is searching for sourced alternatives…",
-    benchVia: (p: string) => `via ${p === "linkup" ? "Linkup" : p}`,
+    benchVia: (p: string) => `via ${p === "linkup+scraper" ? "Linkup + H web-scraper" : p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ €${s}/mo gap vs ${alt} (engine maths)`,
     benchSourceLink: (d: string) => `source${d ? ` · ${d}` : ""}`,
     benchInject: "Regenerate the letter citing these prices",
@@ -239,7 +238,7 @@ export const UI = {
     benchSource: "Preis belegen (Web)",
     benchRerun: "Erneut ausführen",
     benchSearching: "Linkup sucht nach belegten Alternativen…",
-    benchVia: (p: string) => `über ${p === "linkup" ? "Linkup" : p}`,
+    benchVia: (p: string) => `über ${p === "linkup+scraper" ? "Linkup + H web-scraper" : p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ ${s} €/Monat Differenz zu ${alt} (Engine-Berechnung)`,
     benchSourceLink: (d: string) => `Quelle${d ? ` · ${d}` : ""}`,
     benchInject: "Schreiben mit diesen Preisen neu generieren",
@@ -305,7 +304,7 @@ export const UI = {
     benchSource: "Buscar el precio (web)",
     benchRerun: "Reintentar",
     benchSearching: "Linkup busca alternativas con fuente…",
-    benchVia: (p: string) => `vía ${p === "linkup" ? "Linkup" : p}`,
+    benchVia: (p: string) => `vía ${p === "linkup+scraper" ? "Linkup + H web-scraper" : p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ ${s} €/mes de diferencia con ${alt} (cálculo del engine)`,
     benchSourceLink: (d: string) => `fuente${d ? ` · ${d}` : ""}`,
     benchInject: "Regenerar la carta citando estos precios",
@@ -371,7 +370,7 @@ export const UI = {
     benchSource: "Verifica il prezzo (web)",
     benchRerun: "Riprova",
     benchSearching: "Linkup cerca alternative con fonte…",
-    benchVia: (p: string) => `tramite ${p === "linkup" ? "Linkup" : p}`,
+    benchVia: (p: string) => `tramite ${p === "linkup+scraper" ? "Linkup + H web-scraper" : p === "linkup" ? "Linkup" : p}`,
     benchBest: (s: number, alt: string) => `≈ ${s} €/mese di scarto con ${alt} (calcolo engine)`,
     benchSourceLink: (d: string) => `fonte${d ? ` · ${d}` : ""}`,
     benchInject: "Rigenera la lettera citando questi prezzi",

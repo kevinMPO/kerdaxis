@@ -7,6 +7,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import type { AnalyzeResult, Lang, Localized } from "@/lib/types";
+import { leverName, leverProposal } from "@/lib/lever-text";
 import { eur as eurFmt, LANGS, natureLabel, riskLabel } from "@/lib/i18n";
 
 const DICT = {
@@ -207,8 +208,8 @@ export default function Rapport() {
             .sort((a, b) => Number(b.active) - Number(a.active) || b.saving - a.saving)
             .map((l) => (
               <tr key={l.id} className={l.active ? "" : "rap-off"}>
-                <td>{l.label}</td>
-                <td>{l.to}</td>
+                <td>{leverName(l, lang)}</td>
+                <td>{leverProposal(l, lang)}</td>
                 <td className="rap-num">{l.saving} €</td>
                 <td>{riskLabel(l.risk, lang)}</td>
               </tr>

@@ -9,7 +9,7 @@
 // déduit pas du tarif actuel, le levier reste « non vérifié » avec la raison.
 // ---------------------------------------------------------------------------
 
-import type { LeverAction, LeverEvidence, SourcedOffer, UnverifiedReason } from "@/lib/types";
+import type { LeverAction, LeverEvidence, Localized, SourcedOffer, UnverifiedReason } from "@/lib/types";
 
 /** Écart toléré entre le montant payé et « postes × tarif » (TVA, arrondis). */
 const SEAT_MATCH_TOLERANCE = 0.06;
@@ -126,12 +126,14 @@ export function priceLever(input: PricingInput): PricingOutcome {
 }
 
 /** Libellé de la proposition, construit par le moteur à partir de l'offre sourcée. */
-export function describeEvidence(action: LeverAction, evidence: LeverEvidence): string {
+export function describeEvidence(action: LeverAction, evidence: LeverEvidence): Localized {
   const { offer, seats } = evidence;
-  const unit = offer.perSeat ? "/poste/mois" : "/mois";
-  const price = `${offer.monthlyPrice} €${unit}`;
   const seatNote = seats !== null ? ` × ${seats}` : "";
-  if (action === "downgrade") return `formule ${offer.name} (${price}${seatNote})`;
-  if (action === "renegotiate") return `renégocier, appui : ${offer.name} à ${price}${seatNote}`;
-  return `passer à ${offer.name} (${price}${seatNote})`;
+  const fr = `${offer.monthlyPrice} €${offer.perSeat ? "/poste/mois" : "/mois"}${seatNote}`;
+  const en = `€${offer.monthlyPrice}${offer.perSeat ? "/seat/mo" : "/mo"}${seatNote}`;
+  if (action === "downgrade") return { fr: `formule ${offer.name} (${fr})`, en: `${offer.name} plan (${en})` };
+  if (action === "renegotiate") {
+    return { fr: `renégocier, appui : ${offer.name} à ${fr}`, en: `renegotiate, anchor: ${offer.name} at ${en}` };
+  }
+  return { fr: `passer à ${offer.name} (${fr})`, en: `switch to ${offer.name} (${en})` };
 }

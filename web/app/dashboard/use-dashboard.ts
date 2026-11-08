@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AnalyzeResult, Lang, Lever, LeverEvidence, Localized, UnverifiedReason } from "@/lib/types";
-import { MOCK } from "@/lib/mock";
+import type { AnalyzeResult, CancelChannelCheck, Lang, Lever, LeverEvidence, Localized, UnverifiedReason } from "@/lib/types";
+import { EMPTY_ANALYSIS } from "@/lib/analysis/empty";
+import { leverProposal } from "@/lib/lever-text";
 import { detectLang, eur as eurFmt, LANGS } from "@/lib/i18n";
 import { buildPlanCsv, planFilename } from "@/lib/export";
 import { parseIntent } from "@/lib/voice/intents";
@@ -19,8 +20,11 @@ const DEFAULT_BENCH_CATEGORY = "outil SaaS";
 
 export type ApiRefusal = null | "reconnect" | "unavailable";
 
-/** Suppliers the H Company agent has a cancellation path for (mirrors SUPPLIER_IDS on the server). */
-const AGENT_CATALOG = ["nuvio", "lumen"] as const;
+/**
+ * Suppliers the H Company agent has a cancellation path for (mirrors SUPPLIER_IDS on the server).
+ * They are our own demo portals, so the web knows nothing about them: their online path is known, not searched.
+ */
+const AGENT_CATALOG: readonly string[] = ["nuvio", "lumen"];
 
 /**
  * ready: the agent can run now; offline: path exists but the portal is unreachable; unsupported: no path yet;
@@ -66,7 +70,7 @@ interface PricingResponse {
   verified: boolean;
   note?: string;
   pricing:
-    | { status: "sourced"; saving: number; evidence: LeverEvidence; to?: string }
+    | { status: "sourced"; saving: number; evidence: LeverEvidence; to?: string; toLabel?: Localized }
     | { status: "unverified"; reason: Exclude<UnverifiedReason, "web_down"> }
     | null;
 }
@@ -84,6 +88,19 @@ export function needsMarketPrice(lever: Lever): boolean {
   return lever.basis === "pending" || lever.basis === "unverified";
 }
 
+/** Cancellation whose channel Linkup has not answered yet. */
+export function needsCancelCheck(lever: Lever): boolean {
+  if (lever.action !== "cancel" || AGENT_CATALOG.includes(lever.id)) return false;
+  return (lever.cancelChannel?.channel ?? "unknown") === "unknown";
+}
+
+/** The agent cancels only what can be cancelled online; everything else is a letter. */
+export function cancelsOnline(lever: Lever): boolean {
+  return lever.action === "cancel" && (AGENT_CATALOG.includes(lever.id) || lever.cancelChannel?.channel === "online");
+}
+
+const unknownChannel = (): CancelChannelCheck => ({ channel: "unknown", sourceUrl: "", checkedAt: new Date().toISOString().slice(0, 10) });
+
 function applyPricing(lever: Lever, response: PricingResponse | null): Lever {
   const pricing = response?.pricing;
   if (pricing?.status === "sourced") {
@@ -94,6 +111,7 @@ function applyPricing(lever: Lever, response: PricingResponse | null): Lever {
       basis: "sourced",
       evidence: pricing.evidence,
       to: pricing.to ?? pricing.evidence.offer.name,
+      toLabel: pricing.toLabel,
       active: lever.risk === "safe",
       unverifiedReason: undefined,
     };
@@ -148,6 +166,10 @@ export interface Dashboard {
   loaded: boolean;
   refusal: ApiRefusal;
   qontoConnected: boolean;
+  /** null until /api/auth/qonto/status answers; false where Qonto would refuse the callback address. */
+  qontoConnectable: boolean | null;
+  /** The visitor came back from a connect attempt that cannot succeed on this domain. */
+  qontoConnectBlocked: boolean;
   disconnectQonto: () => Promise<void>;
   monthly: number;
   annual: number;
@@ -189,11 +211,13 @@ const EMPTY_LETTER: LetterState = { lever: null, text: "", loading: false, bench
 export function useDashboard(): Dashboard {
   const [lang, setLangState] = useState<Lang>("fr");
   const [view, setView] = useState<ViewId>("today");
-  const [data, setData] = useState<AnalyzeResult>(MOCK);
-  const [levers, setLevers] = useState<Lever[]>(MOCK.levers);
+  const [data, setData] = useState<AnalyzeResult>(EMPTY_ANALYSIS);
+  const [levers, setLevers] = useState<Lever[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [refusal, setRefusal] = useState<ApiRefusal>(null);
   const [qontoConnected, setQontoConnected] = useState(false);
+  const [qontoConnectable, setQontoConnectable] = useState<boolean | null>(null);
+  const [qontoConnectBlocked, setQontoConnectBlocked] = useState(false);
   const [execStatus, setExecStatus] = useState<ExecutionStatus | null>(null);
   const [runs, setRuns] = useState<RunRef[]>([]);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
@@ -231,7 +255,7 @@ export function useDashboard(): Dashboard {
     }
   }, []);
 
-  // A refused /api/analyze must never be shown as an analysis: the demo data stays and the refusal is said.
+  // A refused /api/analyze must never be shown as an analysis: the screen stays empty and the refusal is said.
   useEffect(() => {
     const controller = new AbortController();
     const load = async (): Promise<void> => {
@@ -260,12 +284,17 @@ export function useDashboard(): Dashboard {
     const load = async (): Promise<void> => {
       try {
         const situation = new URLSearchParams(window.location.search).get("qonto");
-        if (situation === "indisponible" || situation === "erreur") setRefusal("unavailable");
+        if (situation === "indisponible") setQontoConnectBlocked(true);
+        if (situation === "erreur") setRefusal("unavailable");
         const [qonto, execution] = await Promise.all([
           fetch("/api/auth/qonto/status", { signal: controller.signal }).then((r) => (r.ok ? r.json() : null)),
           fetch("/api/execution/status", { cache: "no-store", signal: controller.signal }).then((r) => (r.ok ? r.json() : null)),
         ]);
-        if (qonto) setQontoConnected(Boolean((qonto as { connected?: boolean }).connected));
+        if (qonto) {
+          const state = qonto as { connected?: boolean; connectable?: boolean };
+          setQontoConnected(Boolean(state.connected));
+          setQontoConnectable(state.connectable ?? true);
+        }
         if (execution) setExecStatus(execution as ExecutionStatus);
       } catch {
         /* status probes are best-effort: the UI falls back to letters */
@@ -317,7 +346,7 @@ export function useDashboard(): Dashboard {
       const trialLocked = replayMode && execStatus?.replaySupplierId != null && supplierId !== execStatus.replaySupplierId;
       if (trialLocked) return "subscribers";
       if (isExecutable(supplierId)) return "ready";
-      return (AGENT_CATALOG as readonly string[]).includes(supplierId) ? "offline" : "unsupported";
+      return AGENT_CATALOG.includes(supplierId) ? "offline" : "unsupported";
     },
     [isExecutable, replayMode, execStatus],
   );
@@ -332,7 +361,7 @@ export function useDashboard(): Dashboard {
       setLaunchingId(lever.id);
       setLaunchError(null);
       try {
-        const id = await launchCancellation(lever.id);
+        const id = await launchCancellation(lever.id, lang);
         const ref: RunRef = { id, supplierId: lever.id, vendor: lever.label, startedAt: new Date().toISOString() };
         setRuns((current) => {
           const next = [ref, ...current.filter((r) => r.id !== id)];
@@ -347,7 +376,7 @@ export function useDashboard(): Dashboard {
         setLaunchingId(null);
       }
     },
-    [],
+    [lang],
   );
 
   const reportRunView = useCallback((next: ExecutionView) => {
@@ -370,7 +399,7 @@ export function useDashboard(): Dashboard {
           body: JSON.stringify({
             merchant: lever.label,
             action: lever.action ?? "renegotiate",
-            alternative: lever.to,
+            alternative: leverProposal(lever, lang),
             savingMonthly: lever.saving,
             savingAnnual: lever.saving * 12,
             lang,
@@ -407,14 +436,35 @@ export function useDashboard(): Dashboard {
     [lang, copy.benchNone],
   );
 
-  const pendingPriceCount = useMemo(() => levers.filter(needsMarketPrice).length, [levers]);
+  const pendingPriceCount = useMemo(() => levers.filter((l) => needsMarketPrice(l) || needsCancelCheck(l)).length, [levers]);
 
-  // One consent click (rule 3): only each merchant's name and business pole leave, the engine turns prices into €.
+  const checkChannel = useCallback(async (lever: Lever): Promise<void> => {
+    let channel = unknownChannel();
+    try {
+      const reply = await fetch("/api/cancel-channel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ merchant: lever.label }),
+      });
+      if (reply.ok) channel = (await reply.json()) as CancelChannelCheck;
+    } catch {
+      /* web down: the lever stays a letter */
+    }
+    setLevers((all) => all.map((l) => (l.id === lever.id ? { ...l, cancelChannel: channel } : l)));
+  }, []);
+
+  // One consent click (rule 3): only each merchant's name and business pole leave. The engine turns prices into €,
+  // and Linkup says whether a cancellation can be done online (agent) or needs a letter.
   const priceAllLevers = useCallback(async () => {
-    const targets = levers.filter(needsMarketPrice);
+    const targets = levers.filter((l) => needsMarketPrice(l) || needsCancelCheck(l));
     if (targets.length === 0 || pricing.status === "running") return;
     setPricing({ status: "running", done: 0, total: targets.length });
     await runPool(targets, PRICING_CONCURRENCY, async (lever) => {
+      if (needsCancelCheck(lever)) {
+        await checkChannel(lever);
+        setPricing((run) => ({ ...run, done: run.done + 1 }));
+        return;
+      }
       let response: PricingResponse | null = null;
       try {
         const reply = await fetch("/api/benchmark", {
@@ -436,7 +486,7 @@ export function useDashboard(): Dashboard {
       setPricing((run) => ({ ...run, done: run.done + 1 }));
     });
     setPricing((run) => ({ ...run, status: "done" }));
-  }, [levers, lang, pricing.status]);
+  }, [levers, lang, pricing.status, checkChannel]);
 
   const regenerateWithPrices = useCallback(() => {
     if (!letter.lever || !letter.bench) return;
@@ -502,6 +552,8 @@ export function useDashboard(): Dashboard {
     loaded,
     refusal,
     qontoConnected,
+    qontoConnectable,
+    qontoConnectBlocked,
     disconnectQonto,
     monthly,
     annual,

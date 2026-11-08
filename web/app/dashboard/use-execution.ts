@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { FinalLabelSource, ResearchRunCheck } from "@/lib/execution/research/compare";
 import type { RunStatus } from "./copy";
 
 export interface ExecutionEvent {
@@ -18,6 +19,9 @@ export interface PlaybookView {
   finalButtonLabel: string;
   retentionTraps: string[];
   fallbackReason: string | null;
+  researchedAt?: string | null;
+  sourceUrls?: string[];
+  finalLabelSource?: FinalLabelSource;
 }
 
 export interface ExecutionView {
@@ -42,6 +46,8 @@ export interface ExecutionView {
   events: ExecutionEvent[];
   replay?: boolean;
   playbook?: PlaybookView | null;
+  /** Linkup's documented path checked against the agent's log, computed by the server. */
+  researchCheck?: ResearchRunCheck | null;
 }
 
 export const TERMINAL_STATUSES: RunStatus[] = ["supplier_confirmed", "failed", "needs_manual_action", "stopped_by_user"];

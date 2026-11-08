@@ -86,12 +86,22 @@ export function Dashboard({ fontClassName }: { fontClassName: string }): React.R
             <button className="kd-btn kd-btn-quiet" onClick={() => void d.disconnectQonto()}>
               {copy.disconnect}
             </button>
+          ) : d.qontoConnectable === false ? (
+            <button className="kd-btn kd-btn-quiet kd-btn-closed" disabled title={copy.connectClosedHint}>
+              {copy.connectQonto}
+            </button>
           ) : (
             <a className="kd-btn kd-btn-quiet" href="/api/auth/qonto/start">
               {copy.connectQonto}
             </a>
           )}
         </header>
+
+        {d.qontoConnectBlocked && (
+          <p className="kd-banner" role="status">
+            {copy.connectClosed}
+          </p>
+        )}
 
         {d.refusal && (
           <p className="kd-banner" role="alert">

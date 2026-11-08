@@ -1,144 +1,173 @@
-# Kerdaxis
+# Kerdaxis app (`web/`)
 
-Agent d'optimisation bancaire et fiscale pour TPE, freelances et EI, branché sur Qonto.
-**Ton vrai run-rate, pas ton relevé.**
+The Next.js app behind `app.kerdaxis.com`. It reads a company's Qonto account **read-only**,
+splits spending into four natures (controllable / structural / one-off / personal), computes
+what can be recovered, and turns it into actions: a cancellation run by an H Company agent that
+stops before the final click, or a letter the human sends.
 
-Kerdaxis lit le compte **en lecture seule**, sépare les 4 natures de flux
-(pilotable / structurel / ponctuel / perso), chiffre ce qui est récupérable et le
-rend actionnable en un écran : hero « tu peux récupérer X €/an », score de santé,
-runway, simulateur de leviers, fil d'anomalies.
+The project overview, the final-click gate and the architecture diagram are in the
+[root README](../README.md). This file covers the app itself.
 
-## Architecture (le principe non négociable)
+## The non-negotiable principle
 
-> **Le LLM classe, `engine.ts` calcule.** H Company Holo étiquette chaque marchand
-> (nature, pôle, action). Tout montant en euros est calculé par
-> le moteur déterministe. Le LLM ne multiplie jamais.
+> **The LLM labels, the engine counts.** H Company Holo labels each merchant (nature, pole,
+> action). Every euro amount is computed by the deterministic engine. The LLM never multiplies.
 
 ```
-Qonto (lecture seule)  ─▶  categorize.ts (Holo : étiquettes)    ─▶  engine.ts (€)  ─▶  /api/analyze  ─▶  front
-   lib/mcp/qonto-read-client.ts   lib/categorize.ts                lib/engine.ts     app/api/analyze    app/Kerdaxis.tsx
+Qonto (read-only) ─┐
+                   ├─▶ lib/analysis/pipeline.ts ─▶ categorize.ts (Holo: labels) ─▶ lib/engine (€) ─▶ /api/analyze ─▶ dashboard
+Demo (fictional) ──┘     same path for both          rules as fallback              core.ts            app/api/analyze    app/dashboard/
+  lib/demo/transactions.ts
+
+"Verify prices" (on consent):
+pending lever (0 €) ─▶ D1 cache 30 d ─▶ Linkup (2 questions) ─▶ Holo (sourced prices) ─▶ [fallback] H web-scraper-flash ─▶ engine/pricing.ts (€)
+                        benchmark-cache.ts  lib/benchmark.ts                          lib/benchmark-scraper.ts         seats from the amount paid
 ```
 
-### Connexion Qonto : OAuth par visiteur
+The public demo goes through the same pipeline on a fictional statement: no figure is written
+by hand.
 
-Chaque visiteur connecte **son** compte (`/api/auth/qonto/start` → consentement
-Qonto → `/api/auth/qonto/callback`). Les jetons sont chiffrés (AES-GCM) dans KV,
-la session est un cookie signé qui ne contient qu'un identifiant de locataire
-opaque, et `/api/auth/qonto/revoke` débranche tout.
+A `switch` / `downgrade` / `renegotiate` lever leaves the engine at **0 €** (`pending`). Its saving
+only exists with a public price that has a source and a date (rule 4): `sourced`, otherwise
+`unverified` with the reason. The `h/web-scraper-flash` fallback (an H Company pre-built agent, text
+browser) only runs when extraction found no priced plan for the current supplier: it reads the
+official pricing page, keeps a price only if the page is on the merchant's domain and in euros, and
+dividing a yearly total by 12 is done by the code.
 
-> ⚠️ Le serveur d'autorisation de Qonto **ignore** le paramètre `scope` et
-> délivre un jeton doté de droits d'**écriture** qu'on ne peut pas refuser
-> (vérifié à la main, cf. `lib/auth/providers.ts`). La lecture seule de Kerdaxis
-> ne vient donc PAS du jeton : elle vient de l'**allowlist applicative**
-> (`lib/mcp/readonly-guard.ts`), traversée avant chaque appel réseau. C'est une
-> frontière de sécurité de premier ordre, couverte par plus de 500 tests dont
-> un invariant de dépôt (voir ci-dessous). Le jour où
-> Qonto délivre un client OAuth dédié en `.read`, la bascule est une variable
-> d'environnement (`QONTO_OAUTH_PROVIDER=direct-readonly`), pas une réécriture.
+The same consent click also checks whether a cancellation can be done online
+(`/api/cancel-channel`, Linkup on the supplier's official docs, cached 30 days). Online: the H
+Company agent can run it. Offline or unverified: a letter.
 
-| Fichier | Rôle |
+### Qonto connection: OAuth per visitor
+
+Each visitor connects **their own** account (`/api/auth/qonto/start` → Qonto consent →
+`/api/auth/qonto/callback`). Tokens are encrypted (AES-GCM) in KV, the session is a signed cookie
+that only holds an opaque tenant id, and `/api/auth/qonto/revoke` disconnects everything.
+
+> ⚠️ Qonto's authorization server **ignores** the `scope` parameter and issues a token with
+> **write** rights that cannot be refused (checked by hand, see `lib/auth/providers.ts`). Kerdaxis's
+> read-only guarantee therefore does NOT come from the token: it comes from the **application
+> allowlist** (`lib/mcp/readonly-guard.ts`), checked before every network call. It is a first-class
+> security boundary, covered by tests including a repository-wide invariant (see below). The day
+> Qonto issues a dedicated `.read` OAuth client, switching is an environment variable
+> (`QONTO_OAUTH_PROVIDER=direct-readonly`), not a rewrite.
+
+## Files
+
+| File | Role |
 |---|---|
-| `lib/types.ts` | Le contrat d'API (fait foi entre front et back). |
-| `lib/auth/providers.ts` | Description des serveurs d'autorisation (le seul endroit qui dépend d'un fournisseur). |
-| `lib/auth/pkce.ts` · `oauth-client.ts` | PKCE S256 + client OAuth 2.1 générique (client public). |
-| `lib/auth/crypto.ts` · `token-store.ts` | Chiffrement AES-GCM des jetons + stockage KV. Repli mémoire en dev **uniquement** : en production, binding absent = refus. |
-| `lib/auth/session.ts` · `access.ts` | Cookie de session signé (HMAC) + renouvellement transparent du jeton. |
-| `lib/mcp/readonly-guard.ts` | **Allowlist read-only** : méthode + chemin, deny by default. |
-| `lib/mcp/qonto-read-client.ts` | Client Qonto authentifié par jeton — une seule sortie réseau, filtrée. |
-| `lib/privacy/egress.ts` | Filtre anti-PII : `assertNoPii` avant chaque `fetch` sortant (règle 3). |
-| `lib/db/tenant.ts` · `db/0001_init.sql` | Socle multi-locataire D1 : organisations, décisions, journal d'audit. |
-| `lib/llm/holo.ts` | Client de la Models API de H Company : le seul LLM appelé par l'app. |
-| `lib/categorize.ts` | Catégorisation H Company Holo + fallback règles. |
-| `lib/engine.ts` | Moteur déterministe : natures, run-rate, pôles, score, runway, leviers, anomalies. |
-| `lib/letters.ts` | Lettres de résiliation / renégociation via Holo + gabarit de secours. |
-| `lib/export.ts` | Export du plan en CSV (Excel FR). |
-| `lib/mock.ts` | Données de démo (fallback sans clés). |
-| `app/api/analyze/route.ts` | Orchestration OBSERVE → CATÉGORISE → CALCULE (session OAuth, sinon démo — jamais le compte d'un autre). |
-| `app/api/auth/qonto/*` | Flux OAuth : `start`, `callback`, `revoke`, `status`. |
-| `app/api/letter/route.ts` | Prépare un courrier prêt à envoyer pour un levier. |
-| `app/Kerdaxis.tsx` | Le front d'entrée (hero, ledger, simulateur, anomalies, lettres). |
-| `app/rapport/page.tsx` | Rapport imprimable (→ PDF via impression). |
+| `lib/types.ts` | The API contract between front and back. |
+| `lib/auth/providers.ts` | Authorization server descriptions (the only provider-specific place). |
+| `lib/auth/pkce.ts` · `oauth-client.ts` | PKCE S256 and a generic OAuth 2.1 public client. |
+| `lib/auth/crypto.ts` · `token-store.ts` | AES-GCM token encryption and KV storage. In-memory fallback in dev **only**: in production, a missing binding is refused. |
+| `lib/auth/session.ts` · `access.ts` | Signed (HMAC) session cookie and transparent token refresh. |
+| `lib/mcp/readonly-guard.ts` | **Read-only allowlist**: method + path, deny by default. |
+| `lib/mcp/qonto-read-client.ts` | Token-authenticated Qonto client: one filtered network exit. |
+| `lib/privacy/egress.ts` | Anti-PII filter: `assertNoPii` before every outgoing `fetch` (rule 3). |
+| `lib/privacy/access-log.ts` | Log of every third-party call (who, what, when, outcome). |
+| `lib/db/tenant.ts` · `db/` | Multi-tenant D1 layer and migrations (see [`db/README.md`](db/README.md)). |
+| `lib/llm/holo.ts` | H Company Models API client: the only LLM the app calls. |
+| `lib/categorize.ts` | Holo categorization with keyword rules as fallback, EI classification (PRO / PERSO / A-CLARIFIER). |
+| `lib/engine/core.ts` | Deterministic engine: natures, run-rate, poles, score, runway, levers, anomalies, risk. |
+| `lib/engine/pricing.ts` | Sourced prices → saving (seats deduced, switch / downgrade / renegotiate). |
+| `lib/analysis/pipeline.ts` | One pipeline for the real account and the demo: categorize, then engine. |
+| `lib/demo/` | The FICTIONAL statement of the public demo (transactions only). |
+| `lib/demo/demo-cache.ts` · `db/0004_demo_results.sql` | Today's Holo result of the demo, shared between isolates through D1 (a rules fallback is never stored). |
+| `lib/benchmark.ts` · `benchmark-cache.ts` | Linkup public prices + Holo extraction, 30-day D1 cache. |
+| `lib/benchmark-scraper.ts` | Fallback: the H `web-scraper-flash` agent reads the official pricing page. |
+| `lib/execution/` | Human gate (`policy.ts`), H Company runner (`runner.ts`), trial replay, suppliers, Stripe portal. |
+| `lib/execution/research/` | Path research before a run (Linkup, H screenshot reading, Gladia), the check of the documented path against the agent's log (`compare.ts`), and the cancel channel check. |
+| `lib/execution/run-copy.ts` | Every sentence of a run log, in the language the run was launched in. |
+| `lib/lever-text.ts` | A lever's name and text on screen, in the interface language. |
+| `lib/risk/` | Supplier risk agent: identity, finances, BODACC, Linkup signals; the engine scores, Holo explains. |
+| `lib/letters.ts` | Cancellation / renegotiation letters by Holo, with a template fallback. |
+| `lib/export.ts` | Plan export as CSV (Excel FR). |
+| `app/api/analyze/route.ts` | OBSERVE → CATEGORIZE → COMPUTE (OAuth session, otherwise demo, never someone else's account). |
+| `app/api/auth/qonto/*` | OAuth flow: `start`, `callback`, `revoke`, `status`. |
+| `app/api/benchmark/route.ts` · `cancel-channel/route.ts` | On consent: verify prices, and whether a cancellation can be done online. |
+| `app/api/letter/route.ts` | Prepares a ready-to-send letter for a lever. |
+| `app/api/execution/*` | Approve, start, status, final go, stop, screenshot, reset of an agent run. |
+| `app/dashboard/` | The dashboard served at `/demo`. |
+| `app/Kerdaxis.tsx` | The classic dashboard, served at `/classic`. |
+| `app/rapport/page.tsx` | Printable report (→ PDF through printing). |
+| `middleware.ts` | Access levels (trial, subscriber, test) and internal headers. |
 
-## Démarrer
+## Getting started
 
 ```bash
 npm install
-cp .env.example .env.local   # optionnel : renseigner les clés
+cp .env.example .env.local   # optional: fill in the keys
 npm run dev                  # http://localhost:3000
 ```
 
-**Sans clés**, l'app tourne en mode démo (données mock) — démontrable en pitch.
-**Avec les clés** (`.env.local`), elle analyse un vrai compte :
+**Without keys**, the app runs the demo on a fictional statement, categorized by keyword rules.
+**With keys** (`.env.local`, every variable is documented in `.env.example`), it analyses a real account:
 
 ```env
-HAI_API_KEY=...                      # H Company : agent + Holo (étiquettes, lettres, prix, risque)
+HAI_API_KEY=...                       # H Company: agent + Holo (labels, letters, prices, risk)
+LINKUP_API_KEY=...                    # public prices, cancel channels, path research
 
-# Connexion OAuth du visiteur — le SEUL chemin vers un vrai compte
-QONTO_OAUTH_PROVIDER=mcp-proxy        # ou direct-readonly, le jour du client dédié
+# Visitor OAuth connection: the ONLY way to a real account
+QONTO_OAUTH_PROVIDER=mcp-proxy        # or direct-readonly, once a dedicated client exists
 ARGENTIER_BASE_URL=http://localhost:3000
-ARGENTIER_TOKEN_KEY=...               # 32 octets base64 : chiffre les jetons au repos
-ARGENTIER_SESSION_SECRET=...          # 32 caractères min : signe le cookie de session
+ARGENTIER_TOKEN_KEY=...               # 32 bytes base64: encrypts tokens at rest
+ARGENTIER_SESSION_SECRET=...          # 32 characters min: signs the session cookie
 ```
 
-Les deux secrets se génèrent avec :
+Generate both secrets with:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
-### Production : Cloudflare Workers, et deux bindings obligatoires
+### Production: Cloudflare Workers, and two required bindings
 
-La cible de production est **Cloudflare Workers** (OpenNext + `wrangler.jsonc`).
-Deux bindings y sont provisionnés, et ils ne sont pas optionnels :
+Production runs on **Cloudflare Workers** (OpenNext + `wrangler.jsonc`). Two bindings are
+provisioned there, and they are not optional:
 
-| Binding | Type | Rôle | Sans lui, en production |
+| Binding | Type | Role | Without it, in production |
 |---|---|---|---|
-| `ARGENTIER_TOKENS` | KV | Jetons OAuth chiffrés AES-GCM, TTL calé sur le refresh token | **refus** (`BindingManquantError`) |
-| `ARGENTIER_DB` | D1 (`weur`) | Socle multi-locataire : organisations, décisions, `audit_log` (cf. [`db/README.md`](db/README.md)) | **refus** (`BindingManquantError`) |
+| `ARGENTIER_TOKENS` | KV | OAuth tokens encrypted with AES-GCM, TTL set on the refresh token | **refused** (`BindingManquantError`) |
+| `ARGENTIER_DB` | D1 (`weur`) | Multi-tenant base: organizations, decisions, `audit_log`, accounts, executions, and three caches (prices and cancel channels for 30 days, today's demo) (see [`db/README.md`](db/README.md)) | **refused** (`BindingManquantError`); the caches stay silent without their table |
 
-Hors production (`next dev`, tests), leur absence est tolérée : jetons en
-mémoire du process, aucun journal. En production, elle **lève**, et
-`/api/analyze` répond `503 configuration_incomplete`. Ce n'est pas une rigidité
-gratuite : un jeton bancaire porteur de `request_transfers.write` gardé en clair
-dans le tas d'une lambda, sans expiration et sans révocation d'une instance à
-l'autre, n'est pas un « mode dégradé » — et une lecture bancaire sans trace est
-exactement ce qu'un DAF nous paie pour empêcher. L'échappatoire
-`ARGENTIER_ALLOW_DEGRADED_BINDINGS=1` existe pour un build local, jamais pour
-servir du trafic.
+Outside production (`next dev`, tests), their absence is tolerated: tokens in process memory, no
+log. In production it **throws**, and `/api/analyze` answers `503 configuration_incomplete`. This
+is not rigidity for its own sake: a bank token carrying `request_transfers.write`, kept in clear in
+a function's heap, with no expiry and no revocation across instances, is not a "degraded mode". A
+bank read with no trace is exactly what a CFO pays us to prevent. The
+`ARGENTIER_ALLOW_DEGRADED_BINDINGS=1` escape hatch exists for a local build, never to serve traffic.
+
+Deploys start from `main`: every push with green CI is deployed by
+`.github/workflows/deploy-web.yml` (Worker secrets check, OpenNext build, `wrangler deploy`, smoke
+test, demo warm-up). D1 migrations are not part of the deploy: they are applied by hand (see
+[`db/README.md`](db/README.md)). The manual equivalent of the deploy is:
 
 ```bash
-npx opennextjs-cloudflare build
-npx wrangler deploy
+npm run cf:deploy             # OpenNext build, then wrangler deploy
 ```
 
-### Ce qui a été RETIRÉ, et ne doit pas revenir
+### What was REMOVED, and must not come back
 
-Le client Qonto par **clé API statique** (`lib/qonto.ts`, et les variables
-`QONTO_LOGIN` / `QONTO_SECRET_KEY` / `QONTO_IBAN`) est **supprimé**. Une seule
-clé, celle du fondateur, était partagée par tous les visiteurs et portait les
-droits d'**écriture** complets. Elle causait deux défauts distincts :
+The Qonto client using a **static API key** (`lib/qonto.ts`, and the `QONTO_LOGIN` /
+`QONTO_SECRET_KEY` / `QONTO_IBAN` variables) is **deleted**. One key, the founder's, was shared by
+every visitor and carried full **write** rights. It caused two separate defects:
 
-1. **fuite inter-locataire.** `/api/analyze` enchaînait les sources sans
-   distinguer « pas de visiteur » de « visiteur connu dont le jeton a disparu ».
-   Un client OAuth dont le jeton s'évaporait (cookie encore valide, refresh
-   refusé, KV vidé) basculait sans condition sur cette clé et recevait le compte
-   bancaire **réel du fondateur**, badgé « live ». Désormais : une session sans
-   jeton exploitable reçoit un **401 `qonto_reconnexion_requise`**, jamais les
-   données d'un autre. Le visiteur **anonyme**, lui, garde la démo (`/demo`
-   fonctionne sans la moindre clé) — badgée `source: "mock"`.
-2. **sortie réseau hors garde.** Ce client appelait `fetch` sans passer par
-   `assertReadOnly`, c'est-à-dire à côté de la seule frontière qui empêche
-   Kerdaxis de bouger de l'argent. L'invariant est maintenant **vérifié à
-   l'échelle du dépôt** par `lib/mcp/__tests__/invariant-fetch-qonto.test.ts` :
-   tout module de `lib/` ou `app/` qui appelle `fetch` sur un hôte Qonto doit
-   importer *et* appeler la garde, sous peine de test rouge. Le même test passe
-   au rouge si `QONTO_LOGIN` réapparaît dans le code.
+1. **Cross-tenant leak.** `/api/analyze` chained the sources without telling "no visitor" apart
+   from "known visitor whose token is gone". An OAuth client whose token vanished (cookie still
+   valid, refresh refused, KV emptied) fell back on that key unconditionally and received the
+   founder's **real** bank account, badged "live". Now a session with no usable token gets a
+   **401 `qonto_reconnexion_requise`**, never someone else's data. The **anonymous** visitor keeps
+   the demo (`/demo` works without any key), badged `source: "mock"`.
+2. **Network exit outside the guard.** That client called `fetch` without going through
+   `assertReadOnly`, that is, around the only boundary that stops Kerdaxis from moving money. The
+   invariant is now **checked repository-wide** by `lib/mcp/__tests__/invariant-fetch-qonto.test.ts`:
+   any module in `lib/` or `app/` that calls `fetch` on a Qonto host must import *and* call the
+   guard, or the test fails. The same test fails if `QONTO_LOGIN` reappears in the code.
 
-Si ces variables subsistent dans un environnement de déploiement, **retire-les**
-côté hébergeur : elles ne sont plus lues, mais une clé write-capable qui traîne
-dans un secret store reste une clé exfiltrable.
+If these variables are still set in a deployment environment, **remove them** on the host side:
+they are no longer read, but a write-capable key left in a secret store can still be exfiltrated.
 
-Vérifs :
+Checks:
 
 ```bash
 npm run typecheck
@@ -146,39 +175,31 @@ npm test
 npm run build
 ```
 
-## Ce que Kerdaxis NE fait pas
+## What Kerdaxis does NOT do
 
-- Aucune action bancaire : pas de paiement, pas de résiliation automatique.
-  Il conseille et prépare ; **c'est toi qui agis** (PRD §3, §5.8).
-- Aucune donnée utilisée pour entraîner un modèle. Traitement en Europe.
-- Conseils fiscaux = pistes à valider avec un comptable.
+- No banking action: no payment, no transfer, no card operation. Qonto is read-only.
+- No irreversible click by the agent alone: every cancellation stops before the final button and
+  waits for a human go in the interface. Letters are prepared, never sent automatically.
+- No data used to train a model. Processing in Europe.
+- Tax hints are leads to check with an accountant.
 
-## Roadmap (extrait PRD §13)
+## Language model
 
-- **M0 (démo)** — front + `/api/analyze` branché Qonto, données réelles, sans persistance. ✅
-- **M1 (MVP)** — export CSV + lettres de résiliation/renégociation + rapport PDF ✅ · auth (magic link), persistance Postgres, freemium ⏳
-- **M2** — multi-banque (Bridge/Powens), benchmarking anonymisé, suivi des économies réalisées, pricing à la performance.
+Every LLM call in the app goes to an H Company Holo model (`holo4-27b` by default, `HAI_LLM_MODEL`)
+through H's Models API, with the same `HAI_API_KEY` as the agent (`lib/llm/holo.ts`). Four uses:
 
-### Couche « passage à l'action » (M1, livrée)
-
-- **Export du plan** — bouton *Exporter le plan (CSV)* → téléchargement Excel-compatible (BOM UTF-8).
-- **Rapport imprimable** — `/rapport` → *Imprimer / Enregistrer en PDF*.
-- **Lettres prêtes à envoyer** — l'icône ✎ sur chaque levier ouvre un courrier rédigé par Holo
-  (résiliation / renégociation / consolidation selon l'action), éditable, avec bouton *Copier*.
-  Kerdaxis prépare, **tu envoies** : aucun envoi automatique, `[crochets]` à compléter.
-
-## Modèle de langage
-
-Tout appel LLM de l'app passe par un modèle Holo de H Company (`holo4-27b` par défaut,
-`HAI_LLM_MODEL`) via la Models API de H, avec la même clé `HAI_API_KEY` que l'agent
-(`lib/llm/holo.ts`). Quatre usages :
-
-| Usage | Sortie | Sans clé ou en échec |
+| Use | Output | Without a key or on failure |
 |---|---|---|
-| Catégorisation (`/api/analyze`) | étiquettes, schéma JSON + Zod | règles par mots-clés |
-| Lettres (`/api/letter`) | texte | gabarit FR/EN |
-| Benchmark, passe 2 (`/api/benchmark`) | prix extraits du texte Linkup, schéma JSON + Zod | résumé sourcé, sans prix structurés |
-| Risque fournisseur (`/api/risk`) | signaux sourcés (schéma JSON + Zod) et analyse en texte | score sur identité + finances + BODACC, texte déterministe |
+| Categorization (`/api/analyze`) | labels, JSON schema + Zod | keyword rules |
+| Letters (`/api/letter`) | text | FR/EN template |
+| Benchmark, pass 2 (`/api/benchmark`) | prices extracted from the Linkup text, each tied to a source, JSON schema + Zod | sourced summary, no structured prices |
+| Supplier risk (`/api/risk`) | sourced signals (JSON schema + Zod) and a text analysis | score on identity + finances + BODACC, deterministic text |
 
-Le LLM ne renvoie jamais un euro ni un score. La recherche web, elle, est faite par
-Linkup : sans `LINKUP_API_KEY`, le benchmark reste « non vérifié ».
+The LLM never returns a euro or a score. Web search is done by Linkup: without `LINKUP_API_KEY`,
+benchmarks stay "not verified" and every cancellation goes to a letter, except on the demo
+portals (Nuvio, Lumen), which are known to be online.
+
+Outside the Models API, the same `HAI_API_KEY` also drives three agents of H's Agents API: the
+cancellation agent (visual browser, `lib/execution/runner.ts`), the reader of help-article
+screenshots (`lib/execution/research/screenshots.ts`) and the pre-built `h/web-scraper-flash`
+agent, pass 3 of the benchmark (`lib/benchmark-scraper.ts`).

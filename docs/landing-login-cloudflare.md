@@ -109,4 +109,3 @@ extraire prix + date. À câbler côté Worker avec `BRIGHTDATA_TOKEN` en secret
 2. Waitlist (KV) + endpoint — le plus vite au marché (mesure la demande).
 3. Login Worker (secrets) — hash hors repo.
 4. Voix ElevenLabs + Bright Data (une fois les MCP/API branchés).
-5. Autopilote réel sur CMA (voir `autopilote-cma-spec.md`).
