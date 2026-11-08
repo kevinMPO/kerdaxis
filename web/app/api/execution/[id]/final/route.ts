@@ -4,6 +4,7 @@ import { decideFinal } from "@/lib/execution/runner";
 import { decideReplay } from "@/lib/execution/replay";
 import { getExecution, publicView, withExecution } from "@/lib/execution/store";
 import { noStore, execGuard } from "@/lib/execution/http";
+import { withAccessScope } from "@/lib/privacy/access-log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export const dynamic = "force-dynamic";
  */
 const Body = z.object({ decision: z.enum(["approve", "refuse"]), channel: z.literal("ui") }).strict();
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
+async function handlePost(req: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
   const g = execGuard(req);
   if ("denied" in g) return g.denied;
   const { id } = await params;
@@ -43,4 +44,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   } catch (err) {
     return noStore(NextResponse.json({ error: err instanceof Error ? err.message : "erreur" }, { status: 409 }));
   }
+}
+
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }): Promise<Response> {
+  return withAccessScope(req, () => handlePost(req, context));
 }

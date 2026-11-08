@@ -9,6 +9,7 @@
 import { z } from "zod";
 import { assertNoPii } from "@/lib/privacy/egress";
 import { ResearchError, type WrittenPath } from "./types";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 const LINKUP_SEARCH_URL = "https://api.linkup.so/v1/search";
 const LINKUP_FETCH_URL = "https://api.linkup.so/v1/fetch";
@@ -129,6 +130,7 @@ export async function searchWrittenPath(merchant: string): Promise<WrittenPath> 
       includeSources: true,
     };
     assertNoPii(body, "recherche Linkup (parcours de résiliation)");
+    void recordAccess({ service: "linkup", operation: "cancellation docs", direction: "sent", sent: merchant });
     for (let attempt = 0; attempt < MAX_ATTEMPTS_PER_DEPTH; attempt++) {
       try {
         return parseWrittenPath(await postLinkup(LINKUP_SEARCH_URL, body, SEARCH_TIMEOUT_MS), depth);
@@ -166,6 +168,7 @@ export async function searchTutorialVideos(merchant: string): Promise<{ title: s
     includeDomains: ["youtube.com"],
   };
   assertNoPii(body, "recherche Linkup (tutoriel vidéo)");
+  void recordAccess({ service: "linkup", operation: "video tutorial search", direction: "sent", sent: merchant });
   const response = z
     .object({ results: z.array(z.object({ name: z.string().optional(), url: z.string().optional() }).passthrough()).nullish() })
     .safeParse(await postLinkup(LINKUP_SEARCH_URL, body, SEARCH_TIMEOUT_MS));

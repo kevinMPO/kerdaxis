@@ -19,6 +19,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { assertNoPii, redactForLogs, sanitizeMerchantQuery } from "@/lib/privacy/egress";
 import type { Lang, LeverAction } from "./types";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 const MODEL = process.env.ARGENTIER_MODEL || "claude-sonnet-5";
 
@@ -183,6 +184,12 @@ sont fournis, cite-les factuellement (nom + tarif + date) sans agressivité.`;
     // Dernière barrière avant le réseau. Un rejet ici n'est pas une panne : le
     // gabarit déterministe prend le relais, l'utilisateur a son courrier.
     assertNoPii({ prompt }, "rédaction de courrier Anthropic");
+    void recordAccess({
+      service: "anthropic",
+      operation: "letter",
+      direction: "sent",
+      sent: `${marchand} · ${alternative || "-"} · ${Math.round(req.savingMonthly)} €/mo saving`,
+    });
 
     const response = (await client.messages.create({
       model: MODEL,

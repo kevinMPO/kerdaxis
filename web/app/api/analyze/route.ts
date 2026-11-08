@@ -46,6 +46,8 @@ import {
 } from "@/lib/mcp/qonto-read-client";
 import { BindingManquantError, baseD1, bindingsArgentier } from "@/lib/runtime/bindings";
 import type { Localized, MerchantVerdict, Tx } from "@/lib/types";
+import { withAccessScope } from "@/lib/privacy/access-log";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 export const dynamic = "force-dynamic";
 
@@ -210,6 +212,7 @@ async function lireQonto<T>(
       resultat = await operation({ accessToken: renouveles.accessToken });
     }
     await journaliser(ctx, action, chemin, "ok");
+    await recordAccess({ service: "qonto", operation: action.replace(/^qonto\./, ""), direction: "read" });
     return resultat;
   } catch (erreur) {
     // Un refus de l'allowlist read-only est un incident à part : il se voit
@@ -325,7 +328,7 @@ async function analyze(requete: Request): Promise<NextResponse> {
   }
 }
 
-export async function GET(requete: Request): Promise<NextResponse> {
+async function handleGet(requete: Request): Promise<NextResponse> {
   try {
     return await analyze(requete);
   } catch (err) {
@@ -338,6 +341,12 @@ export async function GET(requete: Request): Promise<NextResponse> {
       en: "Internal Kerdaxis error. Nothing was read, nothing was written.",
     });
   }
+}
+
+
+
+export async function GET(requete: Request): Promise<NextResponse> {
+  return withAccessScope(requete, () => handleGet(requete));
 }
 
 export const POST = GET;

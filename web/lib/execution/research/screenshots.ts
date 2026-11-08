@@ -20,6 +20,7 @@ import { z } from "zod";
 import { cancelSession, createSession, getChanges, getSession, postToolResult, type ToolCall } from "../hcompany";
 import { fetchArticle } from "./linkup";
 import { ResearchError, type ScreenshotReading } from "./types";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 const MAX_SCREENSHOTS = 6;
 const SCREENSHOTS_PER_READER = 2;
@@ -164,6 +165,7 @@ function parseReaderAnswer(raw: unknown): ReaderAnswer {
 /** Une session H par lot : lance, répond aux appels d'outil, attend la réponse. */
 async function readBatch(merchant: string, article: string, batch: Screenshot[], firstNumber: number): Promise<ReaderAnswer> {
   const numbers = batch.map((_shot, offset) => `Screenshot ${firstNumber + offset}`).join(", ");
+  void recordAccess({ service: "hcompany", operation: "read doc screenshots", direction: "sent", sent: `${batch.length} public help-center screenshots about ${merchant}` });
   const session = await createSession(
     {
       agent: {

@@ -18,6 +18,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { assertNoPii, sanitizeMerchantQuery } from "@/lib/privacy/egress";
 import type { MerchantVerdict, Nature, Pole, Risk, LeverAction } from "./types";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 const MODEL = process.env.ARGENTIER_MODEL || "claude-sonnet-5";
 
@@ -159,6 +160,12 @@ export async function categorizeWithClaude(
 
   // Dernière barrière avant le réseau.
   assertNoPii(userPayload, "catégorisation Anthropic");
+  void recordAccess({
+    service: "anthropic",
+    operation: "categorize",
+    direction: "sent",
+    sent: `${userPayload.length} merchant names, occurrence counts, recurring flag: ${userPayload.map((m) => m.name).join(", ")}`,
+  });
 
   // Structured outputs (output_config.format) : le champ peut ne pas être typé
   // selon la version du SDK — on cast les params, la réponse reste un Message.
