@@ -52,7 +52,8 @@ opaque, et `/api/auth/qonto/revoke` débranche tout.
 | `lib/engine.ts` | Moteur déterministe : natures, run-rate, pôles, score, runway, leviers, anomalies. |
 | `lib/letters.ts` | Lettres de résiliation / renégociation via Holo + gabarit de secours. |
 | `lib/export.ts` | Export du plan en CSV (Excel FR). |
-| `lib/mock.ts` | Données de démo (fallback sans clés). |
+| `lib/demo/` | Relevé FICTIF de la démo publique (transactions seulement), analysé par le pipeline réel. |
+| `lib/analysis/pipeline.ts` | Pipeline unique compte réel / démo : catégorisation Holo (sinon règles) puis moteur. |
 | `app/api/analyze/route.ts` | Orchestration OBSERVE → CATÉGORISE → CALCULE (session OAuth, sinon démo — jamais le compte d'un autre). |
 | `app/api/auth/qonto/*` | Flux OAuth : `start`, `callback`, `revoke`, `status`. |
 | `app/api/letter/route.ts` | Prépare un courrier prêt à envoyer pour un levier. |

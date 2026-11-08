@@ -8,8 +8,9 @@
 //      requête filtrée par l'allowlist read-only). Si son jeton est
 //      indisponible, la réponse est un 401 « reconnecte ton compte » — JAMAIS
 //      les données d'un autre, JAMAIS un chiffre de démonstration badgé « live ».
-//   2. VISITEUR ANONYME (aucun cookie) → démo (`lib/mock.ts`). C'est ce qui fait
-//      vivre /demo sans la moindre clé.
+//   2. VISITEUR ANONYME (aucun cookie) → démo (`lib/demo/`) : des transactions
+//      FICTIVES passées dans le MÊME pipeline (Holo puis moteur). Aucun chiffre
+//      de la démo n'est écrit à la main. C'est ce qui fait vivre /demo.
 //
 // Ce qui a DISPARU, et ne doit pas revenir : le repli n°2 historique sur la clé
 // API statique « login:secret_key » du fondateur (`lib/qonto.ts`, supprimé).
@@ -24,14 +25,10 @@
 // ---------------------------------------------------------------------------
 
 import { NextResponse } from "next/server";
-import { MOCK } from "@/lib/mock";
-import { build, toMerchantInputs } from "@/lib/engine";
-import {
-  categorizeByRules,
-  categorizeWithHolo,
-  hasHoloKey,
-  type MerchantInput,
-} from "@/lib/categorize";
+import { runAnalysis } from "@/lib/analysis/pipeline";
+import { analyzeDemo } from "@/lib/demo/analysis";
+import { EMPTY_ANALYSIS } from "@/lib/analysis/empty";
+import type { AnalyzeResult, Localized } from "@/lib/types";
 import { jetonValide, renouveler } from "@/lib/auth/access";
 import { lireSession } from "@/lib/auth/session";
 import { getTokenStore, type TokenStore } from "@/lib/auth/token-store";
@@ -45,66 +42,12 @@ import {
   type QontoAuth,
 } from "@/lib/mcp/qonto-read-client";
 import { BindingManquantError, baseD1, bindingsKerdaxis } from "@/lib/runtime/bindings";
-import type { Categorizer, Localized, MerchantVerdict, Tx } from "@/lib/types";
 import { withAccessScope } from "@/lib/privacy/access-log";
 import { recordAccess } from "@/lib/privacy/access-log";
 
 export const dynamic = "force-dynamic";
 
-function windowLabel(days: number): Localized {
-  const end = new Date();
-  const start = new Date(end.getTime() - 30 * 86_400_000);
-  const fmt = (d: Date, locale: string) =>
-    d.toLocaleDateString(locale, { day: "numeric", month: "long" });
-  return {
-    fr: `${fmt(start, "fr-FR")} – ${fmt(end, "fr-FR")} ${end.getFullYear()}`,
-    en: `${fmt(start, "en-US")} – ${fmt(end, "en-US")}, ${end.getFullYear()}`,
-  };
-}
-
-/** OBSERVE terminé → CATÉGORISE (Holo) → CALCULE (engine.ts). */
-async function runPipeline(
-  account: { name: string; bank: string; balance: number },
-  txs: Tx[],
-  windowDays: number,
-) {
-  const months = Math.max(1, windowDays / 30);
-  const inputs: MerchantInput[] = toMerchantInputs(
-    txs.filter((t) => t.side === "debit"),
-    months,
-  );
-
-  let verdicts: MerchantVerdict[];
-  let categorized: Categorizer = "rules";
-  if (hasHoloKey() && inputs.length > 0) {
-    try {
-      verdicts = await categorizeWithHolo(inputs);
-      categorized = "hcompany";
-    } catch (err) {
-      console.error("Catégorisation H Company échouée, fallback règles :", err);
-      verdicts = categorizeByRules(inputs);
-    }
-  } else {
-    verdicts = categorizeByRules(inputs);
-  }
-
-  return build({
-    account,
-    windowLabel: windowLabel(windowDays),
-    txs,
-    verdicts,
-    windowDays,
-    source: "qonto",
-    categorized,
-  });
-}
-
 // --- Réponses --------------------------------------------------------------
-
-/** Charge de DÉMONSTRATION, toujours badgée `source: "mock"`. */
-function donneesDemo() {
-  return { ...MOCK, meta: { ...MOCK.meta!, source: "mock" as const } };
-}
 
 /**
  * Une réponse d'analyse ne se met JAMAIS en cache et varie selon le cookie :
@@ -124,15 +67,16 @@ function sansCache(reponse: NextResponse): NextResponse {
  * Refus explicite, en français, adressé à un visiteur CONNECTÉ dont on ne peut
  * pas honnêtement lire le compte.
  *
- * Le corps reprend la charge de démonstration — badgée `source: "mock"`, donc
- * affichée « démo » par le front — uniquement pour que les clients existants
- * gardent une réponse de forme valide. La vérité machine, ce sont le STATUT
- * (jamais 2xx) et le champ `error`. Ce qui compte : ce corps ne contient les
- * données bancaires de personne.
+ * Le corps est une analyse VIDE, badgée `source: "mock"`, uniquement pour que
+ * les clients existants gardent une réponse de forme valide. La vérité machine,
+ * ce sont le STATUT (jamais 2xx) et le champ `error`. Ce qui compte : ce corps
+ * ne contient aucun chiffre, ni ceux d'un compte, ni ceux de la démo.
  */
+const REFUS_META: NonNullable<AnalyzeResult["meta"]> = { source: "mock", categorized: "rules", txCount: 0 };
+
 function refus(statut: number, code: string, message: Localized): NextResponse {
   return sansCache(
-    NextResponse.json({ ...donneesDemo(), error: code, message }, { status: statut }),
+    NextResponse.json({ ...EMPTY_ANALYSIS, meta: REFUS_META, error: code, message }, { status: statut }),
   );
 }
 
@@ -227,7 +171,7 @@ async function lireQonto<T>(
 async function analyzeAvecSession(
   orgId: string,
   windowDays: number,
-): Promise<Awaited<ReturnType<typeof runPipeline>> | null> {
+): Promise<AnalyzeResult | null> {
   const bindings = bindingsKerdaxis();
   const store = getTokenStore(bindings);
   const jetons = await jetonValide(store, orgId);
@@ -275,11 +219,12 @@ async function analyzeAvecSession(
     listTransactionsOAuth({ ...auth, iban: org.iban }, windowDays),
   );
 
-  return runPipeline(
-    { name: org.name, bank: "Qonto", balance: org.balance },
+  return runAnalysis({
+    account: { name: org.name, bank: "Qonto", balance: org.balance },
     txs,
     windowDays,
-  );
+    source: "qonto",
+  });
 }
 
 /** Deux fenêtres de 30 j glissantes ; surchargeable par ARGENTIER_WINDOW_DAYS. */
@@ -296,7 +241,7 @@ async function analyze(requete: Request): Promise<NextResponse> {
   // Visiteur ANONYME (ou cookie illisible, donc non authentifié) : démo.
   // C'est le seul cas où l'on sert des chiffres qui ne sont pas ceux d'un
   // compte réel — et ils sont badgés comme tels.
-  if (!session) return sansCache(NextResponse.json(donneesDemo()));
+  if (!session) return sansCache(NextResponse.json(await analyzeDemo()));
 
   // Visiteur CONNECTÉ : à partir d'ici, aucun repli n'est acceptable.
   try {

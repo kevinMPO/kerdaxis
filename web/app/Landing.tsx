@@ -4,7 +4,7 @@
  * Landing — page principale du site (le pitch, façon page marketing).
  * Palette inspirée de qonto.com : fond quasi-noir, texte blanc, accent jaune.
  * Bouton « Voir la démo » → l'app Kerdaxis, sur le jeu de démonstration
- * anonymisé de `lib/mock.ts` (société fictive, montants fictifs).
+ * anonymisé de la démo (`lib/demo/`, société fictive, montants fictifs).
  */
 
 import React, { useEffect, useState } from "react";
