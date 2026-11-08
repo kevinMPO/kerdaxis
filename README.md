@@ -125,8 +125,10 @@ The app at `app.kerdaxis.com` has three levels of access. Each is a signed HMAC 
 | Access | How | What you get |
 |---|---|---|
 | **Free trial** | [`/try`](https://app.kerdaxis.com/try): email only | The whole app on a demo company. The H Company agent run is a **replay** of the real recorded session: same captures, same timings, same final-click gate. It is labelled "Replay · recorded real session", and no agent is launched. |
-| **Subscriber, 5 €/month** | [`/signup`](https://app.kerdaxis.com/signup): email and password, then Stripe Checkout | Live H Company agent runs on the demo portal. The subscription is re-checked with Stripe at every sign-in. A Stripe customer portal handles billing. |
+| **Subscriber, 5 €/month** | [`/signup`](https://app.kerdaxis.com/signup): email and password, then Stripe Checkout | Lands on `/dashboard`, which shows only the subscriber's own data (a connected Qonto account or an imported PDF statement, never the demo company). Live H Company agent runs on the demo portal. The subscription is re-checked with Stripe at every sign-in. A Stripe customer portal handles billing. |
 | **Jury / test** | [`/login`](https://app.kerdaxis.com/login): test password | Same as a subscriber, without payment. |
+
+Every level can import a PDF bank statement instead of connecting Qonto (see "Importing a PDF statement" below).
 
 The middleware strips and then rewrites the internal headers `x-kx-test-auth` and `x-kx-role`, so a value sent by a client is never trusted. A trial session can only read its own replays, and its routes never call H Company.
 
@@ -250,7 +252,7 @@ flowchart LR
 
 ### The public demo runs the real engine
 
-A visitor without a connected bank account (free trial, jury) gets a fictional 60-day statement
+On `/demo`, a visitor without a connected bank account (free trial, jury) gets a fictional 60-day statement
 (`lib/demo/transactions.ts`, transactions only, dated relative to the visit). It goes through the same pipeline as a
 real account (`lib/analysis/pipeline.ts`): labels, then the engine computes. No figure in the demo is written by hand.
 The two fictional suppliers, Nuvio and Lumen, carry fixed labels so the cancellation agent always has its targets.
@@ -258,6 +260,9 @@ The two fictional suppliers, Nuvio and Lumen, carry fixed labels so the cancella
 The demo is labelled by the keyword rules (`rulesOnly`), never by Holo. Its statement is fixed, so a 30 to 40 s Holo
 call on every visit taught nothing and kept the visitor waiting. The rules answer in milliseconds, the same way every
 time, so the demo needs no cache. Prices and cancel channels are still checked live, on request.
+
+`/dashboard`, where sign-in lands, never shows the demo company: without a readable Qonto account it asks to connect
+Qonto or to import a PDF statement.
 
 ### Importing a PDF statement (no Qonto needed)
 
@@ -268,6 +273,9 @@ from the Debit / Credit columns or from their sign, never guessed, and IBANs, ca
 from the label. Only those rows go to `POST /api/analyze/import`, validated with Zod, then through the same pipeline as a
 Qonto account (`source: "import"`), dated on the statement's own last day. Nothing is stored. A fictional sample is
 served at `/samples/releve-exemple.pdf` (`node scripts/generate-sample-statement.mjs` regenerates it).
+
+Cancellation runs are remembered in the browser across datasets. The dashboard only shows and counts, in the ledger,
+the runs against a supplier of the analysis on screen, so a demo cancellation never appears in an imported statement.
 
 ### Deploy: `main` is production
 
@@ -293,6 +301,7 @@ commit CI tested. D1 migrations are not part of the deploy: they are applied by 
 | Accounts and waitlist | TypeScript Worker, KV | Cloudflare Workers (`my-app/`) |
 | Agents | H Company Agents API (`agp.eu.hcompany.ai/api/v2`): our cancellation agent (visual browser), a screenshot reader, and the pre-built `h/web-scraper-flash` for pricing pages | H Company cloud |
 | LLM | H Company Holo through the Models API (`holo4-27b` by default) | H Company cloud |
+| Statement import | pdf.js through `unpdf`, in the browser only (loaded on click) | Browser |
 | Voice | Gladia live STT (`@gladiaio/sdk`). The server opens the session, so the key never reaches the browser. | Browser and app server |
 | Billing | Stripe REST API (no SDK) | Stripe |
 
@@ -318,6 +327,11 @@ The H Company agent runs in H's cloud browser, so it can only reach a **public**
 at `https://portal.kerdaxis.com` or at your own deployment (`cd portal && npx wrangler deploy`). From
 `localhost` the app is open without login. From the internet it requires one of the access levels above.
 
+**Connecting a real Qonto account only works locally for now.** The default provider (`QONTO_OAUTH_PROVIDER=mcp-proxy`)
+only accepts a loopback callback, so on `app.kerdaxis.com` the "Connect Qonto" button stays disabled. Locally, set
+`ARGENTIER_BASE_URL` to the exact address you serve (`.env.example` says port 3000, the command above uses 3001). Without
+a Qonto account, import a PDF statement instead.
+
 Locally, without the Cloudflare bindings, executions live in process memory and accounts and trial emails in
 JSON files under `web/data/` (gitignored).
 
@@ -335,15 +349,17 @@ cd web && npm run cf:deploy
 ```
 site/                 kerdaxis.com: landing (EN/FR), film, posters, loops
 web/                  the Kerdaxis app (Next.js)
-  app/dashboard/      the dashboard: /demo (demo company until Qonto is connected) and /dashboard (live Qonto data only, where sign-in lands)
+  app/dashboard/      the dashboard: /demo (demo company until Qonto is connected or a PDF is imported) and
+                      /dashboard (the user's own data only, Qonto or imported PDF, where sign-in lands)
   app/                landing, classic dashboard (Kerdaxis.tsx, /classic), ExecutionPanel,
                       VoiceCommand, access pages (try, signup, signin, login), /risk, /rapport
   app/api/execution/  approve · start · status · [id] · final · stop · screenshot · reset
-  app/api/            analyze · benchmark · cancel-channel · letter · risk · access-log ·
+  app/api/            analyze · analyze/import · benchmark · cancel-channel · letter · risk · access-log ·
                       auth/qonto/* · try · signup · signin · signout · me · billing/* · voice/*
   lib/analysis/       the one pipeline for a real account and the demo: categorize, then engine
   lib/engine/         the deterministic engine: every euro (core) and sourced prices (pricing)
   lib/demo/           fictional demo statement and its analysis (keyword rules, no Holo)
+  lib/statement/      PDF statement import: read in the browser, parsed by fixed rules, validated, then the pipeline
   lib/benchmark*.ts   Linkup search, Holo extraction, web-scraper fallback, D1 price cache
   lib/execution/      policy (action hash) · runner (gate) · replay (trial) · suppliers ·
                       stripe-portal · store · run-copy (localized run log) ·
@@ -356,6 +372,8 @@ web/                  the Kerdaxis app (Next.js)
   middleware.ts       access levels and internal headers
   db/                 D1 migrations, applied by hand (see db/README.md)
   public/replay/      the 10 captures of the recorded run
+  public/samples/     fictional sample bank statement (PDF) for the import
+  scripts/            agent-runs.mjs (real agent runs), generate-sample-statement.mjs (the sample PDF)
 portal/               fictional supplier portal (Cloudflare Worker + Durable Object)
 my-app/               accounts and waitlist Worker (/auth/*, /waitlist) called by the app
 video/                the 69 s film as code (HyperFrames): SPEC.md, compositions/, recorded
