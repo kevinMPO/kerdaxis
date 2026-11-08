@@ -1,0 +1,67 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; }
+    #cam { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #cam img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; }
+    #spot { position: absolute; left: 320px; top: 662px; width: 438px; height: 102px; border: 5px solid #d4f53c; border-radius: 16px;
+      box-shadow: 0 0 0 3000px rgba(13, 13, 18, 0.55); opacity: 0; }
+    #ag { position: absolute; left: 0; top: 0; width: 44px; height: 62px; }
+    .ag-svg { position: absolute; left: 0; top: 0; width: 44px; height: 62px; }
+    .ag-pill { position: absolute; left: 46px; top: 40px; height: 48px; padding: 0 18px 0 14px; border-radius: 24px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 30px; line-height: 48px; white-space: nowrap; }
+    .ag-pill i { display: inline-block; width: 12px; height: 12px; margin-right: 10px; border-radius: 6px; background: #d4f53c; vertical-align: 2px; }
+    #wait { position: absolute; left: 330px; top: 586px; height: 52px; padding: 0 20px; border-radius: 26px; background: #0d0d12; color: #d4f53c;
+      font-family: "Fira Code", monospace; font-size: 30px; line-height: 52px; white-space: nowrap; opacity: 0; }
+    #panel { position: absolute; left: 0; top: 800px; width: 1080px; height: 280px; background: #0d0d12; color: #f4f4f8; }
+    #call { position: absolute; left: 60px; top: 30px; font-weight: 800; font-size: 96px; line-height: 1; letter-spacing: -0.05em; color: #d4f53c; white-space: nowrap; }
+    #go { position: absolute; left: 60px; top: 150px; width: 560px; height: 100px; border-radius: 22px; background: #d4f53c; color: #0d0d12;
+      font-weight: 800; font-size: 40px; line-height: 100px; text-align: center; white-space: nowrap; }
+    #note { position: absolute; left: 660px; top: 160px; width: 380px; font-size: 32px; line-height: 1.3; color: #a9a9bb; }
+    #you { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .cur-svg { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .pill { position: absolute; left: 56px; top: 56px; height: 44px; padding: 0 16px; border-radius: 22px; background: #f4f4f8; color: #0d0d12;
+      font-weight: 700; font-size: 28px; line-height: 44px; white-space: nowrap; }
+    .chip { position: absolute; left: 40px; top: 40px; height: 56px; padding: 0 22px; border-radius: 28px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 28px; line-height: 56px; white-space: nowrap; }
+    .slam { position: absolute; inset: 0; background: #d4f53c; color: #0d0d12; opacity: 0; z-index: 9; }
+    .slam b { position: absolute; left: 0; top: 400px; width: 1080px; text-align: center; font-weight: 800; font-size: 190px; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; }
+    .slam span { position: absolute; left: 0; top: 620px; width: 1080px; text-align: center; font-family: "Fira Code", monospace; font-size: 34px; letter-spacing: 0.12em; }
+  </style>
+  <div id="root" data-composition-id="approve" data-width="1080" data-height="1080">
+    <div id="cam"><img src="assets/shots/obs-07-184340-confirm-paused.png" alt="Supplier portal: final confirmation, the run paused before the irreversible click" /></div>
+    <div id="spot" data-layout-allow-overflow data-layout-allow-overlap></div>
+    <div id="wait" data-layout-allow-overlap>⏸ paused · waiting for you</div>
+    <div id="ag" data-layout-allow-occlusion data-layout-allow-overflow data-layout-allow-overlap><svg viewBox="0 0 26 37" class="ag-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="ag-pill"><i></i>H Company agent</div></div>
+    <div class="chip">The irreversible step</div>
+    <div id="panel"><div id="call">YOUR CALL.</div><div id="go">Give the green light</div><div id="note">Nothing irreversible happens without it.</div></div>
+    <div id="you" data-layout-allow-occlusion data-layout-allow-overflow><svg viewBox="0 0 26 37" class="cur-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="pill">You</div></div>
+    <div id="s5" class="slam"><b>APPROVE</b><span>05</span></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 15.1. Voice 5 at 15.4: "stops" local 2.17. Voice 6 at 19.55: "green light" local 4.63-4.94 -> the click.
+      tl.set("#s5", { opacity: 1 }, 0.05);
+      tl.fromTo("#s5 b", { scale: 1.35, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.25, ease: "expo.out" }, 0.05);
+      tl.set("#s5", { opacity: 0 }, 0.5);
+      gsap.set("#cam", { x: -236, y: -360, scale: 2 });
+      tl.to("#cam", { x: -256, y: -372, scale: 2.03, duration: 4.7, ease: "none" }, 0.5);
+      gsap.set("#ag", { x: 900, y: 1000 });
+      tl.to("#ag", { x: 440, y: 712, duration: 0.6, ease: "power3.out" }, 0.55);
+      tl.set("#spot", { opacity: 1 }, 1.4);
+      tl.fromTo("#wait", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.2 }, 2.17);
+      gsap.set("#panel", { y: 280 });
+      tl.to("#panel", { y: 0, duration: 0.4, ease: "power3.out" }, 2.2);
+      tl.fromTo("#call", { opacity: 0, scale: 1.15, transformOrigin: "0% 50%" }, { opacity: 1, scale: 1, duration: 0.25, ease: "expo.out" }, 2.4);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 2.8);
+      gsap.set("#you", { x: 1100, y: 1150 });
+      tl.to("#you", { x: 420, y: 980, duration: 0.7, ease: "power2.inOut" }, 4.0);
+      tl.to("#you", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.07 }, 4.85);
+      tl.to("#you", { scale: 1, duration: 0.08 }, 4.92);
+      tl.to("#go", { scale: 0.95, duration: 0.07 }, 4.85);
+      tl.set("#go", { textContent: "✓ Green light given" }, 4.88);
+      tl.set({}, {}, 5.2);
+      window.__timelines["approve"] = tl;
+    })();
+  </script>
+</template>

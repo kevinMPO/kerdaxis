@@ -1,0 +1,78 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; }
+    #cam { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #cam img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; opacity: 0; }
+    #spot { position: absolute; left: 356px; top: 372px; width: 366px; height: 96px; border: 5px solid #d4f53c; border-radius: 16px;
+      box-shadow: 0 0 0 3000px rgba(13, 13, 18, 0.55); opacity: 0; }
+    #ag { position: absolute; left: 0; top: 0; width: 44px; height: 62px; }
+    .ag-svg { position: absolute; left: 0; top: 0; width: 44px; height: 62px; }
+    .ag-pill { position: absolute; left: 46px; top: 40px; height: 48px; padding: 0 18px 0 14px; border-radius: 24px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 30px; line-height: 48px; white-space: nowrap; }
+    .ag-pill i { display: inline-block; width: 12px; height: 12px; margin-right: 10px; border-radius: 6px; background: #d4f53c; vertical-align: 2px; }
+    #stamp { position: absolute; left: 0; top: 540px; width: 1080px; text-align: center; opacity: 0; }
+    #stamp span { display: inline-block; padding: 12px 36px; border: 6px solid #0d0d12; border-radius: 18px; background: #0b7a48; color: #ffffff; font-weight: 800; font-size: 66px; white-space: nowrap; }
+    .chip { position: absolute; left: 40px; top: 40px; height: 56px; padding: 0 22px; border-radius: 28px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 28px; line-height: 56px; white-space: nowrap; }
+    #pf { position: absolute; inset: 0; background: #0d0d12; color: #f4f4f8; opacity: 0; }
+    #pf-chips { position: absolute; left: 0; top: 150px; width: 1080px; text-align: center; white-space: nowrap; }
+    .pc { display: inline-block; height: 62px; margin: 0 6px; padding: 0 24px; border-radius: 31px; border: 2px solid #2a2a36; background: #1a1a23; font-weight: 700; font-size: 30px; line-height: 58px; }
+    .pc.test { background: #f0fadb; border-color: #f0fadb; color: #2f7d12; }
+    #pf-big { position: absolute; left: 0; top: 270px; width: 1080px; text-align: center; font-weight: 800; font-size: 340px; line-height: 1; letter-spacing: -0.05em; white-space: nowrap; }
+    #pf-big span { display: inline-block; opacity: 0; }
+    #pa { color: #d4f53c; }
+    #pf-lab { position: absolute; left: 0; top: 660px; width: 1080px; text-align: center; font-weight: 800; font-size: 56px; line-height: 1.15; letter-spacing: -0.02em; opacity: 0; }
+    #pf-22 { position: absolute; left: 0; top: 860px; width: 1080px; text-align: center; font-size: 36px; color: #a9a9bb; opacity: 0; }
+    #pf-22 b { color: #ffffff; font-weight: 800; }
+    #flash { position: absolute; inset: 0; background: #d4f53c; opacity: 0; }
+    .slam { position: absolute; inset: 0; background: #d4f53c; color: #0d0d12; opacity: 0; z-index: 9; }
+    .slam b { position: absolute; left: 0; top: 400px; width: 1080px; text-align: center; font-weight: 800; font-size: 190px; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; }
+    .slam span { position: absolute; left: 0; top: 620px; width: 1080px; text-align: center; font-family: "Fira Code", monospace; font-size: 34px; letter-spacing: 0.12em; }
+  </style>
+  <div id="root" data-composition-id="verify" data-width="1080" data-height="1080">
+    <div id="cam">
+      <img id="c1" src="assets/shots/obs-09-184354-confirm-checked.png" alt="Supplier portal: box ticked after the human green light" />
+      <img id="c2" src="assets/shots/obs-10-184357-done.png" alt="Supplier portal: cancellation confirmed, number NUV-RW3L2Y" />
+    </div>
+    <div id="spot" data-layout-allow-overflow data-layout-allow-overlap></div>
+    <div id="ag" data-layout-allow-occlusion data-layout-allow-overflow data-layout-allow-overlap><svg viewBox="0 0 26 37" class="ag-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="ag-pill"><i></i>H Company agent</div></div>
+    <div id="stamp" data-layout-allow-overlap><span>✓ SUPPLIER-CONFIRMED</span></div>
+    <div class="chip">The supplier's own number</div>
+    <div id="pf">
+      <div id="pf-chips"><span class="pc">Stripe customer portal</span><span id="pc2" class="pc test">Test mode</span></div>
+      <div id="pf-big"><span id="pa">5</span><span id="pb">/5</span></div>
+      <div id="pf-lab">cancellations confirmed<br />by the Stripe API</div>
+      <div id="pf-22"><b>2/2</b> refusals respected</div>
+      <div id="flash"></div>
+    </div>
+    <div id="s6" class="slam"><b>VERIFY</b><span>06</span></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 20.3. Voice 6 "the supplier confirms" ~ local 0.3-0.9; voice 7 at 22.4: "Five" local 2.18, "five" 2.74, "test mode" 4.69.
+      tl.set("#s6", { opacity: 1 }, 0.0);
+      tl.fromTo("#s6 b", { scale: 1.35, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.2, ease: "expo.out" }, 0.0);
+      tl.set("#s6", { opacity: 0 }, 0.32);
+      gsap.set("#cam", { x: -236, y: -360, scale: 2 });
+      tl.set("#c1", { opacity: 1 }, 0.32);
+      gsap.set("#ag", { x: 440, y: 712 });
+      tl.to("#ag", { scale: 0.82, transformOrigin: "0% 0%", duration: 0.05 }, 0.5); tl.to("#ag", { scale: 1, duration: 0.1 }, 0.55);
+      tl.set("#c2", { opacity: 1 }, 0.7); tl.set("#c1", { opacity: 0 }, 0.7); tl.set("#ag", { opacity: 0 }, 0.7);
+      tl.set("#cam", { x: -648, y: -32 }, 0.7);
+      tl.to("#cam", { x: -668, y: -44, scale: 2.03, duration: 1.3, ease: "none" }, 0.7);
+      tl.set("#spot", { opacity: 1 }, 0.78);
+      tl.fromTo("#stamp", { opacity: 0, scale: 1.9, rotation: 6, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, rotation: -3, duration: 0.16, ease: "back.out(1.6)" }, 0.95);
+      tl.set("#pf", { opacity: 1 }, 1.95);
+      tl.fromTo("#pf-chips", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25 }, 2.0);
+      tl.fromTo("#pa", { opacity: 0, scale: 2, transformOrigin: "50% 60%" }, { opacity: 1, scale: 1, duration: 0.16, ease: "back.out(1.5)" }, 2.18);
+      tl.fromTo("#pb", { opacity: 0, scale: 2, transformOrigin: "30% 60%" }, { opacity: 1, scale: 1, duration: 0.16, ease: "back.out(1.5)" }, 2.74);
+      tl.fromTo("#flash", { opacity: 0.85 }, { opacity: 0, duration: 0.35, ease: "power2.out" }, 2.74);
+      tl.fromTo("#pf-lab", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 3.0);
+      tl.fromTo("#pf-22", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.6);
+      tl.fromTo("#pc2", { scale: 1 }, { scale: 1.12, duration: 0.15, yoyo: true, repeat: 1, transformOrigin: "50% 50%" }, 4.69);
+      tl.set({}, {}, 5.6);
+      window.__timelines["verify"] = tl;
+    })();
+  </script>
+</template>

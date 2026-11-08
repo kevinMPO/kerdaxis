@@ -1,0 +1,44 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: visible; pointer-events: none; font-family: "Plus Jakarta Sans", sans-serif; }
+    .cg { position: absolute; left: 0; top: 950px; width: 1080px; text-align: center; opacity: 0; visibility: hidden; }
+    .cg span { display: inline-block; padding: 6px 22px; border-radius: 14px; background: #f4f4f8; color: #0d0d12; font-weight: 800; font-size: 46px; line-height: 62px; letter-spacing: -0.02em; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="captions" data-width="1080" data-height="1080">
+    <div id="cg0" class="cg"><span>It connects to your</span></div>
+    <div id="cg1" class="cg"><span>bank,</span></div>
+    <div id="cg2" class="cg"><span>finds the waste,</span></div>
+    <div id="cg3" class="cg"><span>and compares better deals.</span></div>
+    <div id="cg4" class="cg"><span>Then an H Company</span></div>
+    <div id="cg5" class="cg"><span>agent executes,</span></div>
+    <div id="cg6" class="cg"><span>on the supplier's own</span></div>
+    <div id="cg7" class="cg"><span>website.</span></div>
+    <div id="cg8" class="cg"><span>The page tells it</span></div>
+    <div id="cg9" class="cg"><span>to accept a discount.</span></div>
+    <div id="cg10" class="cg"><span>It says no.</span></div>
+    <div id="cg11" class="cg"><span>Five out of five,</span></div>
+    <div id="cg12" class="cg"><span>on Stripe's real portal,</span></div>
+    <div id="cg13" class="cg"><span>in test mode.</span></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      tl.set("#cg0", { opacity: 1, visibility: "visible" }, 2.55); tl.set("#cg0", { opacity: 0, visibility: "hidden" }, 3.719);
+      tl.set("#cg1", { opacity: 1, visibility: "visible" }, 3.719); tl.set("#cg1", { opacity: 0, visibility: "hidden" }, 4.026);
+      tl.set("#cg2", { opacity: 1, visibility: "visible" }, 4.026); tl.set("#cg2", { opacity: 0, visibility: "hidden" }, 5.011);
+      tl.set("#cg3", { opacity: 1, visibility: "visible" }, 5.011); tl.set("#cg3", { opacity: 0, visibility: "hidden" }, 6.61);
+      tl.set("#cg4", { opacity: 1, visibility: "visible" }, 7.35); tl.set("#cg4", { opacity: 0, visibility: "hidden" }, 8.465);
+      tl.set("#cg5", { opacity: 1, visibility: "visible" }, 8.465); tl.set("#cg5", { opacity: 0, visibility: "hidden" }, 9.45);
+      tl.set("#cg6", { opacity: 1, visibility: "visible" }, 9.45); tl.set("#cg6", { opacity: 0, visibility: "hidden" }, 10.827);
+      tl.set("#cg7", { opacity: 1, visibility: "visible" }, 10.827); tl.set("#cg7", { opacity: 0, visibility: "hidden" }, 11.352);
+      tl.set("#cg8", { opacity: 1, visibility: "visible" }, 11.65); tl.set("#cg8", { opacity: 0, visibility: "hidden" }, 12.753);
+      tl.set("#cg9", { opacity: 1, visibility: "visible" }, 12.753); tl.set("#cg9", { opacity: 0, visibility: "hidden" }, 14.116);
+      tl.set("#cg10", { opacity: 1, visibility: "visible" }, 14.116); tl.set("#cg10", { opacity: 0, visibility: "hidden" }, 14.829);
+      tl.set("#cg11", { opacity: 1, visibility: "visible" }, 22.45); tl.set("#cg11", { opacity: 0, visibility: "hidden" }, 23.457);
+      tl.set("#cg12", { opacity: 1, visibility: "visible" }, 23.457); tl.set("#cg12", { opacity: 0, visibility: "hidden" }, 24.879);
+      tl.set("#cg13", { opacity: 1, visibility: "visible" }, 24.879); tl.set("#cg13", { opacity: 0, visibility: "hidden" }, 25.649);
+      tl.set({}, {}, 36.5);
+      window.__timelines["captions"] = tl;
+    })();
+  </script>
+</template>

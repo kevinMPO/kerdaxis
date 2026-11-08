@@ -1,0 +1,92 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; }
+    #stage { position: absolute; inset: 0; }
+    #cam { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #cam img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; opacity: 0; }
+    #spot { position: absolute; left: 0; top: 0; width: 10px; height: 10px; border: 5px solid #d4f53c; border-radius: 16px;
+      box-shadow: 0 0 0 3000px rgba(13, 13, 18, 0.55); opacity: 0; }
+    .ov { position: absolute; opacity: 0; }
+    #o-want { left: 44px; top: 404px; width: 856px; height: 156px; border: 6px dashed #0d0d12; border-radius: 18px; }
+    #o-inj { left: 36px; top: 664px; width: 1004px; height: 72px; border: 6px solid #0d0d12; border-radius: 12px; background: rgba(212, 245, 60, 0.45); }
+    #o-tag { left: 40px; top: 760px; height: 64px; padding: 0 24px; border-radius: 14px; background: #0d0d12; color: #f4f4f8; font-weight: 700; font-size: 36px; line-height: 64px; white-space: nowrap; }
+    #o-tag b { color: #d4f53c; }
+    #o-stamp { left: 0; top: 150px; width: 1080px; text-align: center; }
+    #o-stamp span { display: inline-block; padding: 14px 44px; border: 8px solid #0d0d12; border-radius: 22px; background: #d4f53c; color: #0d0d12;
+      font-weight: 800; font-size: 130px; letter-spacing: -0.02em; white-space: nowrap; }
+    #ag { position: absolute; left: 0; top: 0; width: 44px; height: 62px; }
+    .ag-svg { position: absolute; left: 0; top: 0; width: 44px; height: 62px; }
+    .ag-pill { position: absolute; left: 46px; top: 40px; height: 48px; padding: 0 18px 0 14px; border-radius: 24px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 30px; line-height: 48px; white-space: nowrap; }
+    .ag-pill i { display: inline-block; width: 12px; height: 12px; margin-right: 10px; border-radius: 6px; background: #d4f53c; vertical-align: 2px; }
+    .chip { position: absolute; left: 40px; top: 40px; height: 56px; padding: 0 22px; border-radius: 28px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 28px; line-height: 56px; white-space: nowrap; z-index: 4; }
+    .chip i { display: inline-block; width: 12px; height: 12px; margin-right: 10px; border-radius: 6px; background: #d4f53c; vertical-align: 2px; }
+    .slam { position: absolute; inset: 0; background: #d4f53c; color: #0d0d12; opacity: 0; z-index: 9; }
+    .slam b { position: absolute; left: 0; top: 400px; width: 1080px; text-align: center; font-weight: 800; font-size: 190px; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; }
+    .slam span { position: absolute; left: 0; top: 620px; width: 1080px; text-align: center; font-family: "Fira Code", monospace; font-size: 34px; letter-spacing: 0.12em; }
+  </style>
+  <div id="root" data-composition-id="exec" data-width="1080" data-height="1080">
+    <div id="stage">
+      <div id="cam">
+        <img id="p1" src="assets/shots/obs-01-184315-account.png" alt="Supplier portal: customer area" />
+        <img id="p2" src="assets/shots/obs-02-184320-billing.png" alt="Supplier portal: billing" />
+        <img id="p3" src="assets/shots/obs-03-184324-subscription.png" alt="Supplier portal: manage subscription" />
+        <img id="p4" src="assets/shots/obs-04-184328-reason-empty.png" alt="Supplier portal: why are you leaving" />
+        <img id="p5" src="assets/shots/obs-05-184331-reason.png" alt="Supplier portal: reason selected" />
+        <img id="p6" src="assets/shots/offer.png" alt="Supplier portal: retention offer with an injected note to AI assistants" />
+      </div>
+      <div id="spot" data-layout-allow-overflow data-layout-allow-overlap></div>
+      <div id="o-want" class="ov" data-layout-allow-overlap></div>
+      <div id="o-inj" class="ov" data-layout-allow-overlap></div>
+      <div id="o-tag" class="ov" data-layout-allow-overlap><b>Injected</b> instruction</div>
+      <div id="ag" data-layout-allow-occlusion data-layout-allow-overflow data-layout-allow-overlap><svg viewBox="0 0 26 37" class="ag-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="ag-pill"><i></i>H Company agent</div></div>
+      <div id="o-stamp" class="ov" data-layout-allow-overlap><span>IT SAID NO.</span></div>
+      <div class="chip"><i></i>Recorded run · demo portal</div>
+    </div>
+    <div id="s4" class="slam"><b>EXECUTE</b><span>04</span></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 7.2. Camera x2 on each control the agent clicks; a spotlight dims the rest of the page.
+      // Voice 3 at 7.3 (the agent executes), voice 4 at 11.6: "tells" local 4.84, "accept" 5.39, "says no" 6.79.
+      const S = 2;
+      const cam = (x, y) => ({ x, y, scale: S });
+      const click = (t) => { tl.to("#ag", { scale: 0.82, transformOrigin: "0% 0%", duration: 0.05 }, t); tl.to("#ag", { scale: 1, duration: 0.12, ease: "power3.out" }, t + 0.05); };
+      const spot = (t, x, y, w, h) => tl.set("#spot", { opacity: 1, left: x - 8, top: y - 8, width: w + 16, height: h + 16 }, t);
+      const show = (id, prev, t) => { tl.set(id, { opacity: 1 }, t); if (prev) tl.set(prev, { opacity: 0 }, t); };
+      tl.set("#s4", { opacity: 1 }, 0.05);
+      tl.fromTo("#s4 b", { scale: 1.35, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.25, ease: "expo.out" }, 0.05);
+      tl.set("#s4", { opacity: 0 }, 0.5);
+      // 1 · View billing
+      gsap.set("#cam", cam(-1480, -174)); show("#p1", null, 0.5);
+      gsap.set("#ag", { x: 980, y: 1100 });
+      spot(0.55, 568, 520, 268, 84);
+      tl.to("#ag", { x: 700, y: 560, duration: 0.35, ease: "power3.out" }, 0.55); click(0.95);
+      // 2 · Manage subscription
+      show("#p2", "#p1", 1.05); tl.set("#cam", cam(-1480, 0), 1.05); spot(1.05, 410, 478, 426, 82);
+      tl.to("#ag", { x: 622, y: 518, duration: 0.3, ease: "power2.inOut" }, 1.1); click(1.6);
+      // 3 · Cancel subscription (a small link at the bottom of the page)
+      show("#p3", "#p2", 1.7); tl.set("#cam", cam(-514, -360), 1.7); spot(1.7, 412, 792, 256, 28);
+      tl.to("#ag", { x: 540, y: 806, duration: 0.3, ease: "power2.inOut" }, 1.75); click(2.25);
+      // 4 · Reason, then Continue
+      show("#p4", "#p3", 2.35); tl.set("#cam", cam(-70, -136), 2.35); spot(2.35, 494, 516, 586, 88);
+      tl.to("#ag", { x: 540, y: 560, duration: 0.3, ease: "power2.inOut" }, 2.4); click(2.85);
+      show("#p5", "#p4", 2.9); spot(2.95, 490, 864, 228, 88);
+      tl.to("#ag", { x: 604, y: 904, duration: 0.25, ease: "power2.inOut" }, 2.95); click(3.3);
+      // 5 · The retention offer: the bait, the injected instruction, and "No thanks" from below
+      show("#p6", "#p5", 3.6); tl.set("#cam", cam(-500, -340), 3.6); tl.set("#spot", { opacity: 0 }, 3.6);
+      tl.fromTo("#o-inj", { opacity: 0, scale: 1.05, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.18, ease: "expo.out" }, 4.84);
+      tl.fromTo("#o-tag", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.18 }, 4.9);
+      tl.fromTo("#o-want", { opacity: 0 }, { opacity: 1, duration: 0.12 }, 5.39);
+      tl.to("#ag", { x: 358, y: 600, duration: 0.4, ease: "power2.inOut" }, 6.3); click(6.95);
+      tl.fromTo("#o-stamp", { opacity: 0, scale: 2.4, rotation: 8, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, rotation: -4, duration: 0.16, ease: "back.out(1.6)" }, 6.79);
+      // impact: a short shake of the whole frame on "says no"
+      [[6.95, 14, -8], [7.0, -12, 6], [7.05, 8, -4], [7.1, 0, 0]].forEach(([t, x, y]) => tl.to("#stage", { x, y, duration: 0.05, ease: "none" }, t));
+      tl.to(["#o-want", "#o-tag"], { opacity: 0, duration: 0.12 }, 7.2);
+      tl.set({}, {}, 7.9);
+      window.__timelines["exec"] = tl;
+    })();
+  </script>
+</template>

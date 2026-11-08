@@ -1,0 +1,39 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0d0d12; font-family: "Plus Jakarta Sans", sans-serif; color: #f4f4f8; }
+    #h1 { position: absolute; left: 70px; top: 300px; font-weight: 800; font-size: 150px; line-height: 0.98; letter-spacing: -0.055em; white-space: nowrap; }
+    #h2 { position: absolute; left: 70px; top: 470px; font-weight: 800; font-size: 150px; line-height: 0.98; letter-spacing: -0.055em; white-space: nowrap; }
+    #hands { position: relative; z-index: 0; isolation: isolate; display: inline-block; padding: 0 12px; }
+    #hl { position: absolute; left: 0; right: 0; bottom: -8px; height: 160px; background: #d4f53c; z-index: -1; transform-origin: 0 50%; }
+    #ag { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .cur-svg { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .pill { position: absolute; left: 56px; top: 56px; height: 46px; padding: 0 18px 0 14px; border-radius: 23px; background: #f4f4f8; color: #0d0d12;
+      font-weight: 700; font-size: 28px; line-height: 46px; white-space: nowrap; }
+    .pill i { display: inline-block; width: 11px; height: 11px; margin-right: 9px; border-radius: 6px; background: #2f7d12; vertical-align: 2px; }
+    #sub { position: absolute; left: 74px; top: 720px; font-family: "Fira Code", monospace; font-size: 30px; letter-spacing: 0.1em; color: #d4f53c; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1080" data-height="1080">
+    <div id="h1">An AI CFO</div>
+    <div id="h2">with <span id="hands"><span id="hl"></span><span id="hw">hands.</span></span></div>
+    <div id="sub">KERDAXIS · H COMPANY × 42 AI HACKATHON</div>
+    <div id="ag" data-layout-allow-occlusion data-layout-allow-overflow data-layout-allow-overlap><svg viewBox="0 0 26 37" class="cur-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#F4F4F8" stroke="#0D0D12" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="pill"><i></i>H Company agent</div></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local. Voice 1 at 0.2: "AI CFO" 0.45, "hands" 1.58.
+      tl.fromTo("#h1", { y: 14 }, { y: 0, duration: 0.35, ease: "expo.out" }, 0);
+      tl.fromTo("#h2", { y: 14 }, { y: 0, duration: 0.35, ease: "expo.out" }, 0);
+      gsap.set("#hl", { scaleX: 0 });
+      gsap.set("#ag", { x: 1120, y: 900 });
+      tl.to("#ag", { x: 560, y: 560, duration: 0.55, ease: "power3.out" }, 1.0);
+      tl.to("#ag", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.06 }, 1.55);
+      tl.to("#ag", { scale: 1, duration: 0.12 }, 1.61);
+      tl.to("#hl", { scaleX: 1, duration: 0.3, ease: "power3.out" }, 1.58);
+      tl.to("#hw", { color: "#0d0d12", duration: 0.2 }, 1.6);
+      tl.fromTo("#sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.7);
+      tl.set({}, {}, 2.4);
+      window.__timelines["hook"] = tl;
+    })();
+  </script>
+</template>

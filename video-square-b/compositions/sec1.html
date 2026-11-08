@@ -1,0 +1,63 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0d0d12; font-family: "Plus Jakarta Sans", sans-serif; color: #f4f4f8; }
+    .slam { position: absolute; inset: 0; background: #d4f53c; color: #0d0d12; opacity: 0; z-index: 5; }
+    .slam b { position: absolute; left: 0; top: 400px; width: 1080px; text-align: center; font-weight: 800; font-size: 190px; letter-spacing: -0.05em; line-height: 1; white-space: nowrap; }
+    .slam span { position: absolute; left: 0; top: 620px; width: 1080px; text-align: center; font-family: "Fira Code", monospace; font-size: 34px; letter-spacing: 0.12em; }
+    .pane { position: absolute; inset: 0; opacity: 0; }
+    .chip { position: absolute; left: 40px; top: 40px; height: 56px; padding: 0 22px; border-radius: 28px; background: #1a1a23; border: 2px solid #2a2a36;
+      font-weight: 700; font-size: 28px; line-height: 52px; white-space: nowrap; }
+    .card { position: absolute; left: 60px; width: 960px; height: 150px; border-radius: 24px; border: 2px solid #2a2a36; background: #1a1a23; }
+    .card b { position: absolute; left: 36px; top: 26px; font-weight: 800; font-size: 60px; letter-spacing: -0.03em; white-space: nowrap; }
+    .card span { position: absolute; left: 38px; top: 98px; font-size: 32px; color: #a9a9bb; white-space: nowrap; }
+    .badge { position: absolute; right: 30px; top: 46px; height: 58px; padding: 0 24px; border-radius: 29px; font-family: "Fira Code", monospace; font-size: 32px; line-height: 58px; white-space: nowrap; }
+    .live { background: #d4f53c; color: #0d0d12; }
+    .next { border: 2px solid #3a3a48; color: #a9a9bb; line-height: 54px; }
+    #q1 { top: 200px; } #q2 { top: 380px; height: 120px; } #q2 b { font-size: 44px; } #q2 span { top: 78px; font-size: 28px; } #q2 .badge { top: 32px; }
+    #q3 { top: 530px; border-color: #d4f53c; background: #1f2410; height: 120px; } #q3 b { color: #d4f53c; font-size: 44px; } #q3 span { top: 78px; font-size: 28px; }
+    #an { background: #f7f7f9; }
+    #an-cam { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; transform-origin: 0 0; }
+    #an-cam img { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; }
+    #an-mk { position: absolute; left: 372px; top: 128px; width: 1030px; height: 72px; border-radius: 8px; background: rgba(212, 245, 60, 0.6); mix-blend-mode: multiply; transform-origin: 0 50%; }
+    #an .chip { background: #0d0d12; border-color: #0d0d12; }
+    #cp-card { position: absolute; left: 60px; top: 230px; width: 960px; height: 520px; border-radius: 28px; border: 3px solid #d4f53c; background: #1f2410; }
+    #cp-card b { position: absolute; left: 50px; top: 50px; font-weight: 800; font-size: 76px; letter-spacing: -0.03em; color: #d4f53c; }
+    #cp-card p { position: absolute; left: 50px; top: 170px; width: 860px; margin: 0; font-weight: 700; font-size: 52px; line-height: 1.2; letter-spacing: -0.02em; }
+    #cp-card small { position: absolute; left: 50px; top: 420px; font-size: 30px; color: #a9a9bb; }
+  </style>
+  <div id="root" data-composition-id="sec1" data-width="1080" data-height="1080">
+    <div id="co" class="pane">
+      <div class="chip">Connects to your tools</div>
+      <div id="q1" class="card"><b>Qonto</b><span>bank · read-only via MCP</span><div class="badge live">LIVE</div></div>
+      <div id="q2" class="card"><b>Sage · Pennylane</b><span>accounting</span><div class="badge next">NEXT</div></div>
+      <div id="q3" class="card"><b>No API? Computer use.</b><span>an H Company agent reads the interface</span></div>
+    </div>
+    <div id="an" class="pane"><div id="an-cam"><img src="assets/media/dashboard.jpg" alt="Kerdaxis dashboard (demo data): You can recover 5,388 € a year" /><div id="an-mk"></div></div>
+      <div class="chip">app.kerdaxis.com · demo data</div></div>
+    <div id="cp" class="pane"><div id="cp-card"><b>Linkup</b><p>Cheaper alternatives, each with its source and date.</p></div></div>
+    <div id="s1" class="slam"><b>CONNECT</b><span>01</span></div>
+    <div id="s2" class="slam"><b>ANALYZE</b><span>02</span></div>
+    <div id="s3" class="slam"><b>COMPARE</b><span>03</span></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 2.4. Voice 2 at 2.5: "connects" 0.31, "bank" 1.07, "finds the waste" 1.64, "compares" 3.03.
+      const slam = (id, t) => {
+        tl.set(id, { opacity: 1 }, t);
+        tl.fromTo(id + " b", { scale: 1.35, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.25, ease: "expo.out" }, t);
+        tl.set(id, { opacity: 0 }, t + 0.42);
+      };
+      slam("#s1", 0.2); tl.set("#co", { opacity: 1 }, 0.62); tl.set("#co", { opacity: 0 }, 1.5);
+      [["#q1", 0.66], ["#q2", 0.95], ["#q3", 1.15]].forEach(([q, t]) => tl.fromTo(q, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.25, ease: "expo.out" }, t));
+      slam("#s2", 1.5); tl.set("#an", { opacity: 1 }, 1.92); tl.set("#an", { opacity: 0 }, 2.9);
+      gsap.set("#an-cam", { x: -332, y: 252, scale: 1.0 }); gsap.set("#an-mk", { scaleX: 0 });
+      tl.to("#an-cam", { x: -345, y: 245, scale: 1.02, duration: 1.0, ease: "none" }, 1.92);
+      tl.to("#an-mk", { scaleX: 1, duration: 0.35, ease: "power2.out" }, 2.05);
+      slam("#s3", 2.9); tl.set("#cp", { opacity: 1 }, 3.32);
+      tl.fromTo("#cp-card", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: "expo.out" }, 3.32);
+      tl.set({}, {}, 4.8);
+      window.__timelines["sec1"] = tl;
+    })();
+  </script>
+</template>
