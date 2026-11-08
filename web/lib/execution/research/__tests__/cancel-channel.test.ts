@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cancelsOnline, needsCancelCheck } from "@/app/dashboard/use-dashboard";
+import { awaitsChannelCheck, cancelsOnline, needsCancelCheck } from "@/app/dashboard/use-dashboard";
 import type { Lever } from "@/lib/types";
 import { buildChannelQuery, parseCancelChannel } from "../cancel-channel";
 import { ResearchError } from "../types";
@@ -73,6 +73,14 @@ describe("agent or letter", () => {
   it("should treat our own demo portals as online without a web search", () => {
     expect(cancelsOnline(lever({ id: "nuvio", label: "Nuvio" }))).toBe(true);
     expect(needsCancelCheck(lever({ id: "nuvio", label: "Nuvio" }))).toBe(false);
+  });
+
+  it("should offer the check instead of a letter until the supplier has been checked once", () => {
+    expect(awaitsChannelCheck(lever({ action: "renegotiate" }))).toBe(true);
+    expect(awaitsChannelCheck(lever({ cancelChannel: { channel: "unknown", sourceUrl: "", checkedAt: CHECKED_AT } }))).toBe(false);
+    expect(awaitsChannelCheck(lever({ cancelChannel: { channel: "offline", sourceUrl: "https://x.test", checkedAt: CHECKED_AT } }))).toBe(false);
+    expect(awaitsChannelCheck(lever({ id: "nuvio", label: "Nuvio" }))).toBe(false);
+    expect(awaitsChannelCheck(lever({ id: "frais-de-change", motif: "fx", action: "switch" }))).toBe(false);
   });
 
   it("should ask Linkup again only while the answer is missing or unknown", () => {

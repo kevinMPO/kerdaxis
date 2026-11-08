@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import type { Lever, Risk } from "@/lib/types";
 import { leverName, leverProposal } from "@/lib/lever-text";
-import { cancelsOnline, type Dashboard } from "./use-dashboard";
+import { awaitsChannelCheck, cancelsOnline, type Dashboard } from "./use-dashboard";
 import { LaunchButton } from "./RunsView";
 import { Icon } from "./Icon";
 
@@ -135,14 +135,29 @@ function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElem
       <td className="kd-col-num kd-num">{hasEuro ? eur(lever.saving) : "—"}</td>
       <td className="kd-col-num kd-num kd-money">{hasEuro ? eur(lever.saving * 12) : "—"}</td>
       <td className="kd-col-act">
-        {showAgent && <LaunchButton d={d} lever={lever} tone="quiet" />}
-        {showLetter && (
-          <button className="kd-btn kd-btn-quiet" onClick={() => void d.openLetter(lever)}>
-            {copy.prepareLetter}
-          </button>
+        {awaitsChannelCheck(lever) ? (
+          <CheckOnlineButton lever={lever} d={d} />
+        ) : (
+          <>
+            {showAgent && <LaunchButton d={d} lever={lever} tone="quiet" />}
+            {showLetter && (
+              <button className="kd-btn kd-btn-quiet" onClick={() => void d.openLetter(lever)}>
+                {copy.prepareLetter}
+              </button>
+            )}
+          </>
         )}
       </td>
     </tr>
+  );
+}
+
+function CheckOnlineButton({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElement {
+  const checking = d.isCheckingChannel(lever.id);
+  return (
+    <button className="kd-btn kd-btn-quiet" onClick={() => void d.checkLeverChannel(lever)} disabled={checking} title={d.copy.checkOnlineHint}>
+      {checking ? d.copy.checkingOnline : d.copy.checkOnline}
+    </button>
   );
 }
 

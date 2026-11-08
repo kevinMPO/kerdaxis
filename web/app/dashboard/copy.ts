@@ -66,6 +66,9 @@ export interface DashboardCopy {
   cancelWithH: string;
   replayWithH: string;
   prepareLetter: string;
+  checkOnline: string;
+  checkingOnline: string;
+  checkOnlineHint: string;
   agentOffline: string;
   agentSoon: string;
   agentSubscribers: string;
@@ -208,6 +211,9 @@ const fr: DashboardCopy = {
   cancelWithH: "Résilier avec H Company",
   replayWithH: "Rejouer la session réelle",
   prepareLetter: "Lettre",
+  checkOnline: "Vérifier en ligne",
+  checkingOnline: "Vérification…",
+  checkOnlineHint: "Linkup vérifie si ce fournisseur se résilie en ligne (agent H Company) ou par lettre. Seul son nom part.",
   agentOffline: "Portail du fournisseur injoignable pour l'agent en ce moment.",
   agentSoon: "Parcours de résiliation pas encore disponible pour ce fournisseur.",
   agentSubscribers: "Essai gratuit : seule la session Nuvio CRM est rejouée. La résiliation en direct est réservée aux abonnés.",
@@ -270,7 +276,7 @@ const fr: DashboardCopy = {
   benchNone: "Aucun prix public vérifiable trouvé.",
   checkPrices: (n) => `Vérifier sur le web (${n})`,
   checkingPrices: (d, t) => `Recherche sur le web… ${d}/${t}`,
-  checkPricesNote: "Seuls le nom du fournisseur et sa catégorie partent vers Linkup. Chaque euro est ensuite calculé par le moteur à partir d'un prix sourcé et daté. Pour une résiliation, Linkup vérifie aussi si elle se fait en ligne : l'agent H Company s'en charge, sinon une lettre.",
+  checkPricesNote: "Seuls le nom du fournisseur et sa catégorie partent vers Linkup. Chaque euro est ensuite calculé par le moteur à partir d'un prix sourcé et daté. Pour chaque abonnement, Linkup vérifie aussi s'il se résilie en ligne : l'agent H Company s'en charge, sinon une lettre.",
   pricePending: "prix à vérifier",
   priceUnverified: {
     no_price: "non vérifié · aucun prix public trouvé",
@@ -358,6 +364,9 @@ const en: DashboardCopy = {
   cancelWithH: "Cancel with H Company",
   replayWithH: "Replay the real session",
   prepareLetter: "Letter",
+  checkOnline: "Check online",
+  checkingOnline: "Checking…",
+  checkOnlineHint: "Linkup checks whether this supplier can be cancelled online (H Company agent) or needs a letter. Only its name is sent.",
   agentOffline: "The supplier's portal is unreachable for the agent right now.",
   agentSoon: "No cancellation path for this supplier yet.",
   agentSubscribers: "Free trial: only the Nuvio CRM session is replayed. Live cancellation is for subscribers.",
@@ -420,7 +429,7 @@ const en: DashboardCopy = {
   benchNone: "No verifiable public price found.",
   checkPrices: (n) => `Check on the web (${n})`,
   checkingPrices: (d, t) => `Searching the web… ${d}/${t}`,
-  checkPricesNote: "Only the supplier name and its category go to Linkup. Every euro is then computed by the engine from a sourced, dated price. For a cancellation, Linkup also checks whether it can be done online: the H Company agent handles it, otherwise a letter.",
+  checkPricesNote: "Only the supplier name and its category go to Linkup. Every euro is then computed by the engine from a sourced, dated price. For each subscription, Linkup also checks whether it can be cancelled online: the H Company agent handles it, otherwise a letter.",
   pricePending: "price to check",
   priceUnverified: {
     no_price: "not verified · no public price found",
@@ -490,6 +499,9 @@ const de: DashboardCopy = {
   cancelWithH: "Mit H Company kündigen",
   replayWithH: "Echte Sitzung abspielen",
   prepareLetter: "Brief",
+  checkOnline: "Online prüfen",
+  checkingOnline: "Wird geprüft…",
+  checkOnlineHint: "Linkup prüft, ob dieser Anbieter online kündbar ist (H-Company-Agent) oder einen Brief braucht. Nur sein Name wird gesendet.",
   risk: { safe: "Ohne Risiko", med: "Prüfen", hard: "Projekt" },
   runsTitle: "Kündigungen",
   stations: ["Freigabe", "Pfad", "Im Portal", "Dein finales Go", "Anbieter-Nachweis", "Auszug T+30"],
@@ -550,6 +562,9 @@ const es: DashboardCopy = {
   cancelWithH: "Cancelar con H Company",
   replayWithH: "Reproducir la sesión real",
   prepareLetter: "Carta",
+  checkOnline: "Verificar en línea",
+  checkingOnline: "Verificando…",
+  checkOnlineHint: "Linkup verifica si este proveedor se cancela en línea (agente de H Company) o por carta. Solo se envía su nombre.",
   risk: { safe: "Sin riesgo", med: "Revisar", hard: "Proyecto" },
   runsTitle: "Cancelaciones",
   stations: ["Aprobación", "Ruta", "En el portal", "Tu luz verde", "Prueba del proveedor", "Extracto D+30"],
@@ -610,6 +625,9 @@ const it: DashboardCopy = {
   cancelWithH: "Disdire con H Company",
   replayWithH: "Riproduci la sessione reale",
   prepareLetter: "Lettera",
+  checkOnline: "Verifica online",
+  checkingOnline: "Verifica in corso…",
+  checkOnlineHint: "Linkup verifica se questo fornitore si disdice online (agente H Company) o con una lettera. Viene inviato solo il nome.",
   risk: { safe: "Senza rischio", med: "Da rivedere", hard: "Progetto" },
   runsTitle: "Disdette",
   stations: ["Approvazione", "Percorso", "Sul portale", "Il tuo via libera", "Prova del fornitore", "Estratto G+30"],

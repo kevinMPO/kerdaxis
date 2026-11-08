@@ -63,7 +63,8 @@ H Company sur le portail, arret avant le clic final, ou lettre) → TRACE (D1).
   H Company que si Linkup, sur accord (meme clic que « verifier les prix »), trouve dans la
   doc officielle qu'elle se fait en ligne (`Lever.cancelChannel`, source + date). Hors ligne
   ou non verifie : lettre. Un levier renegotiate / switch / downgrade resiliable en ligne
-  garde aussi sa lettre a cote du bouton agent. Nuvio et Lumen (portails de demo a nous) sont connus en ligne sans
+  garde aussi sa lettre a cote du bouton agent. Tant que le fournisseur n'a jamais ete verifie,
+  la ligne propose « Verifier en ligne » (ce fournisseur seul) a la place de la lettre. Nuvio et Lumen (portails de demo a nous) sont connus en ligne sans
   recherche. Cache 30 jours dans D1 (`cancel_channels`, db/0005).
 
 ## Fichiers
