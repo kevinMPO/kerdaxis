@@ -8,9 +8,9 @@
 
 import { build, toMerchantInputs } from "@/lib/engine";
 import { categorizeByRules, categorizeWithHolo, hasHoloKey, type MerchantInput } from "@/lib/categorize";
-import type { AnalyzeResult, Categorizer, Localized, MerchantVerdict, Tx } from "@/lib/types";
+import type { AnalyzeResult, Categorizer, MerchantVerdict, Tx } from "@/lib/types";
+import { rollingWindowLabel } from "@/lib/window-label";
 
-const DAY_MS = 86_400_000;
 const DAYS_PER_MONTH = 30;
 
 export interface AnalysisInput {
@@ -25,15 +25,6 @@ export interface AnalysisInput {
   labels?: MerchantVerdict[];
   /** Jour de référence de la fenêtre affichée (injectable pour les tests). */
   now?: Date;
-}
-
-export function windowLabel(now: Date = new Date()): Localized {
-  const start = new Date(now.getTime() - DAYS_PER_MONTH * DAY_MS);
-  const fmt = (d: Date, locale: string): string => d.toLocaleDateString(locale, { day: "numeric", month: "long" });
-  return {
-    fr: `${fmt(start, "fr-FR")} – ${fmt(now, "fr-FR")} ${now.getFullYear()}`,
-    en: `${fmt(start, "en-US")} – ${fmt(now, "en-US")}, ${now.getFullYear()}`,
-  };
 }
 
 async function categorize(inputs: MerchantInput[]): Promise<{ verdicts: MerchantVerdict[]; categorized: Categorizer }> {
@@ -60,7 +51,7 @@ export async function runAnalysis(input: AnalysisInput): Promise<AnalyzeResult> 
 
   return build({
     account: input.account,
-    windowLabel: windowLabel(input.now),
+    windowLabel: rollingWindowLabel(windowDays, input.now),
     txs,
     verdicts: [...verdicts, ...labels],
     windowDays,
