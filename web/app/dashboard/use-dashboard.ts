@@ -166,6 +166,10 @@ export interface Dashboard {
   loaded: boolean;
   refusal: ApiRefusal;
   qontoConnected: boolean;
+  /** null until /api/auth/qonto/status answers; false where Qonto would refuse the callback address. */
+  qontoConnectable: boolean | null;
+  /** The visitor came back from a connect attempt that cannot succeed on this domain. */
+  qontoConnectBlocked: boolean;
   disconnectQonto: () => Promise<void>;
   monthly: number;
   annual: number;
@@ -212,6 +216,8 @@ export function useDashboard(): Dashboard {
   const [loaded, setLoaded] = useState(false);
   const [refusal, setRefusal] = useState<ApiRefusal>(null);
   const [qontoConnected, setQontoConnected] = useState(false);
+  const [qontoConnectable, setQontoConnectable] = useState<boolean | null>(null);
+  const [qontoConnectBlocked, setQontoConnectBlocked] = useState(false);
   const [execStatus, setExecStatus] = useState<ExecutionStatus | null>(null);
   const [runs, setRuns] = useState<RunRef[]>([]);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
@@ -278,12 +284,17 @@ export function useDashboard(): Dashboard {
     const load = async (): Promise<void> => {
       try {
         const situation = new URLSearchParams(window.location.search).get("qonto");
-        if (situation === "indisponible" || situation === "erreur") setRefusal("unavailable");
+        if (situation === "indisponible") setQontoConnectBlocked(true);
+        if (situation === "erreur") setRefusal("unavailable");
         const [qonto, execution] = await Promise.all([
           fetch("/api/auth/qonto/status", { signal: controller.signal }).then((r) => (r.ok ? r.json() : null)),
           fetch("/api/execution/status", { cache: "no-store", signal: controller.signal }).then((r) => (r.ok ? r.json() : null)),
         ]);
-        if (qonto) setQontoConnected(Boolean((qonto as { connected?: boolean }).connected));
+        if (qonto) {
+          const state = qonto as { connected?: boolean; connectable?: boolean };
+          setQontoConnected(Boolean(state.connected));
+          setQontoConnectable(state.connectable ?? true);
+        }
         if (execution) setExecStatus(execution as ExecutionStatus);
       } catch {
         /* status probes are best-effort: the UI falls back to letters */
@@ -541,6 +552,8 @@ export function useDashboard(): Dashboard {
     loaded,
     refusal,
     qontoConnected,
+    qontoConnectable,
+    qontoConnectBlocked,
     disconnectQonto,
     monthly,
     annual,
