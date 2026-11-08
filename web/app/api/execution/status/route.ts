@@ -3,7 +3,7 @@ import { haiConfigured } from "@/lib/execution/hcompany";
 import { getSupplier, reachableByAgent, SUPPLIER_IDS } from "@/lib/execution/suppliers";
 import { linkupConfigured } from "@/lib/execution/research";
 import { noStore } from "@/lib/execution/http";
-import { REPLAY_SUPPLIER_ID } from "@/lib/execution/replay";
+import { REPLAY_SUPPLIER_IDS } from "@/lib/execution/replay";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,9 +23,9 @@ export async function GET(req: Request): Promise<Response> {
         .filter((s) => reachableByAgent(s))
         .map((s) => ({ id: s.id, vendor: s.vendor, host: s.allowedHost, playbook: s.guide.source })),
       portal: { configured: Boolean(nuvio), online: nuvio ? reachableByAgent(nuvio) : false },
-      // Essai gratuit : seul ce fournisseur est rejoué (session enregistrée), les autres sont réservés aux abonnés.
+      // Free trial: only these suppliers are replayed (recorded sessions), the others are for subscribers.
       replay: isTrial,
-      replaySupplierId: isTrial ? REPLAY_SUPPLIER_ID : null,
+      replaySupplierIds: isTrial ? REPLAY_SUPPLIER_IDS : null,
     }),
   );
 }

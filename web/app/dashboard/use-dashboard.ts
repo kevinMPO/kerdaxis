@@ -64,7 +64,7 @@ interface ExecutionStatus {
   suppliers: { id: string; vendor: string }[];
   replay?: boolean;
   /** Free trial: the only supplier replayed; every other one is reserved for subscribers. */
-  replaySupplierId?: string | null;
+  replaySupplierIds?: readonly string[] | null;
 }
 
 export interface BenchAlternative {
@@ -439,7 +439,8 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
 
   const agentState = useCallback(
     (supplierId: string): AgentState => {
-      const trialLocked = replayMode && execStatus?.replaySupplierId != null && supplierId !== execStatus.replaySupplierId;
+      const recorded = execStatus?.replaySupplierIds;
+      const trialLocked = replayMode && recorded != null && !recorded.includes(supplierId);
       if (trialLocked) return "subscribers";
       if (isExecutable(supplierId)) return "ready";
       return AGENT_CATALOG.includes(supplierId) ? "offline" : "unsupported";

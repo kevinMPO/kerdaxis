@@ -20,7 +20,7 @@ const Body = z
   .strict();
 
 const TRIAL_REPLAY_ONLY_MESSAGE =
-  "The free trial replays the recorded Nuvio CRM session. Live cancellations with the H Company agent are for subscribers.";
+  "The free trial replays the recorded Nuvio CRM and Lumen Analytics sessions. Live cancellations with the H Company agent are for subscribers.";
 
 /** Lance l'agent H Company pour un accord donné (usage unique). */
 async function handlePost(req: Request): Promise<Response> {

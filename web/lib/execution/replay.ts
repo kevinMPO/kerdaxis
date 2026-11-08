@@ -1,56 +1,42 @@
 // ---------------------------------------------------------------------------
-// Rediffusion pour l'essai gratuit.
+// Replay for the free trial.
 //
-// Pour le fournisseur de démo (Nuvio CRM), un visiteur en essai ne lance pas
-// d'agent H Company : il voit une session RÉELLE enregistrée le 7 nov. 2026
-// (18:43:07–18:44:00, Paris, portail de démo en anglais, injection de prompt
-// active, confirmation NUV-RW3L2Y), rejouée à ses horaires réels, avec le même
-// feu vert final : le visiteur doit cliquer pour que la suite se joue.
-// L'affichage le dit (« Replay · recorded session »). Aucune valeur inventée :
-// captures, horaires, étapes et coût viennent de cette session. Les autres
-// fournisseurs (Lumen sur Stripe) sont refusés en essai : un vrai agent coûte
-// du quota H Company et bloquerait la garde « un seul agent actif » pour tous.
+// A trial visitor never launches an H Company agent: they watch a REAL
+// recorded session (see replay-recordings.ts), replayed at its real timings,
+// with the same final gate: the visitor has to click for the rest to play.
+// The screen says so ("Replay · recorded session"). Suppliers without a
+// recording are refused in the trial: a real agent spends H Company quota and
+// would hold the "one active agent" guard for everyone.
 // ---------------------------------------------------------------------------
 
 import type { Approval } from "./policy";
 import { appendEvent, type Execution } from "./store";
-import { runCopy, type RunCopy, type RunLang } from "./run-copy";
+import { runCopy, type RunLang } from "./run-copy";
+import { RECORDINGS, type Recording, type ReplayCopy } from "./replay-recordings";
 
-/** Replays saved before the language was recorded were written in English. */
-const replayCopy = (exec: Execution): RunCopy => runCopy(exec.lang ?? "en");
+/** Suppliers with a recorded session, in the order they were recorded. */
+export const REPLAY_SUPPLIER_IDS: readonly string[] = Object.keys(RECORDINGS);
 
-/** Le seul fournisseur rejoué en essai : la session enregistrée est celle de Nuvio CRM. */
-export const REPLAY_SUPPLIER_ID = "nuvio";
+/** Replays saved before the supplier was recorded on the run are Nuvio's. */
+const LEGACY_REPLAY_SUPPLIER = "nuvio";
 
-/** En essai, seul le fournisseur enregistré est rejoué ; tout autre fournisseur est refusé. */
+/** In the trial, only a recorded supplier is replayed; any other is refused. */
 export function trialRunsReplay(supplierId: string): boolean {
-  return supplierId === REPLAY_SUPPLIER_ID;
+  return Object.hasOwn(RECORDINGS, supplierId);
 }
 
-const SHOT = (f: string) => `/replay/${f}`;
+function recordingOf(exec: Execution): Recording {
+  return RECORDINGS[exec.params.supplierId ?? LEGACY_REPLAY_SUPPLIER] ?? RECORDINGS[LEGACY_REPLAY_SUPPLIER];
+}
 
-/** Avant le feu vert : secondes depuis le lancement (session lancée à 18:43:07). */
-/** Step texts come from run-copy (replayBefore / replayAfter), in the same order. */
-const BEFORE: { t: number; shot: string; kind: "agent" | "observation" | "warning" | "system"; url: string }[] = [
-  { t: 8, shot: "obs-01-184315-account.png", kind: "observation", url: "https://portal.kerdaxis.com/account" },
-  { t: 13, shot: "obs-02-184320-billing.png", kind: "agent", url: "https://portal.kerdaxis.com/billing" },
-  { t: 17, shot: "obs-03-184324-subscription.png", kind: "agent", url: "https://portal.kerdaxis.com/subscription" },
-  { t: 21, shot: "obs-04-184328-reason-empty.png", kind: "observation", url: "https://portal.kerdaxis.com/cancel/reason" },
-  { t: 24, shot: "obs-05-184331-reason.png", kind: "agent", url: "https://portal.kerdaxis.com/cancel/reason" },
-  { t: 29, shot: "obs-06-184336-offer.png", kind: "warning", url: "https://portal.kerdaxis.com/cancel/offer" },
-  { t: 33, shot: "obs-07-184340-confirm-paused.png", kind: "system", url: "https://portal.kerdaxis.com/cancel/confirm" },
-];
-const GATE_AT = 33;
+/** Replays saved before the language was recorded were written in English. */
+const replayCopy = (exec: Execution): ReplayCopy => recordingOf(exec).copy[exec.lang ?? "en"];
 
-/** Après le feu vert : secondes depuis le clic humain. */
-const AFTER: { t: number; shot: string; kind: "agent" | "verification"; url: string }[] = [
-  { t: 1, shot: "obs-08-184349-confirm-resumed.png", kind: "agent", url: "https://portal.kerdaxis.com/cancel/confirm" },
-  { t: 5, shot: "obs-09-184354-confirm-checked.png", kind: "agent", url: "https://portal.kerdaxis.com/cancel/confirm" },
-  { t: 8, shot: "obs-10-184357-done.png", kind: "agent", url: "https://portal.kerdaxis.com/cancel/done" },
-];
-const VERIFY_AT = 11;
+const SHOT = (file: string): string => `/replay/${file}`;
 
 export function startReplay(approval: Approval, lang: RunLang = "en"): Execution {
+  const recording = RECORDINGS[approval.params.supplierId];
+  if (!recording) throw new Error("aucune_session_enregistree");
   approval.usedAt = new Date().toISOString();
   const now = new Date();
   const exec: Execution = {
@@ -82,64 +68,58 @@ export function startReplay(approval: Approval, lang: RunLang = "en"): Execution
     replay: { startedMs: now.getTime(), goMs: null, shown: 0 },
     lang,
   };
-  const t = runCopy(lang);
   appendEvent(exec, {
     kind: "approval",
-    message: t.approvalGiven(approval.channel === "voice", approval.params.plan, approval.params.vendor, approval.actionHash.slice(0, 12)),
+    message: runCopy(lang).approvalGiven(approval.channel === "voice", approval.params.plan, approval.params.vendor, approval.actionHash.slice(0, 12)),
   });
-  appendEvent(exec, { kind: "system", message: t.replayIntro });
+  appendEvent(exec, { kind: "system", message: recording.copy[lang].intro });
   return exec;
 }
 
 export function advanceReplay(exec: Execution, nowMs = Date.now()): Execution {
   const r = exec.replay;
   if (!r || exec.status === "stopped_by_user" || exec.status === "supplier_confirmed") return exec;
+  const recording = recordingOf(exec);
+  const { before, after } = recording;
 
   if (r.goMs === null) {
-    const el = (nowMs - r.startedMs) / 1000;
-    while (r.shown < BEFORE.length && BEFORE[r.shown].t <= el) {
+    const elapsed = (nowMs - r.startedMs) / 1000;
+    while (r.shown < before.length && before[r.shown].t <= elapsed) {
       const index = r.shown++;
-      const s = BEFORE[index];
-      exec.lastScreenshot = SHOT(s.shot);
+      const step = before[index];
+      exec.lastScreenshot = SHOT(step.shot);
       exec.steps = r.shown;
-      appendEvent(exec, { kind: s.kind, message: replayCopy(exec).replayBefore[index], url: s.url });
+      appendEvent(exec, { kind: step.kind, message: replayCopy(exec).before[index], url: step.url });
     }
-    if (el >= GATE_AT && exec.status === "running") {
+    if (elapsed >= recording.gateAt && exec.status === "running") {
       exec.status = "awaiting_final_approval";
       exec.paused = true;
       exec.finalPage = {
-        summary: replayCopy(exec).replayFinalPage,
+        summary: replayCopy(exec).finalPage,
         account_shown: exec.params.account,
-        button_label: "Confirm cancellation",
+        button_label: recording.finalButtonLabel,
       };
     }
     return exec;
   }
 
-  const el = (nowMs - r.goMs) / 1000;
-  const done = r.shown - BEFORE.length;
-  for (let i = done; i < AFTER.length && AFTER[i].t <= el; i++) {
-    const s = AFTER[i];
+  const elapsed = (nowMs - r.goMs) / 1000;
+  const done = r.shown - before.length;
+  for (let i = done; i < after.length && after[i].t <= elapsed; i++) {
+    const step = after[i];
     r.shown++;
-    exec.lastScreenshot = SHOT(s.shot);
-    exec.steps = BEFORE.length + i + 1;
-    appendEvent(exec, { kind: s.kind, message: replayCopy(exec).replayAfter[i], url: s.url });
+    exec.lastScreenshot = SHOT(step.shot);
+    exec.steps = before.length + i + 1;
+    appendEvent(exec, { kind: step.kind, message: replayCopy(exec).after[i], url: step.url });
   }
-  if (el >= VERIFY_AT && r.shown >= BEFORE.length + AFTER.length) {
-    exec.confirmationNumber = "NUV-RW3L2Y";
-    exec.supplierState = {
-      status: "cancelled",
-      confirmation_number: "NUV-RW3L2Y",
-      cancelled_at: "2026-11-07T17:43:57Z",
-      access_until: "2026-11-30",
-    };
-    exec.steps = 10;
-    exec.costUsd = 0.027;
+  if (elapsed >= recording.verifyAt && r.shown >= before.length + after.length) {
+    const { outcome } = recording;
+    exec.confirmationNumber = outcome.confirmationNumber;
+    exec.supplierState = { ...outcome.supplierState };
+    exec.steps = outcome.steps;
+    exec.costUsd = outcome.costUsd;
     exec.status = "supplier_confirmed";
-    appendEvent(exec, {
-      kind: "verification",
-      message: replayCopy(exec).replayVerified,
-    });
+    appendEvent(exec, { kind: "verification", message: replayCopy(exec).verified });
   }
   return exec;
 }
@@ -147,22 +127,23 @@ export function advanceReplay(exec: Execution, nowMs = Date.now()): Execution {
 export function decideReplay(exec: Execution, decision: "approve" | "refuse"): Execution {
   if (!exec.replay || exec.status !== "awaiting_final_approval") throw new Error("aucun_accord_final_en_attente");
   exec.finalDecision = { decision, at: new Date().toISOString() };
+  const t = runCopy(exec.lang ?? "en");
   if (decision === "refuse") {
     exec.status = "stopped_by_user";
-    appendEvent(exec, { kind: "approval", message: replayCopy(exec).finalRefused });
+    appendEvent(exec, { kind: "approval", message: t.finalRefused });
     return exec;
   }
   exec.replay.goMs = Date.now();
   exec.paused = false;
   exec.status = "running";
-  appendEvent(exec, { kind: "approval", message: replayCopy(exec).finalGiven });
+  appendEvent(exec, { kind: "approval", message: t.finalGiven });
   return exec;
 }
 
 export function stopReplay(exec: Execution): Execution {
   if (exec.status !== "supplier_confirmed") {
     exec.status = "stopped_by_user";
-    appendEvent(exec, { kind: "system", message: replayCopy(exec).replayStopped });
+    appendEvent(exec, { kind: "system", message: runCopy(exec.lang ?? "en").replayStopped });
   }
   return exec;
 }

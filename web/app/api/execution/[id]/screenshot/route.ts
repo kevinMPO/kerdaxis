@@ -19,7 +19,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const shot = exec?.lastScreenshot;
   if (!shot) return new NextResponse(null, { status: 404 });
   // Rediffusion : capture enregistrée servie depuis notre propre origine.
-  if (exec?.replay && /^\/replay\/obs-\d{2}-[a-z0-9-]+\.png$/.test(shot)) {
+  if (exec?.replay && /^\/replay\/(?:[a-z]+\/)?obs-\d{2}-[a-z0-9-]+\.png$/.test(shot)) {
     return new NextResponse(null, { status: 302, headers: { Location: shot, "Cache-Control": "no-store" } });
   }
 
