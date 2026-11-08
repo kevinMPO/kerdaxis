@@ -1,0 +1,62 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    .lane { position: absolute; left: 110px; font-weight: 900; font-size: 46px; letter-spacing: -0.02em; white-space: nowrap; }
+    .lane small { display: block; font-weight: 700; font-size: 28px; color: #a3b4b9; letter-spacing: 0; }
+    #ln-a { top: 70px; } #ln-b { top: 520px; }
+    .src { position: absolute; left: 110px; width: 700px; height: 96px; border-radius: 20px; border: 2px solid #26343d; background: #111a22; }
+    .src .n { position: absolute; left: 24px; top: 14px; font-weight: 900; font-size: 36px; white-space: nowrap; }
+    .src .d { position: absolute; left: 24px; top: 56px; font-weight: 700; font-size: 28px; color: #a3b4b9; white-space: nowrap; }
+    .chip { position: absolute; right: 18px; top: 24px; height: 48px; padding: 0 16px; border-radius: 24px; font-weight: 900; font-size: 28px; line-height: 44px;
+      letter-spacing: 0.06em; white-space: nowrap; border: 2px solid #3a4a54; color: #a3b4b9; }
+    .chip.live { border-color: #b4f768; color: #b4f768; }
+    #s-q { top: 190px; border-color: rgba(180,247,104,.5); } #s-s { top: 300px; } #s-p { top: 410px; }
+    #s-ui { top: 640px; } #s-portal { top: 750px; border-color: rgba(180,247,104,.5); }
+    #core { position: absolute; left: 1300px; top: 380px; width: 500px; height: 220px; border-radius: 30px; border: 4px solid #b4f768; background: #0f1a12; }
+    #core .t { position: absolute; left: 36px; top: 34px; font-weight: 900; font-size: 64px; letter-spacing: -0.04em; }
+    #core .s { position: absolute; left: 38px; top: 120px; width: 430px; font-weight: 700; font-size: 28px; line-height: 1.25; color: #a3b4b9; }
+    svg#wires { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    #legend { position: absolute; left: 1300px; top: 660px; width: 560px; font-weight: 700; font-size: 28px; line-height: 1.5; color: #a3b4b9; }
+    #legend b { color: #b4f768; }
+  </style>
+  <div id="root" data-composition-id="connect" data-width="1920" data-height="1080">
+    <svg id="wires" viewBox="0 0 1920 1080" fill="none" data-layout-ignore>
+      <path id="w-q" d="M810 238 C 900 238, 1000 450, 1300 450" stroke="#b4f768" stroke-width="5" />
+      <path id="w-s" d="M810 348 C 900 348, 1000 480, 1300 480" stroke="#3a4a54" stroke-width="3" stroke-dasharray="12 12" />
+      <path id="w-p" d="M810 458 C 900 458, 1000 510, 1300 510" stroke="#3a4a54" stroke-width="3" stroke-dasharray="12 12" />
+      <path id="w-ui" d="M810 688 C 900 688, 1000 540, 1300 540" stroke="#3a4a54" stroke-width="3" stroke-dasharray="12 12" />
+      <path id="w-portal" d="M1300 570 C 1000 570, 900 798, 810 798" stroke="#b4f768" stroke-width="5" />
+    </svg>
+    <div id="ln-a" class="lane">MCP / APIs<small>structured financial data</small></div>
+    <div id="s-q" class="src"><div class="n">Qonto</div><div class="d">bank · read-only via MCP</div><div class="chip live">LIVE</div></div>
+    <div id="s-s" class="src"><div class="n">Sage</div><div class="d">accounting</div><div class="chip">ROADMAP</div></div>
+    <div id="s-p" class="src"><div class="n">Pennylane</div><div class="d">accounting</div><div class="chip">ROADMAP</div></div>
+    <div id="ln-b" class="lane">H Company computer use<small>software without an API</small></div>
+    <div id="s-ui" class="src"><div class="n">Apps with no API</div><div class="d">read through the interface</div><div class="chip">CAPABILITY</div></div>
+    <div id="s-portal" class="src"><div class="n">Supplier portals</div><div class="d">act through the interface · recorded run</div><div class="chip live">LIVE</div></div>
+    <div id="core"><div class="t">KERDAXIS</div><div class="s">one financial picture, one action queue</div></div>
+    <div id="legend">━ <b>live today</b> &nbsp; ┄ roadmap / capability</div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 5.7. VO: "MCP and APIs" ~1.2, "computer use" ~3.0, "no integration" ~5.6.
+      const draw = (id, t, d) => { const p = document.querySelector(id); const L = p.getTotalLength();
+        gsap.set(id, { strokeDasharray: p.getAttribute("stroke-dasharray") ? p.getAttribute("stroke-dasharray") : L + " " + L });
+        tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, t); };
+      tl.fromTo("#core", { opacity: 0, scale: 0.92, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.4)" }, 0.05);
+      tl.fromTo("#ln-a", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2 }, 0.2);
+      tl.fromTo(["#s-q", "#s-s", "#s-p"], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.3, stagger: 0.12, ease: "expo.out" }, 0.4);
+      draw("#w-q", 1.0); draw("#w-s", 1.25); draw("#w-p", 1.4);
+      tl.fromTo("#ln-b", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2 }, 2.6);
+      tl.fromTo(["#s-ui", "#s-portal"], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.3, stagger: 0.15, ease: "expo.out" }, 2.8);
+      draw("#w-ui", 3.3); draw("#w-portal", 3.6);
+      tl.fromTo("#legend", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.6);
+      // A data pulse travels the live wires.
+      tl.fromTo("#w-q", { strokeWidth: 5 }, { strokeWidth: 9, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut" }, 1.6);
+      tl.fromTo("#w-portal", { strokeWidth: 5 }, { strokeWidth: 9, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut" }, 4.2);
+      tl.to("#root > *", { opacity: 0, filter: "blur(10px)", duration: 0.25, ease: "power3.in" }, 6.05);
+      window.__timelines["connect"] = tl;
+    })();
+  </script>
+</template>

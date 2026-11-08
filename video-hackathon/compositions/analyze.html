@@ -1,0 +1,52 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #b4f768; font-family: "Inter", sans-serif; color: #080d13; }
+    .verb { position: absolute; left: 104px; top: 90px; font-weight: 900; font-size: 230px; line-height: 0.9; letter-spacing: -0.06em; white-space: nowrap; }
+    #a-sub { position: absolute; left: 116px; top: 340px; width: 760px; font-weight: 700; font-size: 58px; line-height: 1.12; letter-spacing: -0.02em; }
+    #a-rule { position: absolute; left: 116px; top: 560px; width: 720px; padding: 22px 28px; border-radius: 22px; background: #080d13; color: #eef8f5;
+      font-weight: 700; font-size: 36px; line-height: 1.25; }
+    #a-rule b { color: #b4f768; }
+    #a-card { position: absolute; left: 1010px; top: 120px; width: 810px; height: 720px; border-radius: 32px; background: #ffffff; color: #17140f;
+      box-shadow: 0 24px 60px rgba(8, 13, 19, 0.18); }
+    #a-head { position: absolute; left: 44px; top: 34px; font-weight: 700; font-size: 30px; color: #5b554c; white-space: nowrap; }
+    .an { position: absolute; left: 44px; width: 722px; height: 120px; border-bottom: 2px solid #e4e0d6; }
+    #an0 { top: 96px; } #an1 { top: 216px; } #an2 { top: 336px; } #an3 { top: 456px; } #an4 { top: 576px; border-bottom: 0; }
+    .an .lb { position: absolute; left: 0; top: 18px; font-weight: 700; font-size: 38px; white-space: nowrap; }
+    .an .vl { position: absolute; right: 0; top: 16px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 40px; white-space: nowrap; }
+    .an .bar { position: absolute; left: 0; top: 82px; width: 722px; height: 14px; border-radius: 7px; background: #f1efe8; overflow: hidden; }
+    .an .bar i { position: absolute; left: 0; top: 0; height: 14px; border-radius: 7px; background: #b8b2a5; width: 0; }
+    #an0 .bar i { background: #17140f; } #an4 .bar i { background: #2f6f5b; }
+    #a-demo { position: absolute; left: 1014px; top: 856px; font-weight: 700; font-size: 28px; color: #2a3a14; white-space: nowrap; }
+    #a-verb, #a-sub, #a-rule, #a-card { opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="analyze" data-width="1920" data-height="1080">
+    <div id="a-verb" class="verb" style="font-size: 190px;">ANALYZE</div>
+    <div id="a-sub">Every transaction, read-only from the bank.</div>
+    <div id="a-rule">A deterministic engine computes every euro. <b>The AI only labels.</b></div>
+    <div id="a-card">
+      <div id="a-head">One month of spend · demo data</div>
+        <div id="an0" class="an"><div class="lb">Out this month</div><div class="vl" style="color:#17140f">16,137 €</div><div class="bar"><i></i></div></div>
+        <div id="an1" class="an"><div class="lb">Structural</div><div class="vl" style="color:#5b554c">9,240 €</div><div class="bar"><i></i></div></div>
+        <div id="an2" class="an"><div class="lb">One-off</div><div class="vl" style="color:#5b554c">3,468 €</div><div class="bar"><i></i></div></div>
+        <div id="an3" class="an"><div class="lb">Personal</div><div class="vl" style="color:#5b554c">1,802 €</div><div class="bar"><i></i></div></div>
+        <div id="an4" class="an"><div class="lb">Controllable</div><div class="vl" style="color:#2f6f5b">1,627 €</div><div class="bar"><i></i></div></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 10.45. VO: "AI CFO" ~1.6, "deterministic" ~2.5, "every transaction" ~4.6.
+      tl.fromTo("#a-verb", { opacity: 0, scale: 1.25, filter: "blur(10px)", transformOrigin: "0% 0%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 0.0);
+      tl.fromTo("#a-card", { opacity: 0, x: 120, filter: "blur(12px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 0.2);
+            const w = [100, 57.3, 21.5, 11.2, 10.1];
+      w.forEach((v, i) => tl.to("#an" + i + " .bar i", { width: (722 * v / 100) + "px", duration: 0.5, ease: "power3.out" }, 0.45 + i * 0.4));
+      tl.fromTo("#a-sub", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" }, 0.4);
+      tl.fromTo("#a-rule", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, 2.0);
+      tl.to("#an4", { backgroundColor: "#eaffd2", duration: 0.3, ease: "power2.out" }, 2.6);
+      // Whip left into DETECT.
+      tl.to(["#a-verb", "#a-sub", "#a-rule", "#a-card"], { x: "-=1920", filter: "blur(20px)", duration: 0.25, ease: "power3.in" }, 5.05);
+      window.__timelines["analyze"] = tl;
+    })();
+  </script>
+</template>

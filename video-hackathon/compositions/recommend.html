@@ -1,0 +1,40 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #080d13; font-family: "Inter", sans-serif; color: #eef8f5; }
+    .verb { position: absolute; left: 104px; top: 90px; font-weight: 900; font-size: 230px; line-height: 0.9; letter-spacing: -0.06em; white-space: nowrap; color: #b4f768; }
+    .rc { position: absolute; width: 830px; height: 250px; border-radius: 28px; border: 3px solid #26343d; background: #111a22; }
+    #rc0 { left: 110px; top: 330px; } #rc1 { left: 980px; top: 330px; } #rc2 { left: 110px; top: 600px; } #rc3 { left: 980px; top: 600px; }
+    .rc .ac { position: absolute; left: 34px; top: 22px; font-weight: 900; font-size: 84px; letter-spacing: -0.04em; white-space: nowrap; }
+    .rc .rt { position: absolute; left: 38px; top: 128px; font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 30px; color: #a3b4b9; white-space: nowrap; }
+    .rc .ex { position: absolute; left: 38px; top: 182px; font-weight: 700; font-size: 32px; color: #a3b4b9; white-space: nowrap; }
+    .rc .ex b { color: #eef8f5; }
+    #r-note { position: absolute; left: 1380px; top: 104px; width: 440px; font-weight: 700; font-size: 32px; line-height: 1.25; color: #a3b4b9; }
+    #r-note b { color: #eef8f5; }
+    #r-verb, .rc, #r-note { opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="recommend" data-width="1920" data-height="1080">
+    <div id="r-verb" class="verb" style="font-size: 186px;">RECOMMEND</div>
+    <div id="r-note">The AI picks the action. <b>The engine's fixed table sets the euros.</b> Demo data.</div>
+      <div id="rc0" class="rc"><div class="ac">cancel</div><div class="rt">saving = monthly ×1.0</div><div class="ex"><b>Nuvio CRM</b> · 129 €/mo</div></div>
+      <div id="rc1" class="rc"><div class="ac">downgrade</div><div class="rt">saving = monthly ×0.3</div><div class="ex"><b>HeyGen</b> · pause / annual</div></div>
+      <div id="rc2" class="rc"><div class="ac">switch</div><div class="rt">saving = monthly ×0.4</div><div class="ex"><b>Waalaxy</b> · → Apollo + Instantly</div></div>
+      <div id="rc3" class="rc"><div class="ac">renegotiate</div><div class="rt">saving = monthly ×0.2</div><div class="ex"><b>Figma</b> · +14.3% price rise</div></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 22.3. VO: cancel ~0.6, downgrade ~1.4, switch ~2.25, renegotiate ~3.1.
+      tl.fromTo("#r-verb", { opacity: 0, scale: 1.25, filter: "blur(10px)", transformOrigin: "0% 0%" },
+        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, 0.0);
+      tl.fromTo("#r-note", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0.3);
+      [0.45, 0.9, 1.35, 1.8].forEach((t, i) =>
+        tl.fromTo("#rc" + i, { opacity: 0, scale: 0.9, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.4)" }, t));
+      // The concrete case: cancel Nuvio CRM.
+      tl.to("#rc0", { borderColor: "#b4f768", backgroundColor: "#1b2a10", duration: 0.3, ease: "power2.out" }, 3.3);
+            // Zoom through the cancel card into APPROVE (lime world).
+      tl.to(["#r-verb", "#r-note", "#rc1", "#rc2", "#rc3", "#rc0 .ac", "#rc0 .rt", "#rc0 .ex"], { opacity: 0, duration: 0.15, ease: "power3.in" }, 3.85);
+      tl.to("#rc0", { scale: 9, backgroundColor: "#b4f768", borderColor: "#b4f768", duration: 0.45, ease: "power3.in", transformOrigin: "30% 50%" }, 3.85);
+      window.__timelines["recommend"] = tl;
+    })();
+  </script>
+</template>
