@@ -3,6 +3,7 @@ import { haiConfigured } from "@/lib/execution/hcompany";
 import { getSupplier, reachableByAgent, SUPPLIER_IDS } from "@/lib/execution/suppliers";
 import { linkupConfigured } from "@/lib/execution/research";
 import { noStore } from "@/lib/execution/http";
+import { REPLAY_SUPPLIER_ID } from "@/lib/execution/replay";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +12,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request): Promise<Response> {
   const configured = SUPPLIER_IDS.map((id) => getSupplier(id)).filter((s) => s !== null);
   const nuvio = getSupplier("nuvio");
+  const isTrial = req.headers.get("x-kx-role") === "trial";
   return noStore(
     NextResponse.json({
       hcompany: haiConfigured(),
@@ -21,8 +23,9 @@ export async function GET(req: Request): Promise<Response> {
         .filter((s) => reachableByAgent(s))
         .map((s) => ({ id: s.id, vendor: s.vendor, host: s.allowedHost, playbook: s.guide.source })),
       portal: { configured: Boolean(nuvio), online: nuvio ? reachableByAgent(nuvio) : false },
-      // Essai gratuit : l'agent est rejoué (session enregistrée), jamais lancé.
-      replay: req.headers.get("x-kx-role") === "trial",
+      // Essai gratuit : seul ce fournisseur est rejoué (session enregistrée), les autres sont réservés aux abonnés.
+      replay: isTrial,
+      replaySupplierId: isTrial ? REPLAY_SUPPLIER_ID : null,
     }),
   );
 }

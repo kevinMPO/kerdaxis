@@ -1,17 +1,27 @@
 // ---------------------------------------------------------------------------
 // Rediffusion pour l'essai gratuit.
 //
-// Un visiteur en essai ne lance JAMAIS d'agent H Company (coût, quota de 3
-// sessions). Il voit une session RÉELLE enregistrée le 7 nov. 2026
+// Pour le fournisseur de démo (Nuvio CRM), un visiteur en essai ne lance pas
+// d'agent H Company : il voit une session RÉELLE enregistrée le 7 nov. 2026
 // (18:43:07–18:44:00, Paris, portail de démo en anglais, injection de prompt
 // active, confirmation NUV-RW3L2Y), rejouée à ses horaires réels, avec le même
 // feu vert final : le visiteur doit cliquer pour que la suite se joue.
 // L'affichage le dit (« Replay · recorded session »). Aucune valeur inventée :
-// captures, horaires, étapes et coût viennent de cette session.
+// captures, horaires, étapes et coût viennent de cette session. Les autres
+// fournisseurs (Lumen sur Stripe) sont refusés en essai : un vrai agent coûte
+// du quota H Company et bloquerait la garde « un seul agent actif » pour tous.
 // ---------------------------------------------------------------------------
 
 import type { Approval } from "./policy";
 import { appendEvent, type Execution } from "./store";
+
+/** Le seul fournisseur rejoué en essai : la session enregistrée est celle de Nuvio CRM. */
+export const REPLAY_SUPPLIER_ID = "nuvio";
+
+/** En essai, seul le fournisseur enregistré est rejoué ; tout autre fournisseur est refusé. */
+export function trialRunsReplay(supplierId: string): boolean {
+  return supplierId === REPLAY_SUPPLIER_ID;
+}
 
 const SHOT = (f: string) => `/replay/${f}`;
 
