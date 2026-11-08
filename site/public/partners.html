@@ -219,7 +219,7 @@ function applyLang(next,save){
   [].forEach.call(document.querySelectorAll('[data-i-aria]'),function(el){el.setAttribute('aria-label',t(el.getAttribute('data-i-aria')));});
   [].forEach.call(document.querySelectorAll('[data-lang]'),function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-lang')===lang));});
   document.title=t('metaTitle');
-  if(save){try{localStorage.setItem('kx-lang',lang);}catch(e){}}
+  if(save){document.documentElement.classList.add('hl-static');try{localStorage.setItem('kx-lang',lang);}catch(e){}}
 }
 [].forEach.call(document.querySelectorAll('[data-lang]'),function(b){b.addEventListener('click',function(){applyLang(b.getAttribute('data-lang'),true);});});
 var initial='en',topic='';

@@ -14,7 +14,8 @@
   --ease:cubic-bezier(.16,1,.3,1);
 }
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:80px}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:80px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 html:has(dialog[open]){overflow:hidden}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:clip;caret-color:var(--accent);accent-color:var(--accent)}
 ::selection{background:var(--lime);color:var(--ink)}
@@ -32,8 +33,8 @@ h1,h2,h3,h4,p,dl,dd,ol,ul,figure{margin:0}
 .wrap{width:100%;max-width:calc(var(--wrap) + 2*var(--gutter));margin-inline:auto;padding-inline:var(--gutter)}
 
 /* ---------- buttons ---------- */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 22px;border-radius:10px;border:1px solid transparent;font-size:15.5px;font-weight:650;line-height:1;white-space:nowrap;transition:background-color .2s,border-color .2s,color .2s,transform .2s var(--ease)}
-.btn:active:not(:disabled){transform:translateY(1px)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 22px;border-radius:10px;border:1px solid transparent;font-size:15.5px;font-weight:650;line-height:1;white-space:nowrap;transition:background-color .2s,border-color .2s,color .2s,transform .16s var(--ease)}
+.btn:active:not(:disabled){transform:translateY(1px) scale(.97)}
 .btn-primary{background:var(--accent);color:var(--on-accent)}
 .btn-primary:hover{background:var(--accent-hover)}
 .btn-ghost{border-color:var(--line-2);background:var(--surface);color:var(--ink)}
@@ -436,4 +437,34 @@ h3{font-size:1.15rem;font-weight:700;letter-spacing:-.012em;line-height:1.3}
 }
 
 /* Highlighted word in hero titles: ink on lime block, like a marker. */
-.hl{background:linear-gradient(var(--lime),var(--lime)) 0 100%/100% 1.08em no-repeat;color:var(--ink);padding:0 .06em;margin:0 -.02em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.hl{position:relative;z-index:0;color:var(--ink);padding:0 .06em;margin:0 -.02em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+.hl::before{content:"";position:absolute;z-index:-1;left:0;right:0;bottom:0;height:1.08em;background:var(--lime);transform-origin:left center}
+
+/* =====================================================================
+   Motion pass — each one explains something, all once, all reduced-motion safe
+   ===================================================================== */
+@media (prefers-reduced-motion:no-preference){
+  /* 3 · the AI marker draws itself once, like a highlighter stroke */
+  .hl{animation:hl-ink .45s var(--ease) .25s both}
+  .hl::before{animation:hl-mark .45s var(--ease) .25s both}
+  @keyframes hl-mark{from{transform:scaleX(0)}}
+  @keyframes hl-ink{from{color:#f4f4f8}}
+  .hl-static .hl,.hl-static .hl::before{animation:none}
+  /* 1 · the human gate breathes once while the line waits on it */
+  .node-human.is-on .node-dot{animation:gate 1.2s var(--ease) 1}
+  @keyframes gate{50%{box-shadow:0 0 0 14px var(--accent-soft)}}
+  /* 4 · success messages arrive instead of teleporting */
+  .form-ok{animation:rise .3s var(--ease)}
+}
+@media (prefers-reduced-motion:reduce){
+  .form-ok{animation:ok-fade .15s ease-out}
+  @keyframes ok-fade{from{opacity:0}}
+}
+/* 2 · ledger: armed by JS only when motion is allowed; the static page is the final state */
+.ledger.is-armed li::before{transform:scaleX(0);transform-origin:left center;transition:transform .32s var(--ease)}
+.ledger.is-armed li::after{border-color:var(--line-2);background:var(--surface);transition:border-color .25s,background-color .25s}
+.ledger.is-armed li.is-on::before{transform:scaleX(1)}
+.ledger.is-armed li.is-on::after{border-color:var(--ink)}
+.ledger.is-armed li.is-on:nth-child(n+4)::after{border-color:var(--money)}
+.ledger.is-armed li.is-on:last-child::after{background:var(--money)}
