@@ -278,7 +278,7 @@ describe("documentation : la clé API statique reste retirée", () => {
       // Retirer les variables sans expliquer pourquoi laisserait le prochain
       // lecteur les « remettre, elles manquent ».
       expect(
-        /QONTO_LOGIN/.test(contenu) && /supprim|SUPPRIM|retir|RETIR/.test(contenu),
+        /QONTO_LOGIN/.test(contenu) && /supprim|retir|remov/i.test(contenu),
         `${doc} doit expliquer que la clé statique a été supprimée, et pourquoi.`,
       ).toBe(true);
     });

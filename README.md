@@ -350,7 +350,7 @@ This is a hackathon build. Here is what that means today:
 
 Four rules apply everywhere in the codebase:
 
-1. **Read-only Qonto.** Every write, transfer and card call is rejected by `web/lib/mcp/readonly-guard.ts`.
+1. **Read-only Qonto.** Every write, transfer and card call is rejected by `web/lib/mcp/readonly-guard.ts`. The static founder key (`QONTO_LOGIN`, `QONTO_SECRET_KEY`, `QONTO_IBAN`) was removed: it carried write rights and would have been shared on the host. Qonto access goes through per-user read-only OAuth only.
 2. **The engine computes, never the LLM.** Every euro comes from `web/lib/engine`.
 3. **No personal data to the web.** Only a merchant name and category leave for price benchmarks.
 4. **A price needs a source and a date**, otherwise it is shown as "not verified".
