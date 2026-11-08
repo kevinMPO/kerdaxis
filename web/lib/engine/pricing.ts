@@ -117,7 +117,8 @@ export function priceLever(input: PricingInput): PricingOutcome {
     return lower ? outcome(monthly, lower, seats) : { status: "unverified", reason: "not_cheaper" };
   }
 
-  const comparable = input.alternatives.filter((a) => a.comparable);
+  // Même règle que le downgrade : un palier gratuit ne fait pas le travail payé aujourd'hui.
+  const comparable = input.alternatives.filter((a) => a.comparable && a.monthlyPrice > 0);
   if (comparable.length === 0) return { status: "unverified", reason: "no_price" };
   const pick = cheapest(comparable, seats);
   if (!pick) return { status: "unverified", reason: "no_seats" };

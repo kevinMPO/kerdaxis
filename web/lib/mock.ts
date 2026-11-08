@@ -74,7 +74,7 @@ export const MOCK: AnalyzeResult = {
     { id: "gw", label: "Google Workspace ×2", to: "1 compte", saving: 29, risk: "safe", active: true, action: "consolidate", monthly: 58, basis: "observed" },
     { id: "loom", label: "Loom", to: "capture native", saving: 23, risk: "med", active: true, action: "cancel", monthly: 23, basis: "observed" },
     { id: "uber", label: "Uber One", to: "couper", saving: 7, risk: "med", active: true, action: "cancel", monthly: 7, basis: "observed" },
-    { id: "waa", label: "Waalaxy", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 56, pole: "Outbound / Sales", basis: "pending" },
+    { id: "waa", label: "Waalaxy", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 49, pole: "Outbound / Sales", basis: "pending" },
     { id: "repl", label: "Replit", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 25, pole: "IA & Dev", basis: "pending" },
     { id: "hey", label: "HeyGen", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "downgrade", monthly: 29, pole: "Marketing Ads", basis: "pending" },
     { id: "make", label: "Make", to: "prix à vérifier sur le web", saving: 0, risk: "med", active: false, action: "switch", monthly: 10, pole: "IA & Dev", basis: "pending" },

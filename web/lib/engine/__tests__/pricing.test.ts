@@ -57,6 +57,11 @@ describe("priceLever", () => {
     expect(result).toEqual({ status: "unverified", reason: "not_cheaper" });
   });
 
+  it("should never treat a competitor's free tier as an equivalent offer", () => {
+    const result = priceLever({ action: "switch", monthly: 25, ownPlans: [], alternatives: [alt("Windsurf", 0, false), alt("Cursor", 20, false)] });
+    expect(result).toMatchObject({ status: "sourced", saving: 5, evidence: { offer: { name: "Cursor" } } });
+  });
+
   it("should ignore alternatives the classifier marked as not comparable", () => {
     const result = priceLever({ action: "switch", monthly: 30, ownPlans: [], alternatives: [alt("Notepad", 0, false, false)] });
     expect(result).toEqual({ status: "unverified", reason: "no_price" });

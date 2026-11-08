@@ -34,6 +34,7 @@ import { assertNoPii, redactForLogs, sanitizeMerchantQuery } from "@/lib/privacy
 import type { Lang } from "./types";
 import { recordAccess } from "@/lib/privacy/access-log";
 import { readCachedBenchmark, writeCachedBenchmark } from "@/lib/benchmark-cache";
+import { LINKUP_SEARCH_URL } from "@/lib/execution/research/linkup";
 
 const EXTRACT_TIMEOUT_MS = 30_000;
 const EXTRACT_MAX_TOKENS = 2000;
@@ -93,16 +94,57 @@ function yearFrom(text: string): string {
  * charge utile autorisée (règle 3, zéro PII), et `assertNoPii` le re-vérifie
  * juste avant le `fetch`.
  */
+type SearchKind = "ownPlans" | "alternatives";
+
+/**
+ * Deux questions séparées plutôt qu'une : posées ensemble, la réponse
+ * synthétisée de Linkup couvrait les tarifs du fournisseur et laissait tomber
+ * les concurrents (constaté en direct sur Waalaxy).
+ */
+function linkupQuestion(kind: SearchKind, merchant: string, category: string, lang: Lang): string {
+  if (kind === "ownPlans") {
+    return lang === "fr"
+      ? `Quels sont les tarifs publics actuels de "${merchant}" (catégorie : ${category}) ? Liste chaque formule avec son prix mensuel en euros et précise s'il est par utilisateur.`
+      : `What are the current public prices of "${merchant}" (category: ${category})? List each plan with its monthly price in euros and say whether it is per user.`;
+  }
+  return lang === "fr"
+    ? `Quelles sont les 3 meilleures alternatives MOINS CHÈRES à "${merchant}" (catégorie : ${category}) en 2026 ? Pour chaque CONCURRENT (jamais ${merchant} lui-même), donne son nom, son prix mensuel public actuel (par utilisateur si applicable) et l'URL de sa page tarifs.`
+    : `What are the 3 best CHEAPER alternatives to "${merchant}" (category: ${category}) in 2026? For each COMPETITOR (never ${merchant} itself), give its name, its current public monthly price (per user if applicable) and its pricing-page URL.`;
+}
+
+/**
+ * Lance les deux recherches en parallèle et fusionne leurs sources dans UNE
+ * liste numérotée (l'extraction cite un index de cette liste). Une recherche en
+ * échec n'emporte pas l'autre ; les deux en échec = web indisponible.
+ */
 async function searchLinkup(
   merchant: string,
   category: string,
   lang: Lang,
 ): Promise<{ summary: string; sources: BenchSource[] }> {
-  const q =
-    lang === "fr"
-      ? `1) Quels sont les tarifs publics actuels de "${merchant}" (catégorie : ${category}) ? Liste chaque formule avec son prix mensuel en euros et précise s'il est par utilisateur. 2) Quelles sont les 3 meilleures alternatives MOINS CHÈRES qui font le même travail ? Pour chaque CONCURRENT (jamais ${merchant} lui-même), donne son nom, son prix mensuel public actuel (par utilisateur si applicable) et l'URL de sa page tarifs.`
-      : `1) What are the current public prices of "${merchant}" (category: ${category})? List each plan with its monthly price in euros and say whether it is per user. 2) What are the 3 best CHEAPER alternatives that do the same job? For each COMPETITOR (never ${merchant} itself), give its name, its current public monthly price (per user if applicable) and its pricing-page URL.`;
+  const kinds: SearchKind[] = ["ownPlans", "alternatives"];
+  const settled = await Promise.allSettled(kinds.map((kind) => searchLinkupOnce(linkupQuestion(kind, merchant, category, lang), merchant, category)));
+  const answers = settled.flatMap((r, i) => (r.status === "fulfilled" ? [{ kind: kinds[i], ...r.value }] : []));
+  if (answers.length === 0) {
+    throw settled[0].status === "rejected" ? settled[0].reason : new Error("Linkup indisponible");
+  }
+  const sources: BenchSource[] = [];
+  const parts: string[] = [];
+  for (const answer of answers) {
+    const heading = answer.kind === "ownPlans" ? `TARIFS DE ${merchant}` : "ALTERNATIVES";
+    parts.push(`## ${heading}\n${answer.summary}`);
+    for (const src of answer.sources) {
+      if (!sources.some((known) => known.url === src.url)) sources.push(src);
+    }
+  }
+  return { summary: parts.join("\n\n"), sources };
+}
 
+async function searchLinkupOnce(
+  q: string,
+  merchant: string,
+  category: string,
+): Promise<{ summary: string; sources: BenchSource[] }> {
   // sourcedAnswer = réponse synthétisée (liste de concurrents + prix) + sources.
   // Bien plus exploitable par l'extraction que des snippets bruts (searchResults).
   const corps = { q, depth: "standard", outputType: "sourcedAnswer" };
@@ -114,7 +156,7 @@ async function searchLinkup(
   assertNoPii(corps, "recherche Linkup");
   void recordAccess({ service: "linkup", operation: "price search", direction: "sent", sent: `${merchant} · ${category}` });
 
-  const res = await fetch("https://api.linkup.so/v1/search", {
+  const res = await fetch(LINKUP_SEARCH_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.LINKUP_API_KEY}`,

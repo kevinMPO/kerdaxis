@@ -135,7 +135,7 @@ describe("benchmark", () => {
 
     const result = await benchmark("Notion Labs", "IA & Dev", 48);
 
-    expect(calls.map((c) => c.url)).toEqual([LINKUP_URL, HOLO_URL]);
+    expect(calls.map((c) => c.url)).toEqual([LINKUP_URL, LINKUP_URL, HOLO_URL]);
     expect(result.provider).toBe("linkup");
     expect(result.verified).toBe(true);
     expect(result.alternatives).toEqual([
@@ -173,6 +173,31 @@ describe("benchmark", () => {
     expect(result.alternatives).toEqual([]);
   });
 
+  it("should ask Linkup two separate questions: the supplier's own prices and cheaper competitors", async () => {
+    process.env.HAI_API_KEY = "hai-test-key";
+    process.env.LINKUP_API_KEY = "linkup-test-key";
+    routes.set(LINKUP_URL, () => json(LINKUP_ANSWER));
+    routes.set(HOLO_URL, () => holoReply(JSON.stringify({ ownPlans: [], alternatives: [] })));
+
+    await benchmark("Notion Labs", "IA & Dev", 48, "en");
+
+    const questions = calls.filter((c) => c.url === LINKUP_URL).map((c) => String(c.body.q));
+    expect(questions).toHaveLength(2);
+    expect(questions[0]).toContain("current public prices");
+    expect(questions[1]).toContain("CHEAPER alternatives");
+  });
+
+  it("should keep the search alive when one of the two Linkup questions fails", async () => {
+    process.env.LINKUP_API_KEY = "linkup-test-key";
+    let linkupCalls = 0;
+    routes.set(LINKUP_URL, () => (++linkupCalls === 1 ? json({}, 500) : json(LINKUP_ANSWER)));
+
+    const result = await benchmark("Notion Labs", "IA & Dev", 48);
+
+    expect(result.verified).toBe(true);
+    expect(result.sources).toHaveLength(2);
+  });
+
   it("should retry a rejected extraction exactly once", async () => {
     process.env.HAI_API_KEY = "hai-test-key";
     process.env.LINKUP_API_KEY = "linkup-test-key";
@@ -181,7 +206,7 @@ describe("benchmark", () => {
 
     const result = await benchmark("Notion Labs", "IA & Dev", 48);
 
-    expect(calls.map((c) => c.url)).toEqual([LINKUP_URL, HOLO_URL, HOLO_URL]);
+    expect(calls.map((c) => c.url)).toEqual([LINKUP_URL, LINKUP_URL, HOLO_URL, HOLO_URL]);
     expect(result.verified).toBe(true);
     expect(result.alternatives).toEqual([]);
   });
@@ -194,7 +219,7 @@ describe("benchmark", () => {
 
     await benchmark("Notion Labs", "IA & Dev", 48.37);
 
-    expect(calls).toHaveLength(2);
+    expect(calls).toHaveLength(3);
     for (const call of calls) expect(JSON.stringify(call.body)).not.toContain("48.37");
   });
 
@@ -218,7 +243,7 @@ describe("benchmark", () => {
 
     const result = await benchmark("Notion Labs", "IA & Dev", 48);
 
-    expect(calls.map((c) => c.url)).toEqual([LINKUP_URL]);
+    expect(calls.map((c) => c.url)).toEqual([LINKUP_URL, LINKUP_URL]);
     expect(result.verified).toBe(true);
     expect(result.alternatives).toEqual([]);
   });
