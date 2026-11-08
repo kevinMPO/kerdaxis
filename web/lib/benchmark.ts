@@ -26,6 +26,11 @@
 // déduire le nombre de postes payés et proposer un downgrade) et les
 // concurrents moins chers (switch, ou point d'appui d'une renégociation).
 // Un résultat vérifié est mis en cache 30 jours (lib/benchmark-cache.ts).
+//
+// Passe 3, le repli : si aucun palier chiffré du fournisseur actuel n'en sort,
+// l'agent H `h/web-scraper-flash` lit sa page tarifs officielle
+// (lib/benchmark-scraper.ts). Sans ce palier, le moteur ne peut pas déduire le
+// nombre de postes payés.
 // ---------------------------------------------------------------------------
 
 import { z } from "zod";
@@ -34,6 +39,7 @@ import { assertNoPii, redactForLogs, sanitizeMerchantQuery } from "@/lib/privacy
 import type { Lang } from "./types";
 import { recordAccess } from "@/lib/privacy/access-log";
 import { readCachedBenchmark, writeCachedBenchmark } from "@/lib/benchmark-cache";
+import { scrapeOfficialPricing } from "@/lib/benchmark-scraper";
 
 const EXTRACT_TIMEOUT_MS = 30_000;
 const EXTRACT_MAX_TOKENS = 2000;
@@ -72,11 +78,13 @@ export interface BenchmarkResult {
   /** Jour du relevé (AAAA-MM-JJ) : la date garantie de chaque prix. */
   checkedAt: string;
   note?: string;
-  /** Qui a fait la recherche. */
-  provider?: "linkup";
+  /** Qui a fait la recherche (« linkup+scraper » : paliers lus sur la page officielle par l'agent H). */
+  provider?: BenchProvider;
   /** Vrai si le résultat sort du cache D1 plutôt que d'une recherche fraîche. */
   cached?: boolean;
 }
+
+export type BenchProvider = "linkup" | "linkup+scraper";
 
 export function hasLinkupKey(): boolean {
   return !!process.env.LINKUP_API_KEY;
@@ -348,7 +356,7 @@ export async function benchmark(
   if (hit) return { ...hit, merchant, cached: true };
 
   // --- Passe 1 : recherche des prix (Linkup) --------------------------------
-  const provider = "linkup" as const;
+  const provider: BenchProvider = "linkup";
   let summary: string;
   let sources: BenchSource[];
   try {
@@ -396,7 +404,10 @@ export async function benchmark(
   }
   void recordAccess({ service: "hcompany", operation: "price extraction", direction: "sent", sent: `public web results about ${marchandSortant}'s alternatives` });
 
-  for (let attempt = 1; attempt <= EXTRACT_ATTEMPTS; attempt++) {
+  // Sans extraction structurée, on garde au moins le résumé sourcé.
+  let result = verifiedBase;
+  let extracted = false;
+  for (let attempt = 1; attempt <= EXTRACT_ATTEMPTS && !extracted; attempt++) {
     try {
       const brut = await holoChat({
         system: systemeExtraction,
@@ -405,14 +416,42 @@ export async function benchmark(
         maxTokens: EXTRACT_MAX_TOKENS,
         timeoutMs: EXTRACT_TIMEOUT_MS,
       });
-      const extracted = ExtractSchema.parse(JSON.parse(brut));
-      const result: BenchmarkResult = { ...verifiedBase, ...attachSources(extracted, sources, merchant) };
-      await writeCachedBenchmark(marchandSortant, categorieSortante, lang, { ...result, merchant: marchandSortant });
-      return result;
+      result = { ...verifiedBase, ...attachSources(ExtractSchema.parse(JSON.parse(brut)), sources, merchant) };
+      extracted = true;
     } catch (err) {
       console.error(`Benchmark (passe 2, extraction, essai ${attempt}/${EXTRACT_ATTEMPTS}) échoué :`, err);
     }
   }
-  // On garde le résumé sourcé même sans extraction structurée.
-  return verifiedBase;
+
+  // --- Passe 3 : repli sur la page tarifs officielle (agent H) --------------
+  result = await withOfficialOwnPlans(result, marchandSortant, categorieSortante);
+  // Une extraction ratée n'est pas mise en cache : la prochaine recherche retente tout.
+  if (extracted) await writeCachedBenchmark(marchandSortant, categorieSortante, lang, { ...result, merchant: marchandSortant });
+  return result;
+}
+
+function hasPricedOwnPlan(result: BenchmarkResult): boolean {
+  return result.ownPlans.some((plan) => plan.monthlyPrice !== null && plan.monthlyPrice > 0);
+}
+
+/**
+ * Complète les paliers du fournisseur actuel depuis sa page tarifs officielle,
+ * seulement s'il en manque un chiffré. Les paliers lus remplacent ceux sans
+ * prix ; la page lue devient une source datée du jour du relevé (règle 4).
+ */
+async function withOfficialOwnPlans(result: BenchmarkResult, merchant: string, category: string): Promise<BenchmarkResult> {
+  if (hasPricedOwnPlan(result)) return result;
+  const scraped = await scrapeOfficialPricing({ merchant, category, knownSourceUrls: result.sources.map((s) => s.url) });
+  if (!scraped?.plans.some((plan) => plan.monthlyPrice !== null)) return result;
+  const sourceDate = result.checkedAt;
+  const ownPlans: BenchPlan[] = scraped.plans.map((plan) => ({
+    ...plan,
+    unit: plan.perSeat ? "/utilisateur/mois" : "/mois",
+    sourceUrl: scraped.pageUrl,
+    sourceDate,
+  }));
+  const sources = result.sources.some((s) => s.url === scraped.pageUrl)
+    ? result.sources
+    : [...result.sources, { title: `${merchant} pricing`, url: scraped.pageUrl, date: sourceDate }];
+  return { ...result, ownPlans, sources, provider: "linkup+scraper" };
 }

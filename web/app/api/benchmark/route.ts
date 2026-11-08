@@ -21,7 +21,7 @@ import {
   reponseTropDeRequetes,
   verifierDebit,
 } from "@/lib/api/rate-limit";
-import type { Lang, LeverAction, SourcedOffer } from "@/lib/types";
+import type { Lang, LeverAction, LeverEvidence, Localized, SourcedOffer } from "@/lib/types";
 import { withAccessScope } from "@/lib/privacy/access-log";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +43,7 @@ const BenchmarkBody = z.object({
 
 export type BenchmarkResponse = BenchmarkResult & {
   /** Économie calculée par le moteur pour l'action du levier, null si l'action ne dépend pas d'un prix. */
-  pricing: (PricingOutcome & { savingYearly?: number; to?: string }) | null;
+  pricing: (PricingOutcome & { savingYearly?: number; to?: string; toLabel?: Localized }) | null;
   bestSaving: number;
   bestAlternative: string | null;
 };
@@ -58,6 +58,11 @@ function toOffer(plan: BenchPlan, checkedAt: string): SourcedOffer | null {
     sourceDate: plan.sourceDate,
     checkedAt,
   };
+}
+
+function proposal(action: LeverAction, evidence: LeverEvidence): { to: string; toLabel: Localized } {
+  const toLabel = describeEvidence(action, evidence);
+  return { to: toLabel.fr, toLabel };
 }
 
 function withPricing(result: BenchmarkResult, monthly: number, action: LeverAction | undefined): BenchmarkResponse {
@@ -75,7 +80,7 @@ function withPricing(result: BenchmarkResult, monthly: number, action: LeverActi
   }
   return {
     ...result,
-    pricing: { ...pricing, savingYearly: pricing.saving * 12, to: describeEvidence(action, pricing.evidence) },
+    pricing: { ...pricing, savingYearly: pricing.saving * 12, ...proposal(action, pricing.evidence) },
     bestSaving: pricing.saving,
     bestAlternative: pricing.evidence.offer.name,
   };

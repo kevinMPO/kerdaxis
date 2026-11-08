@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { build, ENGINE_VERSION } from "@/lib/engine";
+import { build } from "@/lib/engine";
 import type { LeverAction, MerchantVerdict, Nature, Tx } from "@/lib/types";
 
 let seq = 0;
@@ -134,6 +134,24 @@ describe("le motif est la porte du levier", () => {
   });
 });
 
+describe("propositions localisées", () => {
+  it("une hausse propose de revenir au tarif précédent, en français et en anglais", () => {
+    const txs = [tx("Figma", 42, "2026-06-15"), tx("Figma", 42, "2026-07-15"), tx("Figma", 48, "2026-08-15")];
+    const l = run(txs, [verdict("Figma", "renegotiate")]).levers.find((x) => x.label === "Figma")!;
+    expect(l.to).toBe("revenir au tarif précédent");
+    expect(l.toLabel).toEqual({ fr: "revenir au tarif précédent", en: "go back to the previous price" });
+  });
+
+  it("reprend l'alternative anglaise du modèle, sinon la française", () => {
+    const r = run([...monthly("Loom", 20), ...monthly("Zoom", 15)], [
+      verdict("Loom", "cancel", { alternative: "capture native", alternativeEn: "built-in capture" }),
+      verdict("Zoom", "cancel", { alternative: "Google Meet" }),
+    ]);
+    expect(r.levers.find((x) => x.label === "Loom")!.toLabel).toEqual({ fr: "capture native", en: "built-in capture" });
+    expect(r.levers.find((x) => x.label === "Zoom")!.toLabel).toEqual({ fr: "Google Meet", en: "Google Meet" });
+  });
+});
+
 describe("le risque vient de la table du moteur", () => {
   it("résilier demande une revue : le relevé ne montre pas l'usage", () => {
     const r = run(monthly("Loom", 20), [verdict("Loom", "cancel", { risk: "safe" })]);
@@ -202,10 +220,5 @@ describe("déterminisme du moteur", () => {
     const txs = [...monthly("Loom", 20), ...monthly("Apollo", 100)];
     const verdicts = [verdict("Loom", "cancel"), verdict("Apollo", "consolidate")];
     expect(JSON.stringify(run(txs, verdicts))).toBe(JSON.stringify(run(txs, verdicts)));
-  });
-
-  it("expose une version de moteur non vide", () => {
-    expect(typeof ENGINE_VERSION).toBe("string");
-    expect(ENGINE_VERSION.length).toBeGreaterThan(0);
   });
 });

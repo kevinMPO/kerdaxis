@@ -22,8 +22,6 @@ const PUBLIC = [
   /^\/api\/(test-login|try|signup|signin|signout|me)$/,
   /^\/api\/try\/guest$/,
   /^\/api\/billing\/return$/,
-  // API moteur : authentifiée par son propre Bearer (ENGINE_API_TOKENS), pas par cookie.
-  /^\/api\/v1\/engine\/(analyze|simulate|health)$/,
   /^\/media\//,
   /^\/_next\//,
   /^\/favicon/,

@@ -36,18 +36,11 @@ import type {
 import { classifyEI, type MerchantInput } from "@/lib/categorize";
 import { isMarketPriced } from "./pricing";
 
-/**
- * Version du contrat de calcul. Exposée par l'API moteur (/api/v1/engine) et
- * jointe à chaque réponse : un client peut détecter qu'une règle a changé.
- * À incrémenter dès qu'une règle métier modifie un chiffre produit.
- */
-export const ENGINE_VERSION = "2.0.0";
-
 const DAY = 86_400_000;
 const DAYS_PER_MONTH = 30;
 const MONTHS_PER_YEAR = 12;
 
-// Règles métier chiffrées, alignées sur engine.py (qui fait foi).
+// Règles métier chiffrées.
 /** Intervalle médian (jours) entre deux prélèvements pour une cadence mensuelle. */
 const MONTHLY_CADENCE_MIN_DAYS = 20;
 const MONTHLY_CADENCE_MAX_DAYS = 45;
@@ -105,6 +98,24 @@ export function riskFor(action: LeverAction, llmRisk: Risk): Risk {
 
 /** Libellé d'attente tant que le prix du marché n'est pas cherché. */
 export const PENDING_LABEL = "prix à vérifier sur le web";
+const PENDING_TEXT: Localized = { fr: PENDING_LABEL, en: "price to check on the web" };
+const BACK_TO_PREVIOUS_PRICE: Localized = { fr: "revenir au tarif précédent", en: "go back to the previous price" };
+const FX_LABEL: Localized = { fr: "Frais de change", en: "FX fees" };
+const FX_PROPOSAL: Localized = { fr: "compte multi-devises / carte sans frais", en: "multi-currency account / no-fee card" };
+const ACTION_TEXT: Record<LeverAction, Localized> = {
+  cancel: { fr: "résilier", en: "cancel" },
+  consolidate: { fr: "fusionner le doublon", en: "merge the duplicate" },
+  switch: { fr: "changer d'outil", en: "switch tool" },
+  downgrade: { fr: "descendre de formule", en: "downgrade the plan" },
+  renegotiate: { fr: "renégocier", en: "renegotiate" },
+  keep: { fr: "garder", en: "keep" },
+};
+
+/** La proposition du modèle, dans les deux langues, ou le nom de l'action à défaut. */
+function proposalText(v: MerchantVerdict, action: LeverAction): Localized {
+  if (!v.alternative) return ACTION_TEXT[action];
+  return { fr: v.alternative, en: v.alternativeEn || v.alternative };
+}
 
 const eurL = (n: number): Localized => ({
   fr: Math.round(n).toLocaleString("fr-FR") + " €",
@@ -305,6 +316,7 @@ export function build(input: BuildInput): AnalyzeResult {
         id: slug(a.name),
         label: a.name,
         to: PENDING_LABEL,
+        toLabel: PENDING_TEXT,
         saving: 0,
         motif,
         risk: riskFor(action, v.risk),
@@ -325,6 +337,7 @@ export function build(input: BuildInput): AnalyzeResult {
       id: slug(a.name),
       label: a.name,
       to: v.alternative || v.action,
+      toLabel: proposalText(v, action),
       saving,
       motif,
       risk,
@@ -352,7 +365,8 @@ export function build(input: BuildInput): AnalyzeResult {
     levers.push({
       id: slug(a.name),
       label: a.name,
-      to: "revenir au tarif précédent",
+      to: BACK_TO_PREVIOUS_PRICE.fr,
+      toLabel: BACK_TO_PREVIOUS_PRICE,
       saving: Math.max(0, Math.round(hausse.apresEur - hausse.avantEur)),
       motif: "abonnement",
       risk: "safe",
@@ -377,8 +391,10 @@ export function build(input: BuildInput): AnalyzeResult {
   if (fxMonthly > 0) {
     levers.push({
       id: "frais-de-change",
-      label: "Frais de change",
-      to: "compte multi-devises / carte sans frais",
+      label: FX_LABEL.fr,
+      labelText: FX_LABEL,
+      to: FX_PROPOSAL.fr,
+      toLabel: FX_PROPOSAL,
       saving: fxMonthly,
       motif: "fx",
       risk: "safe",
@@ -404,8 +420,7 @@ export function build(input: BuildInput): AnalyzeResult {
   }
 
   // Économie ANNUELLE par levier = mensuel × 12, calculée PAR LE MOTEUR (jamais
-  // par un client / un LLM). Un consommateur — l'API, Claude Tag — reprend ce
-  // chiffre verbatim au lieu de multiplier lui-même (règle #2).
+  // par l'interface ni par un LLM) : l'écran reprend ce chiffre verbatim (règle #2).
   for (const l of levers) l.savingYearly = l.saving * MONTHS_PER_YEAR;
 
   // --- score /100 : grille transparente ------------------------------------
@@ -470,8 +485,7 @@ export function build(input: BuildInput): AnalyzeResult {
   const flux = detectFlux(merchantDebits, aggs, verdictOf, monthCutoff);
 
   // --- TVA déductible perdue : dépenses PRO sans justificatif ---------------
-  // PÉRIMÈTRE ALIGNÉ SUR engine.py (règle #2, engine.py fait foi) : on ne compte
-  // QUE les marchands classés PRO par mots-clés (classifyEI, whitelist
+  // On ne compte QUE les marchands classés PRO par mots-clés (classifyEI, whitelist
   // PRO_KEYWORDS) — jamais A-CLARIFIER, structurel, voyage… On agrège les
   // transactions où un justificatif était requis mais absent. TVA = base × 20/120.
   // Levier fiscal indicatif : à confirmer avec un comptable.

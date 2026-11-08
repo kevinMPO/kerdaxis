@@ -222,6 +222,7 @@
 }
 .kd-btn:active:not(:disabled) { transform: translateY(1px); }
 .kd-btn:disabled { opacity: 0.55; cursor: progress; }
+.kd-btn-closed:disabled { cursor: not-allowed; }
 .kd-btn-accent { background: var(--kd-accent); color: var(--kd-on-accent); }
 .kd-btn-accent:hover:not(:disabled) { background: var(--kd-accent-hover); }
 .kd-btn-dark { background: var(--kd-ink); color: #fff; }
@@ -586,6 +587,14 @@
 .kd-playbook { font-size: 13px; color: var(--kd-ink-2); }
 .kd-playbook summary { cursor: pointer; font-weight: 700; color: var(--kd-ink-2); }
 .kd-playbook ol { margin: 8px 0; padding-left: 18px; }
+.kd-playbook li + li { margin-top: 4px; }
+.kd-path-meta { margin: 8px 0 0; font-size: 12.5px; color: var(--kd-ink-3); }
+.kd-path-mark { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; padding: 1px 7px; border-radius: 99px; font-size: 11.5px; font-weight: 600; white-space: nowrap; vertical-align: 1px; }
+.kd-path-mark.is-seen { color: var(--kd-money); background: var(--kd-money-soft); }
+.kd-path-mark.is-missed { color: var(--kd-warn); background: var(--kd-warn-soft); }
+.kd-path-score { margin: 10px 0 0; padding: 8px 10px; border-radius: var(--kd-radius); background: var(--kd-warn-soft); color: var(--kd-warn); font-size: 12.5px; font-weight: 600; }
+.kd-path-score.is-ok { background: var(--kd-money-soft); color: var(--kd-money); }
+.kd-path-notes { margin: 8px 0 0; font-size: 12.5px; color: var(--kd-ink-2); }
 .kd-run-meta { margin: 0; color: var(--kd-ink-3); font-size: 12px; line-height: 1.6; }
 
 /* ---------- Ledger ---------- */

@@ -10,10 +10,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { AnalyzeResult, Lang, Lever, Localized, Nature, NatureSlice, Risk } from "@/lib/types";
 import { buildPlanCsv, planFilename } from "@/lib/export";
-import { MOCK } from "@/lib/mock";
+import { EMPTY_ANALYSIS } from "@/lib/analysis/empty";
 import { WAITLIST_URL } from "@/lib/site";
 import { categorizerName, detectLang, eur as eurFmt, LANGS, LOCALE, natureLabel, PITCH, riskLabel, tr } from "@/lib/i18n";
 import { EUROPE_PATHS, EUROPE_VIEWBOX, EU_CITY_XY } from "@/lib/europeMap";
+import { leverName, leverProposal } from "@/lib/lever-text";
 import ExecutionPanel, { launchCancellation } from "./ExecutionPanel";
 import VoiceCommand from "./VoiceCommand";
 import { parseIntent } from "@/lib/voice/intents";
@@ -126,8 +127,8 @@ function useCountUp(target: number, trigger: unknown, ms = 900) {
 
 export default function Kerdaxis() {
   const [lang, setLang] = useState<Lang>("fr");
-  const [data, setData] = useState<AnalyzeResult>(MOCK);
-  const [levers, setLevers] = useState(MOCK.levers);
+  const [data, setData] = useState<AnalyzeResult>(EMPTY_ANALYSIS);
+  const [levers, setLevers] = useState(EMPTY_ANALYSIS.levers);
   const [horizon, setHorizon] = useState(12);
   const [loaded, setLoaded] = useState(false);
   // Refus de /api/analyze. `null` = pas de refus. Voir l'effet de chargement :
@@ -274,7 +275,7 @@ export default function Kerdaxis() {
     setExecBusy(true);
     setExecErr(null);
     try {
-      const id = await launchCancellation(supplierId);
+      const id = await launchCancellation(supplierId, lang);
       setApOpen(false);
       setExecId(id);
     } catch (e) {
@@ -323,7 +324,7 @@ export default function Kerdaxis() {
     let alive = true;
     // `r.ok` est VÉRIFIÉ, et ce n'est pas un détail : sans ce contrôle, un 401
     // « reconnecte ton compte » était parsé comme une analyse, l'écran retombait
-    // sur MOCK, et l'utilisateur lisait des montants FICTIFS en croyant qu'ils
+    // sur la démo, et l'utilisateur lisait des montants FICTIFS en croyant qu'ils
     // étaient les siens. Sur un produit qui vend la justesse des chiffres, c'est
     // le pire défaut possible. Un refus doit se voir.
     fetch("/api/analyze")
@@ -338,8 +339,8 @@ export default function Kerdaxis() {
           setLevers(res.data.levers);
           setRefusApi(null);
         } else {
-          // 401 = session valide mais jeton indisponible. Les données affichées
-          // restent celles de la démonstration : on le DIT, on ne le masque pas.
+          // 401 = session valide mais jeton indisponible. L'écran reste vide de
+          // chiffres : on le DIT, on n'affiche pas ceux d'un autre.
           setRefusApi(res.statut === 401 ? "reconnexion" : "indisponible");
         }
         setLoaded(true);
@@ -502,7 +503,7 @@ export default function Kerdaxis() {
         body: JSON.stringify({
           merchant: l.label,
           action: l.action ?? "renegotiate",
-          alternative: l.to,
+          alternative: leverProposal(l, lang),
           savingMonthly: l.saving,
           savingAnnual: l.saving * 12,
           lang,
@@ -850,7 +851,7 @@ export default function Kerdaxis() {
                   {l.active ? "✓" : ""}
                 </span>
                 <span className="arg-lever-txt">
-                  {l.label} <span className="arg-muted">→ {l.to}</span>
+                  {leverName(l, lang)} <span className="arg-muted">→ {leverProposal(l, lang)}</span>
                   {l.hausse && (
                     <span
                       className="arg-hausse"
@@ -1397,11 +1398,11 @@ export default function Kerdaxis() {
                 <p className="arg-arch-lede">
                   {emph(
                     L({
-                      fr: "Kerdaxis est un **Skill Claude Code** branché sur des **serveurs MCP** en direct. Le LLM orchestre et met en mots ; un moteur déterministe fait chaque euro. Le modèle ne touche jamais au calcul — c'est ce qui rend chaque chiffre auditable.",
-                      en: "Kerdaxis is a **Claude Code Skill** wired to live **MCP servers**. The LLM orchestrates and explains; a deterministic engine does every euro. The model never touches the math — that's what makes every figure auditable.",
-                      de: "Kerdaxis ist ein **Claude Code Skill**, der live an **MCP-Server** angebunden ist. Das LLM orchestriert und formuliert; eine deterministische Engine macht jeden Euro. Das Modell rührt die Berechnung nie an — das macht jede Zahl prüfbar.",
-                      es: "Kerdaxis es un **Skill de Claude Code** conectado en directo a **servidores MCP**. El LLM orquesta y pone en palabras; un motor determinista hace cada euro. El modelo nunca toca el cálculo — eso es lo que hace auditable cada cifra.",
-                      it: "Kerdaxis è uno **Skill di Claude Code** collegato in diretta a **server MCP**. L'LLM orchestra e mette in parole; un motore deterministico fa ogni euro. Il modello non tocca mai il calcolo — è ciò che rende verificabile ogni cifra.",
+                      fr: "Kerdaxis lit le compte en direct via des **connecteurs en lecture seule**. Le LLM étiquette et met en mots ; un moteur déterministe fait chaque euro. Le modèle ne touche jamais au calcul — c'est ce qui rend chaque chiffre auditable.",
+                      en: "Kerdaxis reads the account live through **read-only connectors**. The LLM labels and explains; a deterministic engine does every euro. The model never touches the math — that's what makes every figure auditable.",
+                      de: "Kerdaxis liest das Konto live über **schreibgeschützte Konnektoren**. Das LLM etikettiert und formuliert; eine deterministische Engine macht jeden Euro. Das Modell rührt die Berechnung nie an — das macht jede Zahl prüfbar.",
+                      es: "Kerdaxis lee la cuenta en directo mediante **conectores de solo lectura**. El LLM etiqueta y pone en palabras; un motor determinista hace cada euro. El modelo nunca toca el cálculo — eso es lo que hace auditable cada cifra.",
+                      it: "Kerdaxis legge il conto in diretta tramite **connettori in sola lettura**. L'LLM etichetta e mette in parole; un motore deterministico fa ogni euro. Il modello non tocca mai il calcolo — è ciò che rende verificabile ogni cifra.",
                     }),
                     "arch-lede",
                   )}
@@ -1454,11 +1455,11 @@ export default function Kerdaxis() {
                     <p className="arg-arch-foot">
                       {emph(
                         L({
-                          fr: "Mêmes règles portées dans **engine.ts** pour le dashboard web.",
-                          en: "Same rules ported to **engine.ts** for the web dashboard.",
-                          de: "Dieselben Regeln in **engine.ts** für das Web-Dashboard portiert.",
-                          es: "Las mismas reglas portadas a **engine.ts** para el panel web.",
-                          it: "Le stesse regole portate in **engine.ts** per la dashboard web.",
+                          fr: "Règles dans **lib/engine**, couvertes par des tests unitaires.",
+                          en: "Rules live in **lib/engine**, covered by unit tests.",
+                          de: "Regeln in **lib/engine**, durch Unit-Tests abgedeckt.",
+                          es: "Reglas en **lib/engine**, cubiertas por pruebas unitarias.",
+                          it: "Regole in **lib/engine**, coperte da test unitari.",
                         }),
                         "arch-foot-2",
                       )}
@@ -1535,11 +1536,11 @@ export default function Kerdaxis() {
           <div className="arg-ap-body">
             <ol className="arg-ap-steps">
               {pick(lang, {
-                fr: ["Observe (Qonto 90 j)", "Analyse (engine.py)", "Benchmark (Linkup)", "Décision — ton accord", "Prépare le livrable", "Ledger", "Preuve J+30"],
-                en: ["Observe (Qonto 90d)", "Analyse (engine.py)", "Benchmark (Linkup)", "Decision — your call", "Prepare deliverable", "Ledger", "Proof D+30"],
-                de: ["Beobachten (Qonto 90 T)", "Analyse (engine.py)", "Benchmark (Linkup)", "Entscheidung — deine Freigabe", "Unterlage vorbereiten", "Ledger", "Nachweis T+30"],
-                es: ["Observar (Qonto 90 d)", "Análisis (engine.py)", "Benchmark (Linkup)", "Decisión — tu aprobación", "Preparar el documento", "Ledger", "Prueba D+30"],
-                it: ["Osservare (Qonto 90 g)", "Analisi (engine.py)", "Benchmark (Linkup)", "Decisione — il tuo ok", "Prepara il documento", "Ledger", "Prova G+30"],
+                fr: ["Observe (Qonto 90 j)", "Analyse (moteur)", "Benchmark (Linkup)", "Décision — ton accord", "Prépare le livrable", "Ledger", "Preuve J+30"],
+                en: ["Observe (Qonto 90d)", "Analyse (engine)", "Benchmark (Linkup)", "Decision — your call", "Prepare deliverable", "Ledger", "Proof D+30"],
+                de: ["Beobachten (Qonto 90 T)", "Analyse (Engine)", "Benchmark (Linkup)", "Entscheidung — deine Freigabe", "Unterlage vorbereiten", "Ledger", "Nachweis T+30"],
+                es: ["Observar (Qonto 90 d)", "Análisis (motor)", "Benchmark (Linkup)", "Decisión — tu aprobación", "Preparar el documento", "Ledger", "Prueba D+30"],
+                it: ["Osservare (Qonto 90 g)", "Analisi (motore)", "Benchmark (Linkup)", "Decisione — il tuo ok", "Prepara il documento", "Ledger", "Prova G+30"],
               }).map((label, i) => {
                 const state = i < apStep ? "done" : i === apStep ? "cur" : "todo";
                 return (
@@ -1562,7 +1563,7 @@ export default function Kerdaxis() {
                   </p>
                   <code className="arg-ap-tool" key={apStep}>
                     {apStep === 0 && "mcp__qonto__list_transactions · settled_at_from=−90d"}
-                    {apStep === 1 && "python3 engine.py data/flows-*.json --json"}
+                    {apStep === 1 && "lib/engine · build(transactions, labels)"}
                     {apStep === 2 && `mcp__linkup__linkup-search · "${apLever.label}"`}
                   </code>
                 </div>
@@ -1580,7 +1581,7 @@ export default function Kerdaxis() {
                       {L({ fr: "Économie", en: "Saving", de: "Einsparung", es: "Ahorro", it: "Risparmio" })} · <b className="arg-mono">{eur(apLever.saving)}{L({ fr: "/mois", en: "/mo", de: "/Monat", es: "/mes", it: "/mese" })}</b> →{" "}
                       <b className="arg-mono">{eur(apLever.saving * 12)}/{L({ fr: "an", en: "yr", de: "Jahr", es: "año", it: "anno" })}</b>
                     </p>
-                    <p className="arg-ap-card-line">{L({ fr: "Action", en: "Action", de: "Aktion", es: "Acción", it: "Azione" })} · {apLever.to}</p>
+                    <p className="arg-ap-card-line">{L({ fr: "Action", en: "Action", de: "Aktion", es: "Acción", it: "Azione" })} · {leverProposal(apLever, lang)}</p>
                     {executable(apLever.id) && (
                       <p className="arg-ap-card-line arg-ap-agent">
                         <span className="arg-ap-agent-tag">H Company · computer-use agent</span>
@@ -1596,7 +1597,7 @@ export default function Kerdaxis() {
                     )}
                     {execErr && <p className="arg-ap-card-line" style={{ color: "var(--c-clay)" }}>{execErr}</p>}
                     <p className="arg-ap-card-src">
-                      {L({ fr: "Économie calculée par engine.py · prix sourcé + daté (Linkup)", en: "Saving computed by engine.py · price sourced + dated (Linkup)", de: "Einsparung von engine.py berechnet · Preis belegt + datiert (Linkup)", es: "Ahorro calculado por engine.py · precio con fuente y fecha (Linkup)", it: "Risparmio calcolato da engine.py · prezzo con fonte e data (Linkup)" })}
+                      {L({ fr: "Économie calculée par le moteur · prix sourcé + daté (Linkup)", en: "Saving computed by the engine · price sourced + dated (Linkup)", de: "Einsparung von der Engine berechnet · Preis belegt + datiert (Linkup)", es: "Ahorro calculado por el motor · precio con fuente y fecha (Linkup)", it: "Risparmio calcolato dal motore · prezzo con fonte e data (Linkup)" })}
                     </p>
                   </div>
                   <div className="arg-ap-actions">

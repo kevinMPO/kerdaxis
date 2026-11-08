@@ -1,4 +1,5 @@
-import type { Lang, Risk, UnverifiedReason } from "@/lib/types";
+import type { CancelChannel, Lang, Risk, UnverifiedReason } from "@/lib/types";
+import type { FinalLabelSource } from "@/lib/execution/research/compare";
 
 export type ViewId = "today" | "subscriptions" | "runs" | "ledger";
 
@@ -13,6 +14,8 @@ export interface DashboardCopy {
   disconnect: string;
   reconnect: string;
   unavailable: string;
+  connectClosed: string;
+  connectClosedHint: string;
   headline: (recoverable: string, confirmed: string | null) => string;
   headlineSub: (monthly: string, count: number) => string;
   ledgerSteps: [string, string, string, string, string];
@@ -76,6 +79,13 @@ export interface DashboardCopy {
   proofSource: string;
   journal: string;
   playbook: string;
+  pathResearched: (sources: number, day: string) => string;
+  pathSeen: string;
+  pathNotSeen: string;
+  pathFinal: (label: string) => string;
+  pathFinalSource: Record<FinalLabelSource, string>;
+  pathScore: (seen: number, total: number) => string;
+  pathNotes: string;
   stop: string;
   cost: (usd: string, steps: number) => string;
   ledgerTitle: string;
@@ -102,6 +112,7 @@ export interface DashboardCopy {
   pricePending: string;
   priceUnverified: Record<UnverifiedReason, string>;
   priceSource: (checkedAt: string) => string;
+  cancelChannel: Record<CancelChannel, string>;
   close: string;
   launching: string;
   error: string;
@@ -128,6 +139,8 @@ const fr: DashboardCopy = {
   disconnect: "Déconnecter Qonto",
   reconnect: "Ta session Qonto a expiré : les montants affichés sont ceux de la démonstration.",
   unavailable: "Analyse indisponible : les montants affichés sont ceux de la démonstration.",
+  connectClosed: "La connexion d'un vrai compte Qonto n'est pas encore ouverte sur ce domaine : Qonto doit d'abord autoriser l'adresse de retour de Kerdaxis. En attendant, la démo tourne sur des données d'exemple.",
+  connectClosedHint: "Bientôt : Qonto doit d'abord autoriser l'adresse de retour de Kerdaxis.",
   headline: (r, c) => `Tu peux récupérer ${r} par an. ${c ? `${c} déjà confirmés par les fournisseurs.` : "Rien n'est encore confirmé par un fournisseur."}`,
   headlineSub: (m, n) => `${m} par mois sur ${n} leviers retenus. Chaque euro vient du moteur, jamais du modèle.`,
   ledgerSteps: ["Potentiel", "Approuvé", "Exécuté", "Confirmé fournisseur", "Vérifié sur relevé"],
@@ -200,6 +213,13 @@ const fr: DashboardCopy = {
   proofSource: "Lu sur le portail du fournisseur, pas sur la parole de l'agent.",
   journal: "Journal de l'agent",
   playbook: "Parcours suivi",
+  pathResearched: (n, day) => `Linkup · ${n} sources · recherche du ${day}`,
+  pathSeen: "nommé par l'agent",
+  pathNotSeen: "jamais nommé par l'agent",
+  pathFinal: (label) => `Bouton final : « ${label} »`,
+  pathFinalSource: { docs: "tiré de la doc", screenshots: "lu sur les captures de la doc", catalog: "catalogue Kerdaxis, absent de la doc" },
+  pathScore: (seen, total) => `Linkup face à cette exécution : ${seen}/${total} libellés de la doc nommés par l'agent`,
+  pathNotes: "Note de l'agent",
   stop: "Arrêter l'agent",
   cost: (u, s) => `${s} étapes · ${u} $ d'agent`,
   ledgerTitle: "Grand livre",
@@ -220,9 +240,9 @@ const fr: DashboardCopy = {
   benchmark: "Comparer les prix (Linkup)",
   benchSearching: "Recherche des prix publics…",
   benchNone: "Aucun prix public vérifiable trouvé.",
-  checkPrices: (n) => `Vérifier les prix sur le web (${n})`,
-  checkingPrices: (d, t) => `Recherche des prix publics… ${d}/${t}`,
-  checkPricesNote: "Seuls le nom du fournisseur et sa catégorie partent vers Linkup. Chaque euro est ensuite calculé par le moteur à partir d'un prix sourcé et daté.",
+  checkPrices: (n) => `Vérifier sur le web (${n})`,
+  checkingPrices: (d, t) => `Recherche sur le web… ${d}/${t}`,
+  checkPricesNote: "Seuls le nom du fournisseur et sa catégorie partent vers Linkup. Chaque euro est ensuite calculé par le moteur à partir d'un prix sourcé et daté. Pour une résiliation, Linkup vérifie aussi si elle se fait en ligne : l'agent H Company s'en charge, sinon une lettre.",
   pricePending: "prix à vérifier",
   priceUnverified: {
     no_price: "non vérifié · aucun prix public trouvé",
@@ -231,6 +251,11 @@ const fr: DashboardCopy = {
     web_down: "non vérifié · recherche web indisponible",
   },
   priceSource: (c) => `source · relevé le ${c}`,
+  cancelChannel: {
+    online: "résiliable en ligne",
+    offline: "pas de résiliation en ligne",
+    unknown: "résiliation en ligne non vérifiée",
+  },
   close: "Fermer",
   launching: "Lancement…",
   error: "Une erreur est survenue.",
@@ -247,6 +272,8 @@ const en: DashboardCopy = {
   disconnect: "Disconnect Qonto",
   reconnect: "Your Qonto session expired: the amounts shown are demo data.",
   unavailable: "Analysis unavailable: the amounts shown are demo data.",
+  connectClosed: "Connecting a real Qonto account isn't open on this domain yet: Qonto must first approve Kerdaxis's callback address. Meanwhile, the demo runs on sample data.",
+  connectClosedHint: "Coming soon: Qonto must first approve Kerdaxis's callback address.",
   headline: (r, c) => `You can recover ${r} a year. ${c ? `${c} already confirmed by suppliers.` : "Nothing confirmed by a supplier yet."}`,
   headlineSub: (m, n) => `${m} a month across ${n} selected levers. Every euro comes from the engine, never the model.`,
   ledgerSteps: ["Potential", "Approved", "Executed", "Supplier confirmed", "Verified on statement"],
@@ -319,6 +346,13 @@ const en: DashboardCopy = {
   proofSource: "Read on the supplier's portal, not taken from the agent's word.",
   journal: "Agent log",
   playbook: "Path followed",
+  pathResearched: (n, day) => `Linkup · ${n} sources · researched ${day}`,
+  pathSeen: "named by the agent",
+  pathNotSeen: "never named by the agent",
+  pathFinal: (label) => `Final button: “${label}”`,
+  pathFinalSource: { docs: "from the docs", screenshots: "read on the doc screenshots", catalog: "Kerdaxis catalog, not in the docs" },
+  pathScore: (seen, total) => `Linkup vs this run: ${seen}/${total} documented labels named by the agent`,
+  pathNotes: "Agent's note",
   stop: "Stop the agent",
   cost: (u, s) => `${s} steps · $${u} of agent`,
   ledgerTitle: "Ledger",
@@ -339,9 +373,9 @@ const en: DashboardCopy = {
   benchmark: "Compare prices (Linkup)",
   benchSearching: "Looking up public prices…",
   benchNone: "No verifiable public price found.",
-  checkPrices: (n) => `Check prices on the web (${n})`,
-  checkingPrices: (d, t) => `Looking up public prices… ${d}/${t}`,
-  checkPricesNote: "Only the supplier name and its category go to Linkup. Every euro is then computed by the engine from a sourced, dated price.",
+  checkPrices: (n) => `Check on the web (${n})`,
+  checkingPrices: (d, t) => `Searching the web… ${d}/${t}`,
+  checkPricesNote: "Only the supplier name and its category go to Linkup. Every euro is then computed by the engine from a sourced, dated price. For a cancellation, Linkup also checks whether it can be done online: the H Company agent handles it, otherwise a letter.",
   pricePending: "price to check",
   priceUnverified: {
     no_price: "not verified · no public price found",
@@ -350,6 +384,11 @@ const en: DashboardCopy = {
     web_down: "not verified · web search unavailable",
   },
   priceSource: (c) => `source · checked ${c}`,
+  cancelChannel: {
+    online: "can be cancelled online",
+    offline: "no online cancellation",
+    unknown: "online cancellation not verified",
+  },
   close: "Close",
   launching: "Starting…",
   error: "Something went wrong.",
@@ -357,8 +396,8 @@ const en: DashboardCopy = {
 
 const de: DashboardCopy = {
   ...en,
-  checkPrices: (n) => `Preise im Web prüfen (${n})`,
-  checkingPrices: (d, t) => `Öffentliche Preise werden gesucht… ${d}/${t}`,
+  checkPrices: (n) => `Im Web prüfen (${n})`,
+  checkingPrices: (d, t) => `Websuche läuft… ${d}/${t}`,
   pricePending: "Preis zu prüfen",
   priceSource: (c) => `Quelle · geprüft am ${c}`,
   agentSubscribers: "Kostenloser Test: Nur die Nuvio-CRM-Sitzung wird abgespielt. Live-Kündigung ist für Abonnenten.",
@@ -370,6 +409,8 @@ const de: DashboardCopy = {
   analyzing: "Konto wird gelesen, die Engine rechnet…",
   connectQonto: "Qonto verbinden",
   disconnect: "Qonto trennen",
+  connectClosed: "Die Verbindung eines echten Qonto-Kontos ist auf dieser Domain noch nicht freigeschaltet: Qonto muss zuerst die Rückruf-Adresse von Kerdaxis zulassen. Bis dahin läuft die Demo mit Beispieldaten.",
+  connectClosedHint: "Demnächst: Qonto muss zuerst die Rückruf-Adresse von Kerdaxis zulassen.",
   headline: (r, c) => `Du kannst ${r} pro Jahr zurückholen. ${c ? `${c} bereits vom Anbieter bestätigt.` : "Noch nichts vom Anbieter bestätigt."}`,
   headlineSub: (m, n) => `${m} pro Monat über ${n} gewählte Hebel. Jeder Euro kommt aus der Engine, nie vom Modell.`,
   ledgerSteps: ["Potenzial", "Freigegeben", "Ausgeführt", "Vom Anbieter bestätigt", "Auf Auszug geprüft"],
@@ -398,8 +439,8 @@ const de: DashboardCopy = {
 
 const es: DashboardCopy = {
   ...en,
-  checkPrices: (n) => `Verificar precios en la web (${n})`,
-  checkingPrices: (d, t) => `Buscando precios públicos… ${d}/${t}`,
+  checkPrices: (n) => `Verificar en la web (${n})`,
+  checkingPrices: (d, t) => `Buscando en la web… ${d}/${t}`,
   pricePending: "precio por verificar",
   priceSource: (c) => `fuente · consultada el ${c}`,
   agentSubscribers: "Prueba gratuita: solo se reproduce la sesión de Nuvio CRM. La cancelación en directo es para suscriptores.",
@@ -411,6 +452,8 @@ const es: DashboardCopy = {
   analyzing: "Leyendo la cuenta, el motor está calculando…",
   connectQonto: "Conectar Qonto",
   disconnect: "Desconectar Qonto",
+  connectClosed: "La conexión de una cuenta Qonto real aún no está abierta en este dominio: Qonto debe autorizar primero la dirección de retorno de Kerdaxis. Mientras tanto, la demo funciona con datos de ejemplo.",
+  connectClosedHint: "Próximamente: Qonto debe autorizar primero la dirección de retorno de Kerdaxis.",
   headline: (r, c) => `Puedes recuperar ${r} al año. ${c ? `${c} ya confirmados por los proveedores.` : "Nada confirmado aún por un proveedor."}`,
   headlineSub: (m, n) => `${m} al mes en ${n} palancas elegidas. Cada euro viene del motor, nunca del modelo.`,
   ledgerSteps: ["Potencial", "Aprobado", "Ejecutado", "Confirmado por proveedor", "Verificado en extracto"],
@@ -439,8 +482,8 @@ const es: DashboardCopy = {
 
 const it: DashboardCopy = {
   ...en,
-  checkPrices: (n) => `Verifica i prezzi sul web (${n})`,
-  checkingPrices: (d, t) => `Ricerca dei prezzi pubblici… ${d}/${t}`,
+  checkPrices: (n) => `Verifica sul web (${n})`,
+  checkingPrices: (d, t) => `Ricerca sul web… ${d}/${t}`,
   pricePending: "prezzo da verificare",
   priceSource: (c) => `fonte · rilevata il ${c}`,
   agentSubscribers: "Prova gratuita: viene riprodotta solo la sessione Nuvio CRM. La disdetta dal vivo è per gli abbonati.",
@@ -452,6 +495,8 @@ const it: DashboardCopy = {
   analyzing: "Lettura del conto, il motore sta calcolando…",
   connectQonto: "Collega Qonto",
   disconnect: "Scollega Qonto",
+  connectClosed: "Il collegamento di un vero conto Qonto non è ancora aperto su questo dominio: Qonto deve prima autorizzare l'indirizzo di ritorno di Kerdaxis. Nel frattempo, la demo usa dati di esempio.",
+  connectClosedHint: "Presto disponibile: Qonto deve prima autorizzare l'indirizzo di ritorno di Kerdaxis.",
   headline: (r, c) => `Puoi recuperare ${r} all'anno. ${c ? `${c} già confermati dai fornitori.` : "Ancora nulla confermato da un fornitore."}`,
   headlineSub: (m, n) => `${m} al mese su ${n} leve scelte. Ogni euro viene dal motore, mai dal modello.`,
   ledgerSteps: ["Potenziale", "Approvato", "Eseguito", "Confermato dal fornitore", "Verificato sull'estratto"],

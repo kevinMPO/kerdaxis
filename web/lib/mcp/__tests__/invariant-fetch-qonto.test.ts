@@ -276,9 +276,9 @@ describe("documentation : la clé API statique reste retirée", () => {
       const contenu = readFileSync(join(RACINE, doc), "utf8");
 
       // Retirer les variables sans expliquer pourquoi laisserait le prochain
-      // lecteur les « remettre, elles manquent ».
+      // lecteur les « remettre, elles manquent ». Les README sont en anglais.
       expect(
-        /QONTO_LOGIN/.test(contenu) && /supprim|SUPPRIM|retir|RETIR/.test(contenu),
+        /QONTO_LOGIN/.test(contenu) && /supprim|retir|remov|delet/i.test(contenu),
         `${doc} doit expliquer que la clé statique a été supprimée, et pourquoi.`,
       ).toBe(true);
     });

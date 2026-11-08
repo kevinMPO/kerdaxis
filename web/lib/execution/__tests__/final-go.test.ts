@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { decideFinal } from "../runner";
+import { decideFinal, pauseAtFinalStep } from "../runner";
 import type { Execution } from "../store";
 
 function waitingExec(paused: boolean): Execution {
@@ -47,5 +47,39 @@ describe("decideFinal (human final go)", () => {
   it("should not resume a session that was only idle", async () => {
     await decideFinal(waitingExec(false), "approve");
     expect(calls).toEqual(["POST /api/v2/sessions/s1/messages"]);
+  });
+});
+
+describe("pauseAtFinalStep (watchdog pause before the final button)", () => {
+  let pauseStatus: number;
+
+  beforeEach(() => {
+    process.env.HAI_API_KEY = "test-key";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(pauseStatus === 202 ? null : '{"detail":"conflict"}', { status: pauseStatus })),
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("should report a successful pause", async () => {
+    pauseStatus = 202;
+    const exec = waitingExec(false);
+    await expect(pauseAtFinalStep(exec, "s1")).resolves.toBe(true);
+    expect(exec.events).toHaveLength(0);
+  });
+
+  it("should log a refused pause once instead of swallowing it, and leave it to retry", async () => {
+    pauseStatus = 409;
+    const exec = waitingExec(false);
+    await expect(pauseAtFinalStep(exec, "s1")).resolves.toBe(false);
+    await expect(pauseAtFinalStep(exec, "s1")).resolves.toBe(false);
+    const warnings = exec.events.filter((event) => event.kind === "warning");
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].message).toContain("409");
+    expect(exec.pauseFailed).toBe(true);
   });
 });
