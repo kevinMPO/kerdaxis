@@ -58,10 +58,12 @@ H Company sur le portail, arret avant le clic final, ou lettre) → TRACE (D1).
   modele ne garde qu'un drapeau `hard` (migration lourde).
 - Les benchmarks verifies sont caches 30 jours dans D1 (`market_benchmarks`, db/0003),
   table partagee entre organisations car elle ne contient que du web public.
-- **Agent ou lettre** : une resiliation (`cancel`) n'est confiee a l'agent H Company que
-  si Linkup, sur accord (meme clic que « verifier les prix »), trouve dans la doc officielle
-  qu'elle se fait en ligne (`Lever.cancelChannel`, source + date). Hors ligne ou non
-  verifie : lettre. Nuvio et Lumen (portails de demo a nous) sont connus en ligne sans
+- **Agent ou lettre** : la resiliation d'un abonnement (tout levier lie a un fournisseur,
+  donc hors levier `fx`, quelle que soit l'action recommandee) n'est confiee a l'agent
+  H Company que si Linkup, sur accord (meme clic que « verifier les prix »), trouve dans la
+  doc officielle qu'elle se fait en ligne (`Lever.cancelChannel`, source + date). Hors ligne
+  ou non verifie : lettre. Un levier renegotiate / switch / downgrade resiliable en ligne
+  garde aussi sa lettre a cote du bouton agent. Nuvio et Lumen (portails de demo a nous) sont connus en ligne sans
   recherche. Cache 30 jours dans D1 (`cancel_channels`, db/0005).
 
 ## Fichiers

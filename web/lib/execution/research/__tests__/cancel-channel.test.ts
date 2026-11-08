@@ -57,10 +57,17 @@ describe("agent or letter", () => {
     expect(cancelsOnline(lever({}))).toBe(false);
   });
 
-  it("should never send a renegotiation or a consolidation to the agent", () => {
+  it("should offer the agent on any subscription cancellable online, whatever the recommended action", () => {
     const online = { channel: "online", sourceUrl: "https://x.test", checkedAt: CHECKED_AT } as const;
-    expect(cancelsOnline(lever({ action: "renegotiate", cancelChannel: online }))).toBe(false);
-    expect(cancelsOnline(lever({ action: "consolidate", cancelChannel: online }))).toBe(false);
+    expect(cancelsOnline(lever({ action: "renegotiate", cancelChannel: online }))).toBe(true);
+    expect(cancelsOnline(lever({ action: "consolidate", cancelChannel: online }))).toBe(true);
+    expect(needsCancelCheck(lever({ action: "renegotiate", basis: "pending" }))).toBe(true);
+  });
+
+  it("should never send the aggregated FX lever to the agent, since it has no supplier", () => {
+    const online = { channel: "online", sourceUrl: "https://x.test", checkedAt: CHECKED_AT } as const;
+    expect(cancelsOnline(lever({ id: "frais-de-change", motif: "fx", action: "switch", cancelChannel: online }))).toBe(false);
+    expect(needsCancelCheck(lever({ id: "frais-de-change", motif: "fx", action: "switch" }))).toBe(false);
   });
 
   it("should treat our own demo portals as online without a web search", () => {
