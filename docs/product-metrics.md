@@ -29,7 +29,7 @@ The load-bearing facts:
   **×365/90** (L259). `/verify` observes ~30 real days. **So the annual figure is a projection of a
   proven monthly drop, not an observed annual fact.** The framework treats it as such throughout.
 - `engine.py classify()` uses only the hardcoded `PRO_KEYWORDS`/`PERSO_KEYWORDS` — it **never loads
-  `profile.json`**. CLAUDE.md's "extensibles via profile.json" is a design intent, **not wired in code**.
+  `profile.json`**. AGENTS.md's "extensibles via profile.json" is a design intent, **not wired in code**.
 - **Two surfaces, two enforcement levels.** The **skill** (Claude Code + Qonto/Linkup MCP) relies on
   `settings.json` (Qonto writes hard-denied; Gmail/Instantly/Apollo now hard-denied too) plus prompt
   discipline for PII — `mcp__linkup__*`/`mcp__brightdata__*` args are not filtered there. The **web
