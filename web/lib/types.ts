@@ -116,8 +116,12 @@ export interface LeverEvidence {
 export interface Lever {
   id: string;
   label: string;
-  /** Alternative / action lisible (« 1 seul workspace », « Claude seul »…). */
+  /** Alternative / action lisible (« 1 seul workspace », « Claude seul »…), en français. */
   to: string;
+  /** Même proposition, localisée pour l'écran. Absent : afficher `to`. */
+  toLabel?: Localized;
+  /** Nom affiché localisé, quand le moteur nomme lui-même le levier (frais de change). */
+  labelText?: Localized;
   /** Économie mensuelle en € — calculée par le moteur, jamais par le LLM. */
   saving: number;
   /** Économie annuelle en € = saving × 12, calculée par le moteur (jamais un
@@ -141,9 +145,25 @@ export interface Lever {
   evidence?: LeverEvidence;
   /** Présent seulement si `basis === "unverified"` : pourquoi aucun euro n'est affiché. */
   unverifiedReason?: UnverifiedReason;
+  /** Résiliation en ligne ou non, relevée par Linkup sur accord. Absent tant que non vérifié. */
+  cancelChannel?: CancelChannelCheck;
 }
 
 export type UnverifiedReason = "no_price" | "no_seats" | "not_cheaper" | "web_down";
+
+/**
+ * Où se résilie un abonnement, d'après la doc officielle du fournisseur lue par
+ * Linkup. `online` : l'agent H Company peut le faire ; sinon, une lettre.
+ */
+export type CancelChannel = "online" | "offline" | "unknown";
+
+export interface CancelChannelCheck {
+  channel: CancelChannel;
+  /** Page qui fonde la réponse (règle 4). Vide quand `channel === "unknown"`. */
+  sourceUrl: string;
+  /** Jour du relevé (AAAA-MM-JJ). */
+  checkedAt: string;
+}
 
 export interface FluxItem {
   kind: "new" | "check" | "dup" | "ghost";
@@ -210,10 +230,10 @@ export interface Tx {
 
 // --- Sortie du classifieur LLM (par marchand) -------------------------------
 /**
- * Qui a posé les étiquettes : un modèle H Company Holo (/api/analyze), Claude
- * (étiquettes fournies à l'API moteur, ex. Claude Tag) ou les règles par mots-clés.
+ * Qui a posé les étiquettes : un modèle H Company Holo (/api/analyze) ou les
+ * règles par mots-clés.
  */
-export type Categorizer = "hcompany" | "claude" | "rules";
+export type Categorizer = "hcompany" | "rules";
 
 export interface MerchantVerdict {
   name: string;
@@ -221,8 +241,10 @@ export interface MerchantVerdict {
   pole: Pole;
   isSubscription: boolean;
   action: LeverAction;
-  /** Texte de l'alternative (vide si action = keep). */
+  /** Texte de l'alternative, en français (vide si action = keep). */
   alternative: string;
+  /** Même texte en anglais, pour l'écran ; absent : on retombe sur `alternative`. */
+  alternativeEn?: string;
   /**
    * Motif du levier, OPTIONNEL. Le LLM ne l'émet pas : le moteur le dérive
    * (récurrence, action, frais de change). L'API moteur peut le fournir pour

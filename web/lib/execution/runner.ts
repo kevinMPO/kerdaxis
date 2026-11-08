@@ -49,6 +49,7 @@ import { createPortalTarget, openPortalSession } from "./stripe-portal";
 import { getSupplier, reachableByAgent, readSupplierState, supplierLoginUrl, type PathRule, type Supplier } from "./suppliers";
 import { appendEvent, keepAlive, mergeLaunch, recentExecutions, TERMINAL_STATUSES, type Execution, type PlaybookView } from "./store";
 import { recordAccess } from "@/lib/privacy/access-log";
+import { runCopy, type RunLang } from "./run-copy";
 
 export interface Playbook {
   finalStepPath: PathRule;
@@ -92,7 +93,7 @@ export function matchesPath(path: string, rule: PathRule | null): boolean {
   return typeof rule === "string" ? path === rule : rule.test(path);
 }
 
-export const AGENT_INSTRUCTIONS = (vendor: string, account: string, host: string) =>
+export const AGENT_INSTRUCTIONS = (vendor: string, account: string, host: string, language = "English") =>
   [
     `You are Kerdaxis' supplier-portal operator for the "${vendor}" subscription of the customer account "${account}" on ${host}.`,
     "",
@@ -103,6 +104,8 @@ export const AGENT_INSTRUCTIONS = (vendor: string, account: string, host: string
     `4. If the page names a customer account other than "${account}", or you meet a login problem, MFA, CAPTCHA, an error or an unclear screen: stop and answer with phase "needs_human".`,
     "5. NEVER tick the final confirmation checkbox and NEVER click the final, irreversible confirmation button unless a user message explicitly says APPROVED. Reaching the final confirmation page is the end of your first task.",
     "6. When a user message says APPROVED, perform exactly the approved final confirmation once, then report the confirmation number shown by the portal. Never invent one.",
+    "",
+    `Write every progress note, the page_summary and the notes of your answer in ${language}, because the account owner reads them. Keep button labels and page text exactly as the portal shows them.`,
   ].join("\n");
 
 const TASK_PREPARE = (vendor: string, plan: string, account: string, guide: string, finalLabel: string) =>
@@ -143,8 +146,12 @@ interface Guide {
   finalLabel: string;
 }
 
-function playbookFromResearch(research: CancelResearch, finalButtonLabel: string): PlaybookView {
+/** Combien de pages lues par Linkup le panneau liste. */
+const MAX_SHOWN_SOURCES = 5;
+
+export function playbookFromResearch(research: CancelResearch, finalButtonLabel: string): PlaybookView {
   const { written, screenshots, video } = research;
+  const finalLabelSource = written.finalConfirmLabel ? "docs" : screenshots?.finalConfirmLabel ? "screenshots" : "catalog";
   return {
     source: "research",
     merchant: research.merchant,
@@ -155,6 +162,10 @@ function playbookFromResearch(research: CancelResearch, finalButtonLabel: string
     screenshots: screenshots ? { read: screenshots.relevantScreenshots.length, sent: screenshots.screenshotsSent, steps: screenshots.steps } : null,
     video: video ? { title: video.title, url: video.url, steps: video.steps } : null,
     fallbackReason: null,
+    researchedAt: research.researchedAt,
+    sourceUrls: written.sourceUrls.slice(0, MAX_SHOWN_SOURCES),
+    depthUsed: written.depthUsed,
+    finalLabelSource,
   };
 }
 
@@ -181,11 +192,11 @@ async function prepareGuide(exec: Execution, supplier: Supplier): Promise<Guide>
       video: null,
       fallbackReason: null,
     };
-    appendEvent(exec, { kind: "system", message: `Parcours ${supplier.vendor} : fiche du catalogue Kerdaxis.` });
+    appendEvent(exec, { kind: "system", message: runCopy(exec.lang).catalogGuide(supplier.vendor) });
     return { text: guide.text, finalLabel: supplier.finalButtonLabel };
   }
 
-  appendEvent(exec, { kind: "system", message: `Linkup lit la documentation officielle : ${guide.merchant}…` });
+  appendEvent(exec, { kind: "system", message: runCopy(exec.lang).researchStart(guide.merchant) });
   try {
     const research = await withTimeout(researchCancelPath(guide.merchant, { video: guide.video }), RESEARCH_BUDGET_MS, "recherche trop longue");
     const finalLabel = finalLabelOf(research, supplier.finalButtonLabel);
@@ -193,17 +204,22 @@ async function prepareGuide(exec: Execution, supplier: Supplier): Promise<Guide>
     appendEvent(exec, {
       kind: "system",
       // Pas de champ `url` : le panneau affiche la dernière URL du journal comme adresse de l'écran de l'agent.
-      message: `Linkup : ${research.written.steps.length} étapes dans la doc officielle${research.written.officialDocUrl ? ` (${research.written.officialDocUrl})` : ""}.`,
+      message: runCopy(exec.lang).researchDone(
+        research.written.steps.length,
+        research.written.officialDocUrl || null,
+        research.written.sourceUrls.length,
+        research.researchedAt.slice(0, 10),
+      ),
     });
     if (research.screenshots) {
       const shots = research.screenshots;
       appendEvent(exec, {
         kind: "system",
-        message: `Agent H Company : ${shots.relevantScreenshots.length}/${shots.screenshotsSent} captures de la doc lues, ${shots.steps.length} étapes avec libellés exacts.`,
+        message: runCopy(exec.lang).researchScreens(shots.relevantScreenshots.length, shots.screenshotsSent, shots.steps.length),
       });
     }
     if (research.video) {
-      appendEvent(exec, { kind: "system", message: `Gladia a écouté le tutoriel « ${research.video.title} » : ${research.video.steps.length} étapes.` });
+      appendEvent(exec, { kind: "system", message: runCopy(exec.lang).researchVideo(research.video.title, research.video.steps.length) });
     }
     return { text: guideFromResearch(research), finalLabel };
   } catch (err) {
@@ -219,7 +235,7 @@ async function prepareGuide(exec: Execution, supplier: Supplier): Promise<Guide>
       video: null,
       fallbackReason: reason,
     };
-    appendEvent(exec, { kind: "warning", message: `Recherche indisponible (${reason.slice(0, 120)}) : l'agent suit la consigne générique.` });
+    appendEvent(exec, { kind: "warning", message: runCopy(exec.lang).researchUnavailable(reason.slice(0, 120)) });
     return { text: guide.fallback, finalLabel: supplier.finalButtonLabel };
   }
 }
@@ -232,13 +248,13 @@ async function prepareTarget(exec: Execution, supplier: Supplier): Promise<strin
   exec.target = { subscriptionId: target.subscriptionId, customerId: target.customerId };
   appendEvent(exec, {
     kind: "system",
-    message: `Stripe (mode test) : abonnement ${plan} actif pour ${account} (${target.subscriptionId}), portail client ouvert.`,
+    message: runCopy(exec.lang).stripeTarget(plan, account, target.subscriptionId),
   });
   return target.portalUrl;
 }
 
 /** Lance l'exécution d'un accord. L'accord est consommé (usage unique). */
-export async function startExecution(approval: Approval, orgId: string): Promise<Execution> {
+export async function startExecution(approval: Approval, orgId: string, lang: RunLang = "fr"): Promise<Execution> {
   const check = await checkApproval(approval, orgId);
   if (!check.ok) throw new Error(`accord_invalide:${check.reason}`);
 
@@ -278,13 +294,15 @@ export async function startExecution(approval: Approval, orgId: string): Promise
     createdAt: now,
     updatedAt: now,
     events: [],
+    lang,
   };
+  const t = runCopy(lang);
   appendEvent(exec, {
     kind: "approval",
-    message: `Accord ${approval.channel === "voice" ? "vocal confirmé" : "donné"} pour résilier ${approval.params.plan} (${approval.params.vendor}) · empreinte ${approval.actionHash.slice(0, 12)}…`,
+    message: t.approvalGiven(approval.channel === "voice", approval.params.plan, approval.params.vendor, approval.actionHash.slice(0, 12)),
   });
 
-  appendEvent(exec, { kind: "system", message: "Préparation : parcours et cible chez le fournisseur." });
+  appendEvent(exec, { kind: "system", message: t.preparing });
   // La préparation (recherche, abonnement de test) peut prendre une minute : la
   // requête rend la main tout de suite, le panneau suit le journal. Sur Workers,
   // le travail est gardé en vie (waitUntil) puis réinjecté dans D1 sous verrou.
@@ -307,7 +325,7 @@ async function launchSession(exec: Execution, supplier: Supplier): Promise<void>
   } catch (err) {
     exec.status = "failed";
     exec.error = err instanceof Error ? err.message : String(err);
-    appendEvent(exec, { kind: "error", message: `Lancement impossible : ${exec.error}` });
+    appendEvent(exec, { kind: "error", message: runCopy(exec.lang).launchFailed(exec.error) });
   }
 }
 
@@ -330,7 +348,7 @@ async function openAgentSession(exec: Execution, startUrl: string, attempt: numb
             mode: { type: "visual", width: 1280, height: 720 },
           },
         ],
-        instructions: AGENT_INSTRUCTIONS(vendor, account, allowedHost),
+        instructions: AGENT_INSTRUCTIONS(vendor, account, allowedHost, runCopy(exec.lang).agentLanguage),
         answer_format: ANSWER_FORMAT,
       },
       messages: [{ type: "user_message", message: TASK_PREPARE(vendor, plan, account, guide.text, guide.finalLabel) }],
@@ -358,7 +376,7 @@ async function openAgentSession(exec: Execution, startUrl: string, attempt: numb
     return;
   }
   exec.status = "running";
-  appendEvent(exec, { kind: "system", message: `Session H Company lancée sur ${allowedHost}${attempt > 1 ? ` (essai ${attempt}/${MAX_SESSION_ATTEMPTS})` : ""}.` });
+  appendEvent(exec, { kind: "system", message: runCopy(exec.lang).sessionStarted(allowedHost, attempt, MAX_SESSION_ATTEMPTS) });
 }
 
 /** La session H tourne mais l'agent n'a encore rien décidé depuis plus de STALL_MS. */
@@ -374,11 +392,11 @@ async function relaunchStalledSession(exec: Execution, supplier: Supplier): Prom
   const waited = Math.round(STALL_MS / 1000);
   if (attempt > MAX_SESSION_ATTEMPTS) {
     exec.status = "failed";
-    exec.error = `H Company ne démarre pas l'agent (${MAX_SESSION_ATTEMPTS} sessions sans aucune action en ${waited} s)`;
-    appendEvent(exec, { kind: "error", message: `${exec.error}. Rien n'a été fait chez le fournisseur.` });
+    exec.error = runCopy(exec.lang).agentNeverStarted(MAX_SESSION_ATTEMPTS, waited);
+    appendEvent(exec, { kind: "error", message: runCopy(exec.lang).nothingDoneAtSupplier(exec.error) });
     return;
   }
-  appendEvent(exec, { kind: "warning", message: `L'agent H n'a fait aucune action en ${waited} s : session coupée et relancée.` });
+  appendEvent(exec, { kind: "warning", message: runCopy(exec.lang).agentIdleRelaunch(waited) });
   // Même cible : lien de connexion du portail, ou nouveau lien de portail Stripe pour le MÊME abonnement.
   const startUrl =
     supplier.kind === "stripe_portal" && exec.target?.customerId
@@ -422,7 +440,7 @@ function applyEvent(exec: Execution, ev: HaiEvent, playbook: Playbook, res: Appl
     return;
   }
   if (ev.type === "AgentErrorEvent") {
-    appendEvent(exec, { at, kind: "error", message: `Erreur agent : ${String(d.error ?? "inconnue").slice(0, 200)}` });
+    appendEvent(exec, { at, kind: "error", message: runCopy(exec.lang).agentError(String(d.error ?? "?").slice(0, 200)) });
     return;
   }
   if (ev.type !== "AgentEvent") return;
@@ -433,14 +451,14 @@ function applyEvent(exec: Execution, ev: HaiEvent, playbook: Playbook, res: Appl
       const shot = d.image?.type === "url" && typeof d.image?.source === "string" ? d.image.source : undefined;
       if (shot) exec.lastScreenshot = shot;
       if (!isAllowedUrl(url, exec.params.allowedHost)) {
-        appendEvent(exec, { at, kind: "warning", message: `Navigation hors du portail approuvé : ${safeHost(url)}`, url: withoutQuery(url) });
-        res.violation ??= `navigation hors du portail approuvé (${safeHost(url)})`;
+        appendEvent(exec, { at, kind: "warning", message: runCopy(exec.lang).offPortal(safeHost(url)), url: withoutQuery(url) });
+        res.violation ??= runCopy(exec.lang).offPortalViolation(safeHost(url));
         return;
       }
       const path = pathOf(url);
       if (matchesPath(path, playbook.donePath) && exec.finalDecision?.decision !== "approve") {
-        appendEvent(exec, { at, kind: "error", message: "Page « résiliation effectuée » atteinte SANS feu vert humain.", url: withoutQuery(url) });
-        res.violation ??= "confirmation exécutée sans feu vert humain";
+        appendEvent(exec, { at, kind: "error", message: runCopy(exec.lang).doneWithoutGo, url: withoutQuery(url) });
+        res.violation ??= runCopy(exec.lang).doneWithoutGoViolation;
         return;
       }
       const title = typeof d.metadata?.title === "string" ? d.metadata.title : "";
@@ -451,21 +469,19 @@ function applyEvent(exec: Execution, ev: HaiEvent, playbook: Playbook, res: Appl
         const text = typeof d.metadata?.text === "string" ? summarize(d.metadata.text) : "";
         const p = exec.params;
         exec.finalPage ??= {
-          summary:
-            text ||
-            `${title || "Page de confirmation finale"} — résiliation de ${p.plan} (${p.vendor}), action définitive chez le fournisseur.`,
+          summary: text || runCopy(exec.lang).finalPageFallback(title, p.plan, p.vendor),
           account_shown: p.account,
           button_label: playbook.finalButtonLabel,
         };
       }
-      appendEvent(exec, { at, kind: "observation", message: title ? `Page : ${title} (${path})` : `Page : ${path}`, url: withoutQuery(url), screenshot: shot });
+      appendEvent(exec, { at, kind: "observation", message: runCopy(exec.lang).page(title, path), url: withoutQuery(url), screenshot: shot });
       return;
     }
     case "policy_event": {
       exec.sessionActed = true;
       const content = typeof d.content === "string" ? d.content.trim() : "";
       const tools = Array.isArray(d.tool_reqs) ? d.tool_reqs.map((t: { tool_name?: string }) => t.tool_name).filter(Boolean) : [];
-      const msg = content || (tools.length ? `Action : ${tools.join(", ")}` : "");
+      const msg = content || (tools.length ? runCopy(exec.lang).agentAction(tools.join(", ")) : "");
       if (msg) appendEvent(exec, { at, kind: "agent", message: msg.slice(0, 280) });
       return;
     }
@@ -475,7 +491,7 @@ function applyEvent(exec: Execution, ev: HaiEvent, playbook: Playbook, res: Appl
       res.newAnswer = true;
       return;
     case "error_event":
-      appendEvent(exec, { at, kind: "warning", message: `Étape en échec, l'agent réessaie : ${String(d.error ?? "").slice(0, 160)}` });
+      appendEvent(exec, { at, kind: "warning", message: runCopy(exec.lang).stepRetry(String(d.error ?? "").slice(0, 160)) });
       return;
     default:
       return;
@@ -520,6 +536,26 @@ function pathOf(url: string | undefined): string {
 
 const H_TERMINAL = new Set(["completed", "failed", "timed_out", "interrupted"]);
 
+/**
+ * Couche 2 du point d'arrêt. Si l'API refuse la pause, l'agent n'est plus
+ * retenu que par le découpage en deux tours (couche 1) et le vérificateur
+ * (couche 3) : on le dit au journal au lieu de l'avaler, et `paused` reste faux
+ * pour que la prochaine observation de la page finale retente la pause.
+ */
+export async function pauseAtFinalStep(exec: Execution, sessionId: string): Promise<boolean> {
+  try {
+    await pauseSession(sessionId);
+    return true;
+  } catch (err) {
+    if (!exec.pauseFailed) {
+      exec.pauseFailed = true;
+      const reason = err instanceof Error ? err.message : String(err);
+      appendEvent(exec, { kind: "warning", message: runCopy(exec.lang).pauseFailed(reason.slice(0, 120)) });
+    }
+    return false;
+  }
+}
+
 /** Fait avancer l'exécution : lit les nouveautés H, applique la politique, conclut. */
 export async function advanceExecution(exec: Execution, waitForSeconds = 5): Promise<Execution> {
   if (TERMINAL_STATUSES.has(exec.status) || !exec.sessionId) return exec;
@@ -556,20 +592,16 @@ export async function advanceExecution(exec: Execution, waitForSeconds = 5): Pro
       exec.status = "needs_manual_action";
       exec.error = res.violation;
       await cancelSession(exec.sessionId).catch(() => undefined);
-      appendEvent(exec, { kind: "error", message: "Session H Company annulée par la politique Kerdaxis. Reprise manuelle nécessaire." });
+      appendEvent(exec, { kind: "error", message: runCopy(exec.lang).policyCancelled });
       await verifyOnSupplier(exec, null);
       return exec;
     }
 
     // Couche 2 : pause imposée devant la confirmation finale.
     if (res.atFinalStep && !exec.finalDecision && !exec.paused) {
-      exec.paused = true;
-      await pauseSession(exec.sessionId).catch(() => undefined);
+      exec.paused = await pauseAtFinalStep(exec, exec.sessionId);
       exec.status = "awaiting_final_approval";
-      appendEvent(exec, {
-        kind: "approval",
-        message: "Kerdaxis a mis l'agent en pause devant la confirmation finale. Il attend ton feu vert.",
-      });
+      if (exec.paused) appendEvent(exec, { kind: "approval", message: runCopy(exec.lang).paused });
     }
 
     const phase2 = Boolean(exec.finalDecision) && exec.answerCount > exec.answerCountAtDecision;
@@ -579,8 +611,8 @@ export async function advanceExecution(exec: Execution, waitForSeconds = 5): Pro
       const a = parseAnswer(exec.answer);
       if (a?.phase === "needs_human") {
         exec.status = "needs_manual_action";
-        exec.error = a.notes ?? "l'agent demande une intervention humaine";
-        appendEvent(exec, { kind: "warning", message: `Intervention humaine nécessaire : ${exec.error}` });
+        exec.error = a.notes ?? runCopy(exec.lang).needsHumanDefault;
+        appendEvent(exec, { kind: "warning", message: runCopy(exec.lang).needsHuman(exec.error) });
         await cancelSession(exec.sessionId).catch(() => undefined);
         return exec;
       }
@@ -591,14 +623,14 @@ export async function advanceExecution(exec: Execution, waitForSeconds = 5): Pro
           button_label: a.button_label ?? undefined,
         };
         if (exec.status !== "awaiting_final_approval") {
-          appendEvent(exec, { kind: "approval", message: "L'agent est arrêté devant la confirmation finale et attend ton feu vert." });
+          appendEvent(exec, { kind: "approval", message: runCopy(exec.lang).agentStoppedAtFinal });
         }
         exec.status = "awaiting_final_approval";
       } else if (a?.phase === "cancelled" || a?.confirmation_number) {
         // L'agent annonce une résiliation sans feu vert : écart grave.
         exec.status = "needs_manual_action";
-        exec.error = "l'agent annonce une résiliation sans feu vert humain";
-        appendEvent(exec, { kind: "error", message: `Écart grave : ${exec.error}.` });
+        exec.error = runCopy(exec.lang).announcedWithoutGo;
+        appendEvent(exec, { kind: "error", message: runCopy(exec.lang).severeGap(exec.error) });
         await cancelSession(exec.sessionId).catch(() => undefined);
         await verifyOnSupplier(exec, null);
         return exec;
@@ -624,7 +656,7 @@ export async function decideFinal(exec: Execution, decision: "approve" | "refuse
   if (decision === "refuse") {
     await cancelSession(exec.sessionId).catch(() => undefined);
     exec.status = "stopped_by_user";
-    appendEvent(exec, { kind: "approval", message: "Feu vert final refusé : session arrêtée, rien n'a été confirmé." });
+    appendEvent(exec, { kind: "approval", message: runCopy(exec.lang).finalRefused });
     await verifyOnSupplier(exec, null);
     return exec;
   }
@@ -642,7 +674,7 @@ export async function decideFinal(exec: Execution, decision: "approve" | "refuse
   if (exec.paused) await resumeSession(exec.sessionId).catch(() => undefined);
   exec.paused = false;
   exec.status = "running";
-  appendEvent(exec, { kind: "approval", message: "Feu vert final donné : l'agent confirme la résiliation." });
+  appendEvent(exec, { kind: "approval", message: runCopy(exec.lang).finalGiven });
   return exec;
 }
 
@@ -652,7 +684,7 @@ export async function stopExecution(exec: Execution): Promise<Execution> {
     await cancelSession(exec.sessionId).catch(() => undefined);
   }
   exec.status = "stopped_by_user";
-  appendEvent(exec, { kind: "system", message: "Exécution arrêtée par l'utilisateur." });
+  appendEvent(exec, { kind: "system", message: runCopy(exec.lang).stoppedByUser });
   await verifyOnSupplier(exec, null);
   return exec;
 }
@@ -664,8 +696,8 @@ async function concludeExecution(exec: Execution, changes: HaiChanges): Promise<
   if (!approved) {
     // Session finie sans feu vert (échec, interruption…) : on regarde le portail.
     exec.status = changes.status === "completed" || changes.status === "idle" ? "needs_manual_action" : "failed";
-    exec.error = changes.error ?? `session ${changes.status} avant le feu vert`;
-    appendEvent(exec, { kind: "error", message: `Session terminée avant le feu vert (${changes.error_code ?? changes.status}).` });
+    exec.error = changes.error ?? runCopy(exec.lang).endedBeforeGoDefault(changes.status);
+    appendEvent(exec, { kind: "error", message: runCopy(exec.lang).endedBeforeGo(changes.error_code ?? changes.status) });
     await verifyOnSupplier(exec, null);
     return;
   }
@@ -675,18 +707,18 @@ async function concludeExecution(exec: Execution, changes: HaiChanges): Promise<
     exec.status = "submitted";
     appendEvent(exec, {
       kind: "agent",
-      message: `L'agent rapporte la résiliation${parsed.confirmation_number ? ` (n° ${parsed.confirmation_number})` : ""}. Vérification sur le portail…`,
+      message: runCopy(exec.lang).agentReportsCancel(parsed.confirmation_number ?? null),
     });
     await verifyOnSupplier(exec, parsed.confirmation_number ?? null);
   } else if (parsed?.phase === "needs_human") {
     exec.status = "needs_manual_action";
-    exec.error = parsed.notes ?? "l'agent demande une intervention humaine";
-    appendEvent(exec, { kind: "warning", message: `Intervention humaine nécessaire : ${exec.error}` });
+    exec.error = parsed.notes ?? runCopy(exec.lang).needsHumanDefault;
+    appendEvent(exec, { kind: "warning", message: runCopy(exec.lang).needsHuman(exec.error) });
     await verifyOnSupplier(exec, null);
   } else {
     exec.status = H_TERMINAL.has(changes.status) && changes.status !== "completed" ? "failed" : "needs_manual_action";
-    exec.error = parsed?.notes ?? changes.error ?? "réponse de l'agent ambiguë";
-    appendEvent(exec, { kind: "warning", message: `Non conclu : ${exec.error}` });
+    exec.error = parsed?.notes ?? changes.error ?? runCopy(exec.lang).ambiguousAnswer;
+    appendEvent(exec, { kind: "warning", message: runCopy(exec.lang).inconclusive(exec.error) });
     await verifyOnSupplier(exec, null);
   }
 }
@@ -702,7 +734,7 @@ async function verifyOnSupplier(exec: Execution, reportedNumber: string | null):
   try {
     state = await readSupplierState(supplier, exec.target ?? null);
   } catch (err) {
-    appendEvent(exec, { kind: "warning", message: `Portail injoignable pour la vérification (${err instanceof Error ? err.message : err}).` });
+    appendEvent(exec, { kind: "warning", message: runCopy(exec.lang).portalUnreachable(err instanceof Error ? err.message : String(err)) });
     if (exec.status === "submitted") exec.status = "needs_manual_action";
     return;
   }
@@ -711,19 +743,19 @@ async function verifyOnSupplier(exec: Execution, reportedNumber: string | null):
 
   if (state.status === "discounted") {
     exec.status = "needs_manual_action";
-    exec.error = "le portail indique une offre de rétention acceptée, ce qui n'avait pas été approuvé";
-    appendEvent(exec, { kind: "error", message: `Écart : ${exec.error}.` });
+    exec.error = runCopy(exec.lang).retentionAccepted;
+    appendEvent(exec, { kind: "error", message: runCopy(exec.lang).gap(exec.error) });
     return;
   }
   if (state.status === "cancelled" && !approvedFinal) {
     exec.status = "needs_manual_action";
-    exec.error = "résiliation constatée chez le fournisseur sans feu vert final";
-    appendEvent(exec, { kind: "error", message: `Écart grave : ${exec.error}.` });
+    exec.error = runCopy(exec.lang).cancelledWithoutGoOnPortal;
+    appendEvent(exec, { kind: "error", message: runCopy(exec.lang).severeGap(exec.error) });
     return;
   }
   if (exec.status !== "submitted") {
     if (state.status === "active") {
-      appendEvent(exec, { kind: "verification", message: "Vérifié sur le portail : l'abonnement est toujours actif, rien n'a été confirmé." });
+      appendEvent(exec, { kind: "verification", message: runCopy(exec.lang).stillActive });
     }
     return;
   }
@@ -736,18 +768,17 @@ async function verifyOnSupplier(exec: Execution, reportedNumber: string | null):
   if (proven) {
     exec.status = "supplier_confirmed";
     exec.confirmationNumber = state.confirmation_number;
-    const by = supplier.proof === "billing_api" ? "Confirmé par l'API Stripe" : "Confirmé par le fournisseur";
     appendEvent(exec, {
       kind: "verification",
-      message: `${by} : ${exec.params.plan} résilié, n° ${state.confirmation_number}${state.access_until ? `, accès jusqu'au ${state.access_until}` : ""}.`,
+      message: runCopy(exec.lang).confirmed(supplier.proof === "billing_api", exec.params.plan, String(state.confirmation_number), state.access_until ?? null),
     });
   } else {
     exec.status = "needs_manual_action";
     exec.error =
       state.status !== "cancelled"
-        ? "l'agent annonce une résiliation que le portail ne confirme pas"
-        : `numéro de confirmation différent (agent : ${reportedNumber ?? "aucun"}, portail : ${state.confirmation_number})`;
-    appendEvent(exec, { kind: "error", message: `Non prouvé : ${exec.error}.` });
+        ? runCopy(exec.lang).portalDoesNotConfirm
+        : runCopy(exec.lang).numberMismatch(reportedNumber, String(state.confirmation_number));
+    appendEvent(exec, { kind: "error", message: runCopy(exec.lang).notProven(exec.error) });
   }
 }
 

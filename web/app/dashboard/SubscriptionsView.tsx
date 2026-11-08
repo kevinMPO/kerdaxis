@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import type { Lever, Risk } from "@/lib/types";
-import type { Dashboard } from "./use-dashboard";
+import { leverName, leverProposal } from "@/lib/lever-text";
+import { cancelsOnline, type Dashboard } from "./use-dashboard";
 import { LaunchButton } from "./RunsView";
 import { Icon } from "./Icon";
 
@@ -108,17 +109,17 @@ export function SubscriptionsView({ d }: { d: Dashboard }): React.ReactElement {
 function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElement {
   const { copy, eur } = d;
   const agent = d.agentState(lever.id);
-  const canRun = lever.action === "cancel" && agent === "ready";
-  const showAgent = lever.action === "cancel";
+  const showAgent = cancelsOnline(lever);
+  const canRun = showAgent && agent === "ready";
   const hasEuro = lever.basis !== "pending" && lever.basis !== "unverified";
   return (
     <tr className={lever.active ? "" : "is-off"}>
       <td className="kd-col-check">
-        <input type="checkbox" checked={lever.active} onChange={() => d.toggleLever(lever.id)} aria-label={`${copy.inPlan}: ${lever.label}`} />
+        <input type="checkbox" checked={lever.active} onChange={() => d.toggleLever(lever.id)} aria-label={`${copy.inPlan}: ${leverName(lever, d.lang)}`} />
       </td>
       <td>
         <button className="kd-cell-link" onClick={() => void d.openLetter(lever)}>
-          {lever.label}
+          {leverName(lever, d.lang)}
         </button>
         {lever.hausse && <span className="kd-tag kd-tag-warn">+{lever.hausse.pct.toFixed(1)}%</span>}
         {canRun && <span className="kd-tag kd-tag-accent">H Company</span>}
@@ -152,12 +153,36 @@ function ProposalCell({ lever, d }: { lever: Lever; d: Dashboard }): React.React
     const { offer } = lever.evidence;
     return (
       <span>
-        {lever.to}{" "}
+        {leverProposal(lever, d.lang)}{" "}
         <a className="kd-link" href={offer.sourceUrl} target="_blank" rel="noopener">
           {copy.priceSource(offer.checkedAt)} <Icon name="external" size={12} />
         </a>
       </span>
     );
   }
-  return <span>{lever.to}</span>;
+  return (
+    <span>
+      {leverProposal(lever, d.lang)}
+      <ChannelNote lever={lever} d={d} />
+    </span>
+  );
+}
+
+function ChannelNote({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElement | null {
+  const check = lever.cancelChannel;
+  if (lever.action !== "cancel" || !check) return null;
+  return (
+    <span className="kd-small">
+      {" · "}
+      {d.copy.cancelChannel[check.channel]}
+      {check.sourceUrl && (
+        <>
+          {" "}
+          <a className="kd-link" href={check.sourceUrl} target="_blank" rel="noopener">
+            {d.copy.priceSource(check.checkedAt)} <Icon name="external" size={12} />
+          </a>
+        </>
+      )}
+    </span>
+  );
 }

@@ -6,11 +6,18 @@ import { checkApproval } from "@/lib/execution/policy";
 import { getApproval, publicView, putApproval, putExecution } from "@/lib/execution/store";
 import { DEMO_ORG, noStore, execGuard } from "@/lib/execution/http";
 import { withAccessScope } from "@/lib/privacy/access-log";
+import { runLangOf } from "@/lib/execution/run-copy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const Body = z.object({ approvalId: z.string().uuid() }).strict();
+const Body = z
+  .object({
+    approvalId: z.string().uuid(),
+    /** Interface language: the run log and the agent's notes are written in it. */
+    lang: z.enum(["fr", "en", "de", "es", "it"]).optional(),
+  })
+  .strict();
 
 const TRIAL_REPLAY_ONLY_MESSAGE =
   "The free trial replays the recorded Nuvio CRM session. Live cancellations with the H Company agent are for subscribers.";
@@ -41,9 +48,9 @@ async function handlePost(req: Request): Promise<Response> {
       // Essai gratuit sur le fournisseur de démo : mêmes contrôles d'accord (usage unique, TTL), puis rediffusion.
       const check = await checkApproval(approval, DEMO_ORG);
       if (!check.ok) throw new Error(`accord_invalide:${check.reason}`);
-      exec = startReplay(approval);
+      exec = startReplay(approval, runLangOf(parsed.data.lang));
     } else {
-      exec = await startExecution(approval, DEMO_ORG);
+      exec = await startExecution(approval, DEMO_ORG, runLangOf(parsed.data.lang));
     }
     // Usage unique : l'accord consommé (usedAt) est réécrit avant toute réponse.
     await putApproval(approval);
