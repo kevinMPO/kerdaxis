@@ -105,6 +105,24 @@ export function riskFor(action: LeverAction, llmRisk: Risk): Risk {
 
 /** Libellé d'attente tant que le prix du marché n'est pas cherché. */
 export const PENDING_LABEL = "prix à vérifier sur le web";
+const PENDING_TEXT: Localized = { fr: PENDING_LABEL, en: "price to check on the web" };
+const BACK_TO_PREVIOUS_PRICE: Localized = { fr: "revenir au tarif précédent", en: "go back to the previous price" };
+const FX_LABEL: Localized = { fr: "Frais de change", en: "FX fees" };
+const FX_PROPOSAL: Localized = { fr: "compte multi-devises / carte sans frais", en: "multi-currency account / no-fee card" };
+const ACTION_TEXT: Record<LeverAction, Localized> = {
+  cancel: { fr: "résilier", en: "cancel" },
+  consolidate: { fr: "fusionner le doublon", en: "merge the duplicate" },
+  switch: { fr: "changer d'outil", en: "switch tool" },
+  downgrade: { fr: "descendre de formule", en: "downgrade the plan" },
+  renegotiate: { fr: "renégocier", en: "renegotiate" },
+  keep: { fr: "garder", en: "keep" },
+};
+
+/** La proposition du modèle, dans les deux langues, ou le nom de l'action à défaut. */
+function proposalText(v: MerchantVerdict, action: LeverAction): Localized {
+  if (!v.alternative) return ACTION_TEXT[action];
+  return { fr: v.alternative, en: v.alternativeEn || v.alternative };
+}
 
 const eurL = (n: number): Localized => ({
   fr: Math.round(n).toLocaleString("fr-FR") + " €",
@@ -305,6 +323,7 @@ export function build(input: BuildInput): AnalyzeResult {
         id: slug(a.name),
         label: a.name,
         to: PENDING_LABEL,
+        toLabel: PENDING_TEXT,
         saving: 0,
         motif,
         risk: riskFor(action, v.risk),
@@ -325,6 +344,7 @@ export function build(input: BuildInput): AnalyzeResult {
       id: slug(a.name),
       label: a.name,
       to: v.alternative || v.action,
+      toLabel: proposalText(v, action),
       saving,
       motif,
       risk,
@@ -352,7 +372,8 @@ export function build(input: BuildInput): AnalyzeResult {
     levers.push({
       id: slug(a.name),
       label: a.name,
-      to: "revenir au tarif précédent",
+      to: BACK_TO_PREVIOUS_PRICE.fr,
+      toLabel: BACK_TO_PREVIOUS_PRICE,
       saving: Math.max(0, Math.round(hausse.apresEur - hausse.avantEur)),
       motif: "abonnement",
       risk: "safe",
@@ -377,8 +398,10 @@ export function build(input: BuildInput): AnalyzeResult {
   if (fxMonthly > 0) {
     levers.push({
       id: "frais-de-change",
-      label: "Frais de change",
-      to: "compte multi-devises / carte sans frais",
+      label: FX_LABEL.fr,
+      labelText: FX_LABEL,
+      to: FX_PROPOSAL.fr,
+      toLabel: FX_PROPOSAL,
       saving: fxMonthly,
       motif: "fx",
       risk: "safe",

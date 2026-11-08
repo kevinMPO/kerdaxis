@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import type { Lever, Risk } from "@/lib/types";
+import { leverName, leverProposal } from "@/lib/lever-text";
 import { cancelsOnline, type Dashboard } from "./use-dashboard";
 import { LaunchButton } from "./RunsView";
 import { Icon } from "./Icon";
@@ -114,11 +115,11 @@ function LeverRow({ lever, d }: { lever: Lever; d: Dashboard }): React.ReactElem
   return (
     <tr className={lever.active ? "" : "is-off"}>
       <td className="kd-col-check">
-        <input type="checkbox" checked={lever.active} onChange={() => d.toggleLever(lever.id)} aria-label={`${copy.inPlan}: ${lever.label}`} />
+        <input type="checkbox" checked={lever.active} onChange={() => d.toggleLever(lever.id)} aria-label={`${copy.inPlan}: ${leverName(lever, d.lang)}`} />
       </td>
       <td>
         <button className="kd-cell-link" onClick={() => void d.openLetter(lever)}>
-          {lever.label}
+          {leverName(lever, d.lang)}
         </button>
         {lever.hausse && <span className="kd-tag kd-tag-warn">+{lever.hausse.pct.toFixed(1)}%</span>}
         {canRun && <span className="kd-tag kd-tag-accent">H Company</span>}
@@ -152,7 +153,7 @@ function ProposalCell({ lever, d }: { lever: Lever; d: Dashboard }): React.React
     const { offer } = lever.evidence;
     return (
       <span>
-        {lever.to}{" "}
+        {leverProposal(lever, d.lang)}{" "}
         <a className="kd-link" href={offer.sourceUrl} target="_blank" rel="noopener">
           {copy.priceSource(offer.checkedAt)} <Icon name="external" size={12} />
         </a>
@@ -161,7 +162,7 @@ function ProposalCell({ lever, d }: { lever: Lever; d: Dashboard }): React.React
   }
   return (
     <span>
-      {lever.to}
+      {leverProposal(lever, d.lang)}
       <ChannelNote lever={lever} d={d} />
     </span>
   );

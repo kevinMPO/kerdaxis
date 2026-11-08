@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import type { Lever } from "@/lib/types";
+import { leverName, leverProposal } from "@/lib/lever-text";
 import type { Dashboard } from "./use-dashboard";
 import { ledgerValues } from "./ledger";
 import { LaunchButton } from "./RunsView";
@@ -73,11 +74,11 @@ export function TodayView({ d }: { d: Dashboard }): React.ReactElement {
                   <Icon name="route" />
                 </span>
                 <div className="kd-need-body">
-                  <p className="kd-need-title">{copy.needApprove(lever.label)}</p>
+                  <p className="kd-need-title">{copy.needApprove(leverName(lever, d.lang))}</p>
                   <p className="kd-need-why">
                     {d.agentState(lever.id) === "offline" ? `${copy.agentOffline} · ` : ""}
                     {d.agentState(lever.id) === "subscribers" ? `${copy.agentSubscribers} · ` : ""}
-                    {lever.to} · <span className="kd-num">{eur(lever.saving)}</span>
+                    {leverProposal(lever, d.lang)} · <span className="kd-num">{eur(lever.saving)}</span>
                     {copy.perMonth} · <span className="kd-num kd-money">{eur(lever.saving * 12)}</span>
                     {copy.perYear}
                   </p>
