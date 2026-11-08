@@ -286,11 +286,11 @@ describe("GET /api/auth/qonto/callback — protection CSRF", () => {
 });
 
 describe("GET /api/auth/qonto/callback — refus de l'utilisateur", () => {
-  it("renvoie vers /demo sans rien stocker", async () => {
+  it("renvoie vers /dashboard sans rien stocker", async () => {
     const reponse = await callback(requeteCallback("?error=access_denied"));
 
     expect(reponse.status).toBe(302);
-    expect(reponse.headers.get("location")).toBe(`${BASE}/demo?qonto=refus`);
+    expect(reponse.headers.get("location")).toBe(`${BASE}/dashboard?qonto=refus`);
     expect(cookiesPoses(reponse).has("argentier_session")).toBe(false);
     expect(fauxFetch).not.toHaveBeenCalled();
   });
@@ -298,7 +298,7 @@ describe("GET /api/auth/qonto/callback — refus de l'utilisateur", () => {
   it("distingue une erreur serveur d'un refus", async () => {
     const reponse = await callback(requeteCallback("?error=server_error"));
 
-    expect(reponse.headers.get("location")).toBe(`${BASE}/demo?qonto=erreur`);
+    expect(reponse.headers.get("location")).toBe(`${BASE}/dashboard?qonto=erreur`);
   });
 });
 
@@ -619,7 +619,7 @@ describe("GET /api/auth/qonto/callback — clé de locataire", () => {
 
     const reponse = await callback(retourLegitime());
 
-    expect(reponse.headers.get("location")).toBe(`${BASE}/demo?qonto=connecte`);
+    expect(reponse.headers.get("location")).toBe(`${BASE}/dashboard?qonto=connecte`);
     // 1. Le cookie porte la clé canonique...
     const session = await verifierSession(valeurCookie(reponse, NOM_COOKIE_SESSION));
     expect(session?.orgId).toBe(CANONIQUE);
@@ -648,7 +648,7 @@ describe("GET /api/auth/qonto/callback — clé de locataire", () => {
 
     // Avant correctif : la moindre erreur D1 sautait au catch général AVANT le
     // stockage du jeton → `?qonto=erreur`, et personne ne pouvait se connecter.
-    expect(reponse.headers.get("location")).toBe(`${BASE}/demo?qonto=connecte`);
+    expect(reponse.headers.get("location")).toBe(`${BASE}/dashboard?qonto=connecte`);
     const derive = await deriverOrgId(QONTO_ORG_ID);
     const session = await verifierSession(valeurCookie(reponse, NOM_COOKIE_SESSION));
     // Repli sur le dérivé, et le token store est indexé sur la MÊME valeur.
@@ -663,7 +663,7 @@ describe("GET /api/auth/qonto/callback — clé de locataire", () => {
 
     const reponse = await callback(retourLegitime());
 
-    expect(reponse.headers.get("location")).toBe(`${BASE}/demo?qonto=connecte`);
+    expect(reponse.headers.get("location")).toBe(`${BASE}/dashboard?qonto=connecte`);
     expect(db.emis.some((sql) => sql.startsWith("CREATE TABLE IF NOT EXISTS organizations"))).toBe(
       true,
     );

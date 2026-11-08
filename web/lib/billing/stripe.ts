@@ -9,7 +9,7 @@
 // connexion. La clé ne quitte jamais le serveur.
 // ---------------------------------------------------------------------------
 
-import { appOrigin } from "@/lib/site";
+import { appOrigin, LIVE_DASHBOARD_PATH } from "@/lib/site";
 
 const API = "https://api.stripe.com/v1";
 const LOCAL_HOST = /^(localhost|127\.0\.0\.1)(:\d+)?$/;
@@ -110,7 +110,7 @@ export async function getSubscriptionStatus(id: string): Promise<string> {
 }
 
 export async function createPortal(customerId: string, origin: string): Promise<string> {
-  const s = await call<{ url: string }>("POST", "/billing_portal/sessions", { customer: customerId, return_url: `${origin}/demo` });
+  const s = await call<{ url: string }>("POST", "/billing_portal/sessions", { customer: customerId, return_url: `${origin}${LIVE_DASHBOARD_PATH}` });
   return s.url;
 }
 

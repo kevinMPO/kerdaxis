@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAccountById, isActive, updateAccount } from "@/lib/accounts/store";
 import { COOKIE_OPTS, issueSession, MEMBER_TTL_S, SESSION_COOKIE } from "@/lib/auth/user-session";
 import { getCheckout, publicOrigin } from "@/lib/billing/stripe";
+import { LIVE_DASHBOARD_PATH } from "@/lib/site";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export async function GET(req: Request): Promise<Response> {
       subscriptionStatus: cs.subscription.status,
     });
     if (!isActive(cs.subscription.status)) throw new Error(`subscription_${cs.subscription.status}`);
-    const res = NextResponse.redirect(`${origin}/demo?welcome=1`, 303);
+    const res = NextResponse.redirect(`${origin}${LIVE_DASHBOARD_PATH}?welcome=1`, 303);
     res.cookies.set(SESSION_COOKIE, await issueSession("member", acc.email), { ...COOKIE_OPTS, maxAge: MEMBER_TTL_S });
     return res;
   } catch (err) {

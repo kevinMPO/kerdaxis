@@ -4,7 +4,7 @@ import React from "react";
 import type { Lang } from "@/lib/types";
 import VoiceCommand from "../VoiceCommand";
 import AccountBar from "../demo/AccountBar";
-import { useDashboard } from "./use-dashboard";
+import { useDashboard, type Dashboard as DashboardState, type DashboardMode } from "./use-dashboard";
 import type { ViewId } from "./copy";
 import { TodayView } from "./TodayView";
 import { SubscriptionsView } from "./SubscriptionsView";
@@ -23,8 +23,13 @@ const NAV: { id: ViewId; icon: IconName }[] = [
 
 const LANG_OPTIONS: Lang[] = ["fr", "en", "de", "es", "it"];
 
-export function Dashboard({ fontClassName }: { fontClassName: string }): React.ReactElement {
-  const d = useDashboard();
+interface DashboardProps {
+  fontClassName: string;
+  mode?: DashboardMode;
+}
+
+export function Dashboard({ fontClassName, mode = "demo" }: DashboardProps): React.ReactElement {
+  const d = useDashboard(mode);
   const { copy, view, setView, data, loc, runs, runViews } = d;
   const waitingCount = runs.filter((r) => runViews[r.id]?.status === "awaiting_final_approval").length;
   const isLive = data.meta?.source === "qonto";
@@ -74,7 +79,7 @@ export function Dashboard({ fontClassName }: { fontClassName: string }): React.R
 
       <div className="kd-main">
         <header className="kd-topbar">
-          {d.loaded && (
+          {d.loaded && !d.needsQonto && (
             <>
               <span className="kd-account">{data.account.name}</span>
               <span className="kd-muted">{loc(data.window.label)}</span>
@@ -116,6 +121,8 @@ export function Dashboard({ fontClassName }: { fontClassName: string }): React.R
               <span className="kd-analyzing-dot" aria-hidden="true" />
               {copy.analyzing}
             </div>
+          ) : d.needsQonto ? (
+            <ConnectQontoPanel d={d} />
           ) : (
             <>
               {view === "today" && <TodayView d={d} />}
@@ -137,5 +144,23 @@ export function Dashboard({ fontClassName }: { fontClassName: string }): React.R
         <VoiceCommand lang={d.lang} onCommand={d.onVoiceCommand} />
       </div>
     </div>
+  );
+}
+
+function ConnectQontoPanel({ d }: { d: DashboardState }): React.ReactElement {
+  const { copy } = d;
+  const closed = d.qontoConnectable === false;
+  return (
+    <section className="kd-connect" aria-labelledby="kd-connect-title">
+      <h1 id="kd-connect-title" className="kd-h1">
+        {copy.connectTitle}
+      </h1>
+      <p className="kd-lede">{closed ? copy.connectClosed : copy.connectLede}</p>
+      {!closed && (
+        <a className="kd-btn kd-btn-accent kd-btn-lg" href="/api/auth/qonto/start">
+          {copy.connectQonto}
+        </a>
+      )}
+    </section>
   );
 }

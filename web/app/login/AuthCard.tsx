@@ -3,6 +3,7 @@
 // Formulaire d'accès partagé par /try, /signup, /signin (même habillage que /login).
 
 import React, { useEffect, useRef, useState } from "react";
+import { DEMO_PATH, LIVE_DASHBOARD_PATH } from "@/lib/site";
 import { AuthShell } from "./AuthShell";
 
 type Mode = "try" | "signup" | "signin";
@@ -40,9 +41,16 @@ const ERR: Record<string, string> = {
   billing_unavailable: "Billing is unreachable right now, please try again.",
 };
 
-function nextPath(): string {
+/** Trial users get the demo company; account holders land on their own data. */
+const DEFAULT_NEXT: Record<Mode, string> = {
+  try: DEMO_PATH,
+  signup: LIVE_DASHBOARD_PATH,
+  signin: LIVE_DASHBOARD_PATH,
+};
+
+function nextPath(mode: Mode): string {
   const next = new URLSearchParams(window.location.search).get("next");
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/demo";
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : DEFAULT_NEXT[mode];
 }
 
 export default function AuthCard({ mode, notice }: { mode: Mode; notice?: string }) {
@@ -80,7 +88,7 @@ export default function AuthCard({ mode, notice }: { mode: Mode; notice?: string
         return;
       }
       if (r.ok) {
-        window.location.href = nextPath();
+        window.location.href = nextPath(mode);
         return;
       }
       setErr(ERR[d.error ?? ""] ?? "Something went wrong, please try again.");

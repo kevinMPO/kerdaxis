@@ -323,7 +323,7 @@ cd web && npm run cf:deploy
 ```
 site/                 kerdaxis.com: landing (EN/FR), film, posters, loops
 web/                  the Kerdaxis app (Next.js)
-  app/dashboard/      the dashboard served at /demo (today, subscriptions, runs, ledger, letters)
+  app/dashboard/      the dashboard: /demo (demo company until Qonto is connected) and /dashboard (live Qonto data only, where sign-in lands)
   app/                landing, classic dashboard (Kerdaxis.tsx, /classic), ExecutionPanel,
                       VoiceCommand, access pages (try, signup, signin, login), /risk, /rapport
   app/api/execution/  approve · start · status · [id] · final · stop · screenshot · reset
