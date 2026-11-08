@@ -37,7 +37,7 @@ jobs:
       - name: Rendu sur l'échantillon de démonstration
         # Garde-fou de non-régression : le moteur doit tourner de bout en bout
         # sur le jeu d'exemple sans lever d'exception.
-        run: python3 engine.py data/exemple-demo.json > /dev/null
+        run: python3 engine.py tests/fixtures/exemple-demo.json > /dev/null
 
   web:
     name: Application web (Next.js)
