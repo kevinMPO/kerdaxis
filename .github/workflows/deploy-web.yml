@@ -1,0 +1,54 @@
+# Déploie l'app (web/ → Worker « argentier », app.kerdaxis.com) quand la CI de main est verte,
+# pour exactement le commit testé. Garde-fous : CI verte (moteur, types, tests, build, sécurité),
+# build Cloudflare OK, et tous les secrets runtime présents sur le Worker — sinon on n'écrase pas
+# la production. Prérequis GitHub : secret CLOUDFLARE_API_TOKEN.
+name: Deploy web (app.kerdaxis.com)
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: 5e83f0c9dfa04e17b2c4ac41851805bb
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Runtime secrets present on the Worker
+        run: |
+          required="ANTHROPIC_API_KEY ARGENTIER_SESSION_SECRET ARGENTIER_TOKEN_KEY LINKUP_API_KEY ELEVENLABS_API_KEY GLADIA_API_KEY HAI_API_KEY KERDAXIS_SESSION_SECRET KERDAXIS_TEST_PASSWORD PORTAL_API_KEY PORTAL_LOGIN_TOKEN STRIPE_SECRET_KEY"
+          have=$(npx wrangler secret list --format json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).map(x=>x.name).join(" ")))')
+          missing=""
+          for k in $required; do case " $have " in *" $k "*) ;; *) missing="$missing $k";; esac; done
+          if [ -n "$missing" ]; then echo "::error::Secrets absents du Worker :$missing — lancer web/scripts/push-secrets.sh"; exit 1; fi
+      - name: Build (OpenNext for Cloudflare)
+        run: npm run cf:build
+      - name: Deploy
+        run: npx wrangler deploy
+      - name: Smoke test
+        run: |
+          for p in / /signup /signin /try; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "https://app.kerdaxis.com$p")
+            echo "$p $code"; [ "$code" = "200" ] || exit 1
+          done
