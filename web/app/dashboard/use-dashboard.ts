@@ -19,8 +19,11 @@ export type ApiRefusal = null | "reconnect" | "unavailable";
 /** Suppliers the H Company agent has a cancellation path for (mirrors SUPPLIER_IDS on the server). */
 const AGENT_CATALOG = ["nuvio", "lumen"] as const;
 
-/** ready: the agent can run now; offline: path exists but the portal is unreachable; unsupported: no path yet. */
-export type AgentState = "ready" | "offline" | "unsupported";
+/**
+ * ready: the agent can run now; offline: path exists but the portal is unreachable; unsupported: no path yet;
+ * subscribers: a free trial only replays the recorded supplier, live runs need a subscription.
+ */
+export type AgentState = "ready" | "offline" | "unsupported" | "subscribers";
 
 export interface RunRef {
   id: string;
@@ -33,6 +36,8 @@ interface ExecutionStatus {
   hcompany: boolean;
   suppliers: { id: string; vendor: string }[];
   replay?: boolean;
+  /** Free trial: the only supplier replayed; every other one is reserved for subscribers. */
+  replaySupplierId?: string | null;
 }
 
 export interface BenchAlternative {
@@ -253,10 +258,12 @@ export function useDashboard(): Dashboard {
 
   const agentState = useCallback(
     (supplierId: string): AgentState => {
+      const trialLocked = replayMode && execStatus?.replaySupplierId != null && supplierId !== execStatus.replaySupplierId;
+      if (trialLocked) return "subscribers";
       if (isExecutable(supplierId)) return "ready";
       return (AGENT_CATALOG as readonly string[]).includes(supplierId) ? "offline" : "unsupported";
     },
-    [isExecutable],
+    [isExecutable, replayMode, execStatus],
   );
 
   const selectRun = useCallback((id: string) => {

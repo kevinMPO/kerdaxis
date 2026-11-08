@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getExecution } from "@/lib/execution/store";
-import { execGuard } from "@/lib/execution/http";
+import { execGuard, trialMayAccess } from "@/lib/execution/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if ("denied" in g) return g.denied;
   const { id } = await params;
   const exec = await getExecution(id);
-  if (g.mode === "replay" && !exec?.replay) return new NextResponse(null, { status: 403 });
+  if (g.mode === "trial" && (!exec || !trialMayAccess(exec))) return new NextResponse(null, { status: 403 });
   const shot = exec?.lastScreenshot;
   if (!shot) return new NextResponse(null, { status: 404 });
   // Rediffusion : capture enregistrée servie depuis notre propre origine.

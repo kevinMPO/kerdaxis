@@ -180,7 +180,7 @@ export async function launchCancellation(supplierId: string): Promise<string> {
     body: JSON.stringify({ approvalId: approval.approvalId }),
   });
   const exec = await s.json();
-  if (!s.ok) throw new Error(exec.error ?? "lancement refusé");
+  if (!s.ok) throw new Error(exec.message ?? exec.error ?? "lancement refusé");
   return exec.id as string;
 }
 

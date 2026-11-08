@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { advanceExecution } from "@/lib/execution/runner";
 import { advanceReplay } from "@/lib/execution/replay";
 import { getExecution, publicView, withExecution } from "@/lib/execution/store";
-import { noStore, execGuard } from "@/lib/execution/http";
+import { noStore, execGuard, trialMayAccess } from "@/lib/execution/http";
 import { withAccessScope } from "@/lib/privacy/access-log";
 
 export const runtime = "nodejs";
@@ -15,8 +15,8 @@ async function handleGet(req: Request, { params }: { params: Promise<{ id: strin
   const { id } = await params;
   const current = await getExecution(id);
   if (!current) return noStore(NextResponse.json({ error: "not_found" }, { status: 404 }));
-  // Un compte d'essai ne voit que ses rediffusions, jamais une exécution réelle.
-  if (g.mode === "replay" && !current.replay) return noStore(NextResponse.json({ error: "forbidden" }, { status: 403 }));
+  // Un compte d'essai ne voit que ce qu'un essai a lancé, jamais un run d'opérateur.
+  if (g.mode === "trial" && !trialMayAccess(current)) return noStore(NextResponse.json({ error: "forbidden" }, { status: 403 }));
   // Un autre sondage avance déjà cette exécution : on rend l'état lu, sans attendre.
   const done = await withExecution(id, async (exec) => {
     if (exec.replay) {
