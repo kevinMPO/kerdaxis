@@ -117,6 +117,11 @@ export function needsCancelCheck(lever: Lever): boolean {
   return (lever.cancelChannel?.channel ?? "unknown") === "unknown";
 }
 
+/** Supplier never checked yet: the row offers the check itself rather than a letter it may not need. */
+export function awaitsChannelCheck(lever: Lever): boolean {
+  return needsCancelCheck(lever) && lever.cancelChannel === undefined;
+}
+
 /**
  * The agent is offered on any subscription that can be cancelled online, whatever the recommended action:
  * a renegotiation lever still lets the user cancel instead. Everything else is a letter.
@@ -224,6 +229,9 @@ export interface Dashboard {
   pendingPriceCount: number;
   priceAllLevers: () => Promise<void>;
   regenerateWithPrices: () => void;
+  /** One consent click for one supplier: only its name goes to Linkup. */
+  checkLeverChannel: (lever: Lever) => Promise<void>;
+  isCheckingChannel: (leverId: string) => boolean;
   onVoiceCommand: (text: string) => string;
   importState: ImportState;
   /** Reads a PDF statement in the browser and replaces the analysis with it. */
@@ -259,6 +267,7 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
   const [runViews, setRunViews] = useState<Record<string, ExecutionView>>({});
   const [letter, setLetter] = useState<LetterState>(EMPTY_LETTER);
   const [pricing, setPricing] = useState<PricingRun>(IDLE_PRICING);
+  const [checkingChannelIds, setCheckingChannelIds] = useState<ReadonlySet<string>>(() => new Set());
   const [importState, setImportState] = useState<ImportState>(IDLE_IMPORT);
 
   const copy = dashboardCopy(lang);
@@ -526,6 +535,7 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
   const pendingPriceCount = useMemo(() => levers.filter((l) => needsMarketPrice(l) || needsCancelCheck(l)).length, [levers]);
 
   const checkChannel = useCallback(async (lever: Lever): Promise<void> => {
+    setCheckingChannelIds((ids) => new Set(ids).add(lever.id));
     let channel = unknownChannel();
     try {
       const reply = await fetch("/api/cancel-channel", {
@@ -538,7 +548,22 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
       /* web down: the lever stays a letter */
     }
     setLevers((all) => all.map((l) => (l.id === lever.id ? { ...l, cancelChannel: channel } : l)));
+    setCheckingChannelIds((ids) => {
+      const next = new Set(ids);
+      next.delete(lever.id);
+      return next;
+    });
   }, []);
+
+  const checkLeverChannel = useCallback(
+    async (lever: Lever): Promise<void> => {
+      if (checkingChannelIds.has(lever.id) || !needsCancelCheck(lever)) return;
+      await checkChannel(lever);
+    },
+    [checkingChannelIds, checkChannel],
+  );
+
+  const isCheckingChannel = useCallback((leverId: string) => checkingChannelIds.has(leverId), [checkingChannelIds]);
 
   // One consent click (rule 3): only each merchant's name and business pole leave. The engine turns prices into €,
   // and Linkup says whether a cancellation can be done online (agent) or needs a letter.
@@ -568,13 +593,13 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
     };
     await runPool(targets, PRICING_CONCURRENCY, async (lever) => {
       await Promise.all([
-        needsCancelCheck(lever) ? checkChannel(lever) : undefined,
+        needsCancelCheck(lever) && !checkingChannelIds.has(lever.id) ? checkChannel(lever) : undefined,
         needsMarketPrice(lever) ? checkPrice(lever) : undefined,
       ]);
       setPricing((run) => ({ ...run, done: run.done + 1 }));
     });
     setPricing((run) => ({ ...run, status: "done" }));
-  }, [levers, lang, pricing.status, checkChannel]);
+  }, [levers, lang, pricing.status, checkChannel, checkingChannelIds]);
 
   const regenerateWithPrices = useCallback(() => {
     if (!letter.lever || !letter.bench) return;
@@ -668,6 +693,8 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
     pricing,
     pendingPriceCount,
     priceAllLevers,
+    checkLeverChannel,
+    isCheckingChannel,
     regenerateWithPrices,
     onVoiceCommand,
     importState,
