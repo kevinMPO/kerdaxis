@@ -34,10 +34,14 @@ const SOUS_TRAITANTS = [
       "sort pas.",
   },
   {
-    nom: "Anthropic PBC",
-    pays: "États-Unis",
-    role: "Classement des dépenses, rédaction des courriers, lecture des prix relevés",
-    donnees: "Nom du marchand et catégorie, exclusivement",
+    nom: "H Company (SAS)",
+    pays: "France",
+    role:
+      "Classement des dépenses, rédaction des courriers, lecture des prix " +
+      "relevés, agent de navigation pour les résiliations que vous approuvez",
+    donnees:
+      "Nom du marchand et catégorie ; pour un courrier, l’alternative et " +
+      "l’économie visée ; pour une résiliation, le fournisseur et la formule",
     note:
       "Aucun IBAN, aucun identifiant de transaction, aucun solde, aucune " +
       "donnée nominative. Filtre bloquant avant chaque envoi.",
@@ -128,7 +132,7 @@ export default function SousTraitants() {
           <strong>
             Ce qui sort vers les prestataires d’analyse est délibérément pauvre.
           </strong>{" "}
-          Vers Anthropic et Linkup, seuls le <strong>nom du marchand</strong> et
+          Vers H Company et Linkup, seuls le <strong>nom du marchand</strong> et
           la <strong>catégorie</strong> sont transmis — par exemple « Notion » et
           « logiciel ». Jamais d’IBAN, d’identifiant de transaction, de numéro de
           compte, de solde ni de donnée nominative. Un filtre s’exécute{" "}

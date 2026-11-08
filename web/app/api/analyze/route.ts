@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // POST/GET /api/analyze — orchestration (PRD §15, étape 3) :
-//   Source Qonto (lecture seule) → catégorisation (Claude) → engine.ts → JSON.
+//   Source Qonto (lecture seule) → catégorisation (H Company Holo) → engine.ts → JSON.
 //
 // DEUX sources, et une frontière nette entre les deux :
 //   1. VISITEUR CONNECTÉ (cookie de session) → son compte, via la session OAuth
@@ -62,7 +62,7 @@ function windowLabel(days: number): Localized {
   };
 }
 
-/** OBSERVE terminé → CATÉGORISE (Claude) → CALCULE (engine.ts). */
+/** OBSERVE terminé → CATÉGORISE (Holo) → CALCULE (engine.ts). */
 async function runPipeline(
   account: { name: string; bank: string; balance: number },
   txs: Tx[],

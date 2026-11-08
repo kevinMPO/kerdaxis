@@ -10,12 +10,12 @@ runway, simulateur de leviers, fil d'anomalies.
 
 ## Architecture (le principe non négociable)
 
-> **Le LLM classe, `engine.ts` calcule.** Claude étiquette chaque marchand
-> (nature, pôle, action, ratio d'économie). Tout montant en euros est calculé par
+> **Le LLM classe, `engine.ts` calcule.** H Company Holo étiquette chaque marchand
+> (nature, pôle, action). Tout montant en euros est calculé par
 > le moteur déterministe. Le LLM ne multiplie jamais.
 
 ```
-Qonto (lecture seule)  ─▶  categorize.ts (Claude : étiquettes)  ─▶  engine.ts (€)  ─▶  /api/analyze  ─▶  front
+Qonto (lecture seule)  ─▶  categorize.ts (Holo : étiquettes)    ─▶  engine.ts (€)  ─▶  /api/analyze  ─▶  front
    lib/mcp/qonto-read-client.ts   lib/categorize.ts                lib/engine.ts     app/api/analyze    app/Kerdaxis.tsx
 ```
 
@@ -47,9 +47,10 @@ opaque, et `/api/auth/qonto/revoke` débranche tout.
 | `lib/mcp/qonto-read-client.ts` | Client Qonto authentifié par jeton — une seule sortie réseau, filtrée. |
 | `lib/privacy/egress.ts` | Filtre anti-PII : `assertNoPii` avant chaque `fetch` sortant (règle 3). |
 | `lib/db/tenant.ts` · `db/0001_init.sql` | Socle multi-locataire D1 : organisations, décisions, journal d'audit. |
-| `lib/categorize.ts` | Catégorisation Claude (`claude-sonnet-5`) + fallback règles. |
+| `lib/llm/holo.ts` | Client de la Models API de H Company : le seul LLM appelé par l'app. |
+| `lib/categorize.ts` | Catégorisation H Company Holo + fallback règles. |
 | `lib/engine.ts` | Moteur déterministe : natures, run-rate, pôles, score, runway, leviers, anomalies. |
-| `lib/letters.ts` | Lettres de résiliation / renégociation via Claude + gabarit de secours. |
+| `lib/letters.ts` | Lettres de résiliation / renégociation via Holo + gabarit de secours. |
 | `lib/export.ts` | Export du plan en CSV (Excel FR). |
 | `lib/mock.ts` | Données de démo (fallback sans clés). |
 | `app/api/analyze/route.ts` | Orchestration OBSERVE → CATÉGORISE → CALCULE (session OAuth, sinon démo — jamais le compte d'un autre). |
@@ -70,8 +71,7 @@ npm run dev                  # http://localhost:3000
 **Avec les clés** (`.env.local`), elle analyse un vrai compte :
 
 ```env
-HAI_API_KEY=...                      # catégorisation par H Company Holo ; sans : règles (mots-clés)
-ANTHROPIC_API_KEY=sk-ant-...          # lettres + repli du benchmark
+HAI_API_KEY=...                      # H Company : agent + Holo (étiquettes, lettres, prix, risque)
 
 # Connexion OAuth du visiteur — le SEUL chemin vers un vrai compte
 QONTO_OAUTH_PROVIDER=mcp-proxy        # ou direct-readonly, le jour du client dédié
@@ -163,16 +163,22 @@ npm run build
 
 - **Export du plan** — bouton *Exporter le plan (CSV)* → téléchargement Excel-compatible (BOM UTF-8).
 - **Rapport imprimable** — `/rapport` → *Imprimer / Enregistrer en PDF*.
-- **Lettres prêtes à envoyer** — l'icône ✎ sur chaque levier ouvre un courrier rédigé par Claude
+- **Lettres prêtes à envoyer** — l'icône ✎ sur chaque levier ouvre un courrier rédigé par Holo
   (résiliation / renégociation / consolidation selon l'action), éditable, avec bouton *Copier*.
   Kerdaxis prépare, **tu envoies** : aucun envoi automatique, `[crochets]` à compléter.
 
-## Modèle de catégorisation
+## Modèle de langage
 
-La catégorisation des marchands utilise un modèle Holo de H Company (`holo4-27b` par
-défaut, configurable via `HAI_CATEGORIZE_MODEL`) par la Models API de H, avec la même
-clé `HAI_API_KEY` que l'agent. Un schéma JSON (`response_format: json_schema`) contraint
-la sortie, puis Zod la revalide ; le LLM ne renvoie que des étiquettes, jamais des euros.
-Sans clé ou en cas d'échec, les règles par mots-clés prennent le relais.
+Tout appel LLM de l'app passe par un modèle Holo de H Company (`holo4-27b` par défaut,
+`HAI_LLM_MODEL`) via la Models API de H, avec la même clé `HAI_API_KEY` que l'agent
+(`lib/llm/holo.ts`). Quatre usages :
 
-Les lettres et le repli du benchmark utilisent toujours Claude (`ARGENTIER_MODEL`).
+| Usage | Sortie | Sans clé ou en échec |
+|---|---|---|
+| Catégorisation (`/api/analyze`) | étiquettes, schéma JSON + Zod | règles par mots-clés |
+| Lettres (`/api/letter`) | texte | gabarit FR/EN |
+| Benchmark, passe 2 (`/api/benchmark`) | prix extraits du texte Linkup, schéma JSON + Zod | résumé sourcé, sans prix structurés |
+| Risque fournisseur (`/api/risk`) | signaux sourcés (schéma JSON + Zod) et analyse en texte | score sur identité + finances + BODACC, texte déterministe |
+
+Le LLM ne renvoie jamais un euro ni un score. La recherche web, elle, est faite par
+Linkup : sans `LINKUP_API_KEY`, le benchmark reste « non vérifié ».

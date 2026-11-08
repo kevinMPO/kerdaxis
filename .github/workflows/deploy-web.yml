@@ -37,7 +37,7 @@ jobs:
       - run: npm ci
       - name: Runtime secrets present on the Worker
         run: |
-          required="ANTHROPIC_API_KEY ARGENTIER_SESSION_SECRET ARGENTIER_TOKEN_KEY LINKUP_API_KEY ELEVENLABS_API_KEY GLADIA_API_KEY HAI_API_KEY KERDAXIS_SESSION_SECRET KERDAXIS_TEST_PASSWORD PORTAL_API_KEY PORTAL_LOGIN_TOKEN STRIPE_SECRET_KEY"
+          required="ARGENTIER_SESSION_SECRET ARGENTIER_TOKEN_KEY LINKUP_API_KEY ELEVENLABS_API_KEY GLADIA_API_KEY HAI_API_KEY KERDAXIS_SESSION_SECRET KERDAXIS_TEST_PASSWORD PORTAL_API_KEY PORTAL_LOGIN_TOKEN STRIPE_SECRET_KEY"
           have=$(npx wrangler secret list --format json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).map(x=>x.name).join(" ")))')
           missing=""
           for k in $required; do case " $have " in *" $k "*) ;; *) missing="$missing $k";; esac; done

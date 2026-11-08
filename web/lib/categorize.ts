@@ -18,13 +18,11 @@
 // ---------------------------------------------------------------------------
 
 import { z } from "zod";
-import { HaiError, haiConfigured } from "@/lib/execution/hcompany";
+import { holoChat, holoConfigured } from "@/lib/llm/holo";
 import { assertNoPii, sanitizeMerchantQuery } from "@/lib/privacy/egress";
 import type { MerchantVerdict, Nature, Pole, Risk, LeverAction } from "./types";
 import { recordAccess } from "@/lib/privacy/access-log";
 
-const HOLO_BASE_URL = (process.env.HAI_MODELS_BASE_URL ?? "https://api.hcompany.ai/v1").replace(/\/+$/, "");
-const HOLO_MODEL = process.env.HAI_CATEGORIZE_MODEL || "holo4-27b";
 /** Au-delà, /api/analyze retombe sur les règles plutôt que de faire attendre le dashboard. */
 const HOLO_TIMEOUT_MS = 30_000;
 const RISKS: Risk[] = ["safe", "med", "hard"];
@@ -133,12 +131,8 @@ const VerdictsSchema = z.object({
   ),
 });
 
-interface HoloChatCompletion {
-  choices?: Array<{ message?: { content?: string | null } }>;
-}
-
 export function hasHoloKey(): boolean {
-  return haiConfigured();
+  return holoConfigured();
 }
 
 /** Un marchand et le nom, nettoyé, sous lequel il a le droit de sortir. */
@@ -191,43 +185,13 @@ export async function categorizeWithHolo(
     sent: `${userPayload.length} merchant names, occurrence counts, recurring flag: ${userPayload.map((m) => m.name).join(", ")}`,
   });
 
-  const corps = {
-    model: HOLO_MODEL,
-    temperature: 0,
-    // Classification en un coup : la trace de raisonnement ne ferait que ralentir.
-    chat_template_kwargs: { enable_thinking: false },
-    response_format: {
-      type: "json_schema",
-      json_schema: { name: "merchant_verdicts", schema: SCHEMA },
-    },
-    messages: [
-      { role: "system", content: SYSTEM },
-      {
-        role: "user",
-        content: `Classe chacun de ces marchands. Renvoie un verdict par marchand, même ordre.\n\n${JSON.stringify(userPayload, null, 2)}`,
-      },
-    ],
-  };
-
-  const res = await fetch(`${HOLO_BASE_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.HAI_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(corps),
-    cache: "no-store",
-    signal: AbortSignal.timeout(HOLO_TIMEOUT_MS),
+  const contenu = await holoChat({
+    model: process.env.HAI_CATEGORIZE_MODEL,
+    system: SYSTEM,
+    user: `Classe chacun de ces marchands. Renvoie un verdict par marchand, même ordre.\n\n${JSON.stringify(userPayload, null, 2)}`,
+    jsonSchema: { name: "merchant_verdicts", schema: SCHEMA },
+    timeoutMs: HOLO_TIMEOUT_MS,
   });
-  if (!res.ok) {
-    // Extrait court du corps pour le diagnostic, jamais les en-têtes (la clé).
-    const extrait = (await res.text().catch(() => "")).slice(0, 300);
-    throw new HaiError(res.status, `http_${res.status}`, `H Company Models API ${res.status} : ${extrait}`);
-  }
-
-  const completion = (await res.json()) as HoloChatCompletion;
-  const contenu = completion.choices?.[0]?.message?.content;
-  if (!contenu) throw new HaiError(502, "empty_completion", "Réponse Holo vide");
   const parsed = VerdictsSchema.parse(JSON.parse(contenu));
   return recomposer(parsed.verdicts, sortants);
 }

@@ -3,7 +3,7 @@
 // envoyer pour un levier donné. Kerdaxis prépare, l'utilisateur envoie.
 //
 // ACCÈS : ouvert, mais PLAFONNÉ par IP (cf. lib/api/rate-limit.ts). La
-// rédaction passe par Anthropic, donc chaque appel coûte. Une authentification
+// rédaction passe par H Company Holo, donc chaque appel coûte. Une authentification
 // stricte casserait /demo, qui prépare des lettres pour un visiteur non
 // connecté (app/Kerdaxis.tsx, `openLetter`) : le plafond par IP est le
 // compromis qui garde la démo vivante sans laisser brûler les crédits.

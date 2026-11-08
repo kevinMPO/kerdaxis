@@ -5,7 +5,8 @@
 // bancaire, aucun envoi automatique. Les infos personnelles restent des
 // [crochets] à compléter — on n'invente pas les coordonnées de l'utilisateur.
 //
-// Bilingue : Claude rédige dans la langue demandée ; gabarit de secours FR/EN.
+// Multilingue : H Company Holo rédige dans la langue demandée ; gabarit de
+// secours FR/EN sans HAI_API_KEY ou si l'appel échoue.
 //
 // RÈGLE 3 (zéro PII) : le nom du fournisseur peut venir d'un libellé Qonto brut
 // (« VIR SEPA … »). Il est donc nettoyé avant de partir, tout comme
@@ -16,12 +17,14 @@
 // partent jamais vers un moteur de recherche, contrairement au benchmark.
 // ---------------------------------------------------------------------------
 
-import Anthropic from "@anthropic-ai/sdk";
+import { holoChat, holoConfigured } from "@/lib/llm/holo";
 import { assertNoPii, redactForLogs, sanitizeMerchantQuery } from "@/lib/privacy/egress";
 import type { Lang, LeverAction } from "./types";
 import { recordAccess } from "@/lib/privacy/access-log";
 
-const MODEL = process.env.ARGENTIER_MODEL || "claude-sonnet-5";
+const LETTER_MAX_TOKENS = 1200;
+/** Un courrier est plus long à écrire qu'une liste d'étiquettes. */
+const LETTER_TIMEOUT_MS = 45_000;
 
 export interface LetterSource {
   name: string;
@@ -142,17 +145,12 @@ Regole imperative:
 - Restituisci SOLO il testo della lettera (oggetto incluso), senza commenti.`,
 };
 
-export function hasAnthropicKey(): boolean {
-  return !!process.env.ANTHROPIC_API_KEY;
-}
-
 const LETTER_LANGS: Lang[] = ["fr", "en", "de", "es", "it"];
 
 export async function generateLetter(req: LetterRequest): Promise<string> {
   const lang: Lang = req.lang && LETTER_LANGS.includes(req.lang) ? req.lang : "fr";
-  if (!hasAnthropicKey()) return templateLetter(req, lang);
+  if (!holoConfigured()) return templateLetter(req, lang);
   try {
-    const client = new Anthropic();
     const intent = ACTION_INTENT[lang][req.action] ?? ACTION_INTENT[lang].renegotiate;
     // Nettoyage anti-PII des deux seuls champs de texte libre venus du compte.
     const marchand = sanitizeMerchantQuery(req.merchant).merchant;
@@ -183,26 +181,23 @@ sont fournis, cite-les factuellement (nom + tarif + date) sans agressivité.`;
 
     // Dernière barrière avant le réseau. Un rejet ici n'est pas une panne : le
     // gabarit déterministe prend le relais, l'utilisateur a son courrier.
-    assertNoPii({ prompt }, "rédaction de courrier Anthropic");
+    assertNoPii({ prompt }, "rédaction de courrier H Company");
     void recordAccess({
-      service: "anthropic",
+      service: "hcompany",
       operation: "letter",
       direction: "sent",
       sent: `${marchand} · ${alternative || "-"} · ${Math.round(req.savingMonthly)} €/mo saving`,
     });
 
-    const response = (await client.messages.create({
-      model: MODEL,
-      max_tokens: 1200,
-      system: [{ type: "text", text: SYSTEM[lang], cache_control: { type: "ephemeral" } }],
-      messages: [{ role: "user", content: prompt }],
-    })) as Anthropic.Message;
-
-    const text = response.content.find((b) => b.type === "text");
-    if (text && text.type === "text" && text.text.trim()) return text.text.trim();
-    return templateLetter(req, lang);
+    return await holoChat({
+      system: SYSTEM[lang],
+      user: prompt,
+      temperature: 0.3,
+      maxTokens: LETTER_MAX_TOKENS,
+      timeoutMs: LETTER_TIMEOUT_MS,
+    });
   } catch (err) {
-    console.error("Génération lettre Claude échouée, fallback gabarit :", err);
+    console.error("Génération lettre Holo échouée, fallback gabarit :", err);
     return templateLetter(req, lang);
   }
 }
@@ -238,7 +233,7 @@ function buildSourcesBlock(req: LetterRequest, lang: Lang): string {
     : `\n\nSourced market prices (cite factually to support the request, with the date):\n${rows}`;
 }
 
-// --- Gabarit déterministe (sans clé Anthropic) -----------------------------
+// --- Gabarit déterministe (sans clé H Company) -----------------------------
 function templateLetter(req: LetterRequest, lang: Lang): string {
   const isCancel = req.action === "cancel";
   // fr → gabarit FR ; en/de/es/it → gabarit EN (base neutre, à relire par l'utilisateur).

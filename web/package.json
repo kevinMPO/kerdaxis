@@ -16,7 +16,6 @@
     "cf:deploy": "npm run cf:build && wrangler deploy"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.68.0",
     "@gladiaio/sdk": "^2.2.1",
     "@mastra/core": "^1.82.0",
     "@mastra/libsql": "^1.21.1",

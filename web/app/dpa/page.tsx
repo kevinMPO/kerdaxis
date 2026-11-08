@@ -261,13 +261,11 @@ export default function Dpa() {
         <strong>Union européenne</strong> (base en région Europe de l’Ouest).
       </p>
       <p>
-        Deux sous-traitants d’analyse sont établis aux{" "}
-        <strong>États-Unis</strong> : Anthropic et ElevenLabs. Ces transferts
-        reposent sur les <strong>clauses contractuelles types</strong> de la
-        Commission européenne du 4 juin 2021, complétées par les mesures
-        techniques décrites à l’article 3.2 — pour Anthropic, le contenu transmis
-        ne comporte, <strong>par construction</strong>, aucune donnée
-        personnelle identifiante.
+        Un sous-traitant est établi aux <strong>États-Unis</strong> :
+        ElevenLabs. Ce transfert repose sur les{" "}
+        <strong>clauses contractuelles types</strong> de la Commission
+        européenne du 4 juin 2021, complétées par les mesures techniques
+        décrites à l’article 3.2.
       </p>
 
       <h2>6. Audit</h2>
