@@ -11,8 +11,10 @@ vi.mock("@/lib/execution/store", async (importOriginal) => {
   return { ...actual, getApproval, putApproval, putExecution };
 });
 
-const { trialMayAccess } = await import("../http");
-const { REPLAY_SUPPLIER_ID, trialRunsReplay } = await import("../replay");
+const { DEMO_ORG, trialMayAccess } = await import("../http");
+const { actionHash } = await import("../policy");
+type ActionParams = import("../policy").ActionParams;
+const { REPLAY_SUPPLIER_IDS, trialRunsReplay } = await import("../replay");
 const { POST: startRoute } = await import("@/app/api/execution/start/route");
 type Execution = import("../store").Execution;
 
@@ -36,11 +38,12 @@ describe("free trial: the recorded replay only, never a real H Company agent", (
     vi.clearAllMocks();
   });
 
-  it("should replay only the recorded demo supplier", () => {
-    expect(REPLAY_SUPPLIER_ID).toBe("nuvio");
+  it("should replay only the suppliers with a recorded session", () => {
+    expect(REPLAY_SUPPLIER_IDS).toEqual(["nuvio", "lumen"]);
     expect(trialRunsReplay("nuvio")).toBe(true);
-    expect(trialRunsReplay("lumen")).toBe(false);
+    expect(trialRunsReplay("lumen")).toBe(true);
     expect(trialRunsReplay("unknown")).toBe(false);
+    expect(trialRunsReplay("toString")).toBe(false);
   });
 
   it("should let a trial account follow a replay but never a real run", () => {
@@ -48,8 +51,35 @@ describe("free trial: the recorded replay only, never a real H Company agent", (
     expect(trialMayAccess(exec({}))).toBe(false);
   });
 
-  it("should refuse a trial start on Lumen without consuming the approval or starting the agent", async () => {
-    getApproval.mockResolvedValue({ id: APPROVAL_ID, params: { supplierId: "lumen" } });
+  it("should replay the recorded Lumen session in the trial without starting the agent", async () => {
+    const params = {
+      orgId: DEMO_ORG,
+      supplierId: "lumen",
+      vendor: "Lumen Analytics",
+      plan: "Lumen Analytics Pro",
+      account: "Acme Conseil SAS",
+      monthlyCents: 3900,
+    } as unknown as ActionParams;
+    getApproval.mockResolvedValue({
+      id: APPROVAL_ID,
+      actionHash: await actionHash(params),
+      channel: "ui",
+      expiresAt: new Date(Date.now() + 60_000).toISOString(),
+      usedAt: null,
+      params,
+    });
+
+    const response = await startRoute(startRequest("trial"));
+    const body = (await response.json()) as { replay: boolean; status: string };
+
+    expect(response.status).toBe(200);
+    expect(body.replay).toBe(true);
+    expect(startExecution).not.toHaveBeenCalled();
+    expect(putExecution).toHaveBeenCalledTimes(1);
+  });
+
+  it("should refuse a trial start on a supplier without a recording, without consuming the approval or starting the agent", async () => {
+    getApproval.mockResolvedValue({ id: APPROVAL_ID, params: { supplierId: "unrecorded" } });
 
     const response = await startRoute(startRequest("trial"));
     const body = (await response.json()) as { error: string; message: string };

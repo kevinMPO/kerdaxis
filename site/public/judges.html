@@ -63,7 +63,7 @@
       <li><div><h3 data-i="j1t">Open the demo company</h3><p data-i="j1">You land on ACME Conseil, a demo company, with savings already found.</p>
         <ul><li data-i="j1a">Every euro comes from the deterministic engine; Holo only labels transactions.</li><li data-i="j1b">"Needs you" lists what Kerdaxis wants you to decide.</li><li data-i="j1c">The five-value ledger shows that nothing is confirmed yet.</li></ul></div>
         <a class="btn btn-primary" href="https://app.kerdaxis.com/api/try/guest" data-i="j1cta">Open the demo</a></li>
-      <li><div><h3 data-i="j2t">Cancel Nuvio CRM with H Company</h3><p data-i="j2">Click "Cancel with H Company" on Nuvio CRM, a fictional supplier we built, and approve.</p>
+      <li><div><h3 data-i="j2t">Cancel Nuvio CRM with H Company</h3><p data-i="j2">Click "Cancel with H Company" on Nuvio CRM, a fictional supplier we built, and approve. Then try Lumen Analytics: the same replay on Stripe’s real customer portal, in test mode.</p>
         <ul><li data-i="j2a">The agent declines the retention offer and ignores an instruction injected in the page.</li><li data-i="j2b">It stops before the irreversible button. Nothing happens until you give the green light.</li><li data-i="j2c">Kerdaxis then compares the confirmation number read by the agent with the one on the portal.</li></ul></div></li>
       <li><div><h3 data-i="j3t">Check how it is built</h3><p data-i="j3">The home page explains the harness and shows the measured runs, including the one that failed.</p>
         <ul><li data-i="j3a">Under the hood: two-turn mission, watchdog, domain lock, path research.</li><li data-i="j3b">Proof: 5/5 cancellations confirmed by the Stripe API, 2/2 refusals respected.</li></ul></div>
@@ -83,7 +83,7 @@
     <table class="crit">
       <thead><tr><th data-i="thC">Criterion</th><th data-i="thW">Weight</th><th data-i="thS">Where you see it</th></tr></thead>
       <tbody>
-        <tr><td data-i="c1">Computer Use</td><td>25%</td><td data-i="c1s">Step 2: the agent works on a real web interface, stops at the final page, ignores the injected instruction.</td></tr>
+        <tr><td data-i="c1">Computer Use</td><td>25%</td><td data-i="c1s">Step 2: the agent works on a real web interface, stops before the irreversible click, ignores the injected instruction.</td></tr>
         <tr><td data-i="c2">Technical execution and reliability</td><td>25%</td><td data-i="c2s">Proof on the home page: 5/5 confirmed by the Stripe API, 2/2 refusals respected, the failed first run and its three-layer fix.</td></tr>
         <tr><td data-i="c3">Usefulness</td><td>20%</td><td data-i="c3s">Step 1: savings found on bank data, in euros from a deterministic engine, with sourced alternative prices.</td></tr>
         <tr><td data-i="c4">Originality</td><td>15%</td><td data-i="c4s">An AI CFO that executes the savings you approve, with an evidence ledger up to the supplier's confirmation.</td></tr>
@@ -101,7 +101,7 @@
       <h2 id="honestTitle" data-i="hoTitle">Recorded, test mode, production: no mixing.</h2></div>
     </header>
     <div class="evidence">
-      <div><span class="tag tag-rec" data-i="e1k">Recorded demo</span><h3 data-i="e1t">The guest run and the film</h3><p data-i="e1">A real H Company session recorded on Nuvio, a fictional supplier portal we built.</p></div>
+      <div><span class="tag tag-rec" data-i="e1k">Recorded demo</span><h3 data-i="e1t">The guest run and the film</h3><p data-i="e1">Real H Company sessions recorded on Nuvio, a fictional supplier portal we built, and on Stripe’s real customer portal in test mode (Lumen).</p></div>
       <div><span class="tag tag-test" data-i="e2k">Test-mode execution</span><h3 data-i="e2t">The live agent and the figures</h3><p data-i="e2">Real agent runs on our demo portal and on Stripe's real customer portal, in Stripe test mode.</p></div>
       <div><span class="tag tag-live" data-i="e3k">In production today</span><h3 data-i="e3t">The analysis</h3><p data-i="e3">Read-only Qonto analysis, the deterministic engine and sourced prices. Bank-statement verification at D+30 is not in the figures.</p></div>
     </div>
@@ -142,20 +142,20 @@ en:{
   stEyebrow:'The test',stTitle:'Three steps, one optional.',stLede:'Everything here runs in your browser. As a guest, the agent run is a replay of a real recorded H Company session.',
   j1t:'Open the demo company',j1:'You land on ACME Conseil, a demo company, with savings already found.',
   j1a:'Every euro comes from the deterministic engine; Holo only labels transactions.',j1b:'"Needs you" lists what Kerdaxis wants you to decide.',j1c:'The five-value ledger shows that nothing is confirmed yet.',j1cta:'Open the demo',
-  j2t:'Cancel Nuvio CRM with H Company',j2:'Click "Cancel with H Company" on Nuvio CRM, a fictional supplier we built, and approve.',
+  j2t:'Cancel Nuvio CRM with H Company',j2:'Click "Cancel with H Company" on Nuvio CRM, a fictional supplier we built, and approve. Then try Lumen Analytics: the same replay on Stripe’s real customer portal, in test mode.',
   j2a:'The agent declines the retention offer and ignores an instruction injected in the page.',j2b:'It stops before the irreversible button. Nothing happens until you give the green light.',j2c:'Kerdaxis then compares the confirmation number read by the agent with the one on the portal.',
   j3t:'Check how it is built',j3:'The home page explains the harness and shows the measured runs, including the one that failed.',
   j3a:'Under the hood: two-turn mission, watchdog, domain lock, path research.',j3b:'Proof: 5/5 cancellations confirmed by the Stripe API, 2/2 refusals respected.',j3cta:'Under the hood',
   j4t:'Optional: run the live agent',j4:"With the test access (ask the team), sign in to launch a real H Company agent on our demo portal, or on Stripe's real customer portal in test mode. One live agent runs at a time: if it is busy, use the replay.",j4cta:'Jury / test access',
   crEyebrow:'Judging criteria',crTitle:'Where to look for each criterion.',thC:'Criterion',thW:'Weight',thS:'Where you see it',
-  c1:'Computer Use',c1s:'Step 2: the agent works on a real web interface, stops at the final page, ignores the injected instruction.',
+  c1:'Computer Use',c1s:'Step 2: the agent works on a real web interface, stops before the irreversible click, ignores the injected instruction.',
   c2:'Technical execution and reliability',c2s:'Proof on the home page: 5/5 confirmed by the Stripe API, 2/2 refusals respected, the failed first run and its three-layer fix.',
   c3:'Usefulness',c3s:'Step 1: savings found on bank data, in euros from a deterministic engine, with sourced alternative prices.',
   c4:'Originality',c4s:"An AI CFO that executes the savings you approve, with an evidence ledger up to the supplier's confirmation.",
   c5:'UX and user control',c5s:"The human green light before anything irreversible. Voice can't give it.",
   c6:'Demo clarity',c6s:'This page and the 51-second film.',
   hoEyebrow:'What is real',hoTitle:'Recorded, test mode, production: no mixing.',
-  e1k:'Recorded demo',e1t:'The guest run and the film',e1:'A real H Company session recorded on Nuvio, a fictional supplier portal we built.',
+  e1k:'Recorded demo',e1t:'The guest run and the film',e1:'Real H Company sessions recorded on Nuvio, a fictional supplier portal we built, and on Stripe’s real customer portal in test mode (Lumen).',
   e2k:'Test-mode execution',e2t:'The live agent and the figures',e2:"Real agent runs on our demo portal and on Stripe's real customer portal, in Stripe test mode.",
   e3k:'In production today',e3t:'The analysis',e3:'Read-only Qonto analysis, the deterministic engine and sourced prices. Bank-statement verification at D+30 is not in the figures.',
   footLabel:'Footer',footJudges:'For judges',footPartners:'Accounting firms',footFde:'Forward Deployed Engineers',footLegal:'Legal notice',footPrivacy:'Privacy',
@@ -170,20 +170,20 @@ fr:{
   stEyebrow:'Le test',stTitle:'Trois étapes, une facultative.',stLede:'Tout se passe dans votre navigateur. En invité, l’exécution de l’agent est la rediffusion d’une vraie session H Company enregistrée.',
   j1t:'Ouvrir l’entreprise de démo',j1:'Vous arrivez sur ACME Conseil, une entreprise de démo, avec des économies déjà repérées.',
   j1a:'Chaque euro vient du moteur déterministe ; Holo ne fait qu’étiqueter les transactions.',j1b:'« Needs you » liste ce que Kerdaxis vous demande de décider.',j1c:'Le registre à cinq valeurs montre que rien n’est encore confirmé.',j1cta:'Ouvrir la démo',
-  j2t:'Résilier Nuvio CRM avec H Company',j2:'Cliquez sur « Cancel with H Company » pour Nuvio CRM, un fournisseur fictif que nous avons construit, puis approuvez.',
+  j2t:'Résilier Nuvio CRM avec H Company',j2:'Cliquez sur « Cancel with H Company » pour Nuvio CRM, un fournisseur fictif que nous avons construit, puis approuvez. Essayez ensuite Lumen Analytics : la même rediffusion sur le vrai portail client de Stripe, en mode test.',
   j2a:'L’agent refuse l’offre de rétention et ignore une consigne injectée dans la page.',j2b:'Il s’arrête devant le bouton irréversible. Rien ne se passe sans votre feu vert.',j2c:'Kerdaxis compare ensuite le numéro de confirmation lu par l’agent avec celui du portail.',
   j3t:'Voir comment c’est construit',j3:'La page d’accueil explique le harnais et montre les exécutions mesurées, y compris celle qui a échoué.',
   j3a:'Sous le capot : mission en deux tours, chien de garde, verrou de domaine, recherche du parcours.',j3b:'Preuves : 5/5 résiliations confirmées par l’API Stripe, 2/2 refus respectés.',j3cta:'Sous le capot',
   j4t:'Facultatif : lancer l’agent en réel',j4:'Avec l’accès de test (demandez-le à l’équipe), connectez-vous pour lancer un vrai agent H Company sur notre portail de démo, ou sur le vrai portail client de Stripe en mode test. Un seul agent réel tourne à la fois : s’il est occupé, utilisez la rediffusion.',j4cta:'Accès jury / test',
   crEyebrow:'Critères du jury',crTitle:'Où regarder pour chaque critère.',thC:'Critère',thW:'Poids',thS:'Où le voir',
-  c1:'Computer Use',c1s:'Étape 2 : l’agent travaille sur une vraie interface web, s’arrête sur la page finale, ignore la consigne injectée.',
+  c1:'Computer Use',c1s:'Étape 2 : l’agent travaille sur une vraie interface web, s’arrête avant le clic irréversible, ignore la consigne injectée.',
   c2:'Exécution technique et fiabilité',c2s:'Preuves sur l’accueil : 5/5 confirmées par l’API Stripe, 2/2 refus respectés, la première exécution ratée et son correctif en trois couches.',
   c3:'Utilité',c3s:'Étape 1 : des économies trouvées sur des données bancaires, en euros calculés par un moteur déterministe, avec des prix alternatifs sourcés.',
   c4:'Originalité',c4s:'Un DAF IA qui exécute les économies que vous approuvez, avec un registre de preuves jusqu’à la confirmation du fournisseur.',
   c5:'UX et contrôle utilisateur',c5s:'Le feu vert humain avant tout geste irréversible. La voix ne peut pas le donner.',
   c6:'Clarté de la démo',c6s:'Cette page et le film de 51 secondes.',
   hoEyebrow:'Ce qui est réel',hoTitle:'Enregistré, mode test, production : sans mélange.',
-  e1k:'Démo enregistrée',e1t:'L’exécution invitée et le film',e1:'Une vraie session H Company enregistrée sur Nuvio, un portail fournisseur fictif que nous avons construit.',
+  e1k:'Démo enregistrée',e1t:'L’exécution invitée et le film',e1:'De vraies sessions H Company enregistrées sur Nuvio, un portail fournisseur fictif que nous avons construit, et sur le vrai portail client de Stripe en mode test (Lumen).',
   e2k:'Exécution en mode test',e2t:'L’agent en réel et les chiffres',e2:'De vraies exécutions de l’agent sur notre portail de démo et sur le vrai portail client de Stripe, en mode test Stripe.',
   e3k:'En production aujourd’hui',e3t:'L’analyse',e3:'L’analyse Qonto en lecture seule, le moteur déterministe et les prix sourcés. La vérification sur relevé bancaire à J+30 n’est pas dans les chiffres.',
   footLabel:'Pied de page',footJudges:'Pour le jury',footPartners:'Cabinets comptables',footFde:'Forward Deployed Engineers',footLegal:'Mentions légales',footPrivacy:'Confidentialité',

@@ -34,8 +34,8 @@ export function operatorGuard(req: Request): NextResponse | null {
  * Garde des routes d'exécution, essai compris :
  *  - "live"  : opérateur / test / abonné → agent H Company réel ;
  *  - "trial" : essai gratuit (x-kx-role posé par middleware.ts) → rediffusion
- *              enregistrée pour le fournisseur de démo (REPLAY_SUPPLIER_ID),
- *              aucun agent H Company réel, les autres fournisseurs sont refusés.
+ *              d'une session enregistrée (REPLAY_SUPPLIER_IDS), aucun agent
+ *              H Company réel, les fournisseurs non enregistrés sont refusés.
  */
 export function execGuard(req: Request): { denied: NextResponse } | { mode: "live" | "trial" } {
   if (!operatorGuard(req)) return { mode: "live" };

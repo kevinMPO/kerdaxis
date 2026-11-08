@@ -71,7 +71,7 @@ H Company session `192149b8-…`, 7 Nov 2026, 18:43:07–18:44:00 (Paris), Engli
 | Injected "accept the offer" note | ignored, offer declined |
 | Result | `supplier_confirmed` · **NUV-RW3L2Y**, identical on the agent and the portal side |
 
-The 10 captures of this run are in `web/public/replay/`. They also drive the free-trial replay (see below).
+The 10 captures of this run are in `web/public/replay/`. They also drive the Nuvio free-trial replay (see below).
 
 ## Real suppliers: researched playbooks and the Stripe portal
 
@@ -118,13 +118,18 @@ only the origin and path of every page the agent visits. H's cloud browser reach
 tunnel, so this supplier runs live even when the Nuvio portal is local. Lumen is in the demo data as an
 inactive lever, so the demo totals do not change; open its card and choose *Cancel with H Company*.
 
+The free trial replays one real Lumen run, recorded on 8 Nov 2026 (H session `b80d6955`, 10 steps, $0.035): the
+10 captures are in `web/public/replay/lumen/`, the timeline and texts in `web/lib/execution/replay-recordings.ts`.
+To record a new one, run `node --env-file=.env.local scripts/record-replay.mjs --supplier lumen` from `web/`
+with the app running locally. It drives one real run, then reads the session back from the H Company API.
+
 ## Access: free trial, subscription, jury
 
 The app at `app.kerdaxis.com` has three levels of access. Each is a signed HMAC cookie checked in `web/middleware.ts`.
 
 | Access | How | What you get |
 |---|---|---|
-| **Free trial** | [`/try`](https://app.kerdaxis.com/try): email only | The whole app on a demo company. The H Company agent run is a **replay** of the real recorded session: same captures, same timings, same final-click gate. It is labelled "Replay · recorded real session", and no agent is launched. |
+| **Free trial** | [`/try`](https://app.kerdaxis.com/try): email only | The whole app on a demo company. The H Company agent run is a **replay** of a real recorded session, on Nuvio (our portal) or Lumen (Stripe's customer portal): same captures, same timings, same final-click gate. It is labelled "Replay · recorded real session", and no agent is launched. Suppliers without a recording are for subscribers. |
 | **Subscriber, 5 €/month** | [`/signup`](https://app.kerdaxis.com/signup): email and password, then Stripe Checkout | Lands on `/dashboard`, which shows only the subscriber's own data (a connected Qonto account or an imported PDF statement, never the demo company). Live H Company agent runs on the demo portal. The subscription is re-checked with Stripe at every sign-in. A Stripe customer portal handles billing. |
 | **Jury / test** | [`/login`](https://app.kerdaxis.com/login): test password | Same as a subscriber, without payment. |
 
@@ -371,9 +376,10 @@ web/                  the Kerdaxis app (Next.js)
   lib/billing/        Stripe Checkout, subscription check, customer portal
   middleware.ts       access levels and internal headers
   db/                 D1 migrations, applied by hand (see db/README.md)
-  public/replay/      the 10 captures of the recorded run
+  public/replay/      the captures of the recorded runs (Nuvio at the root, Lumen in lumen/)
   public/samples/     fictional sample bank statement (PDF) for the import
-  scripts/            agent-runs.mjs (real agent runs), generate-sample-statement.mjs (the sample PDF)
+  scripts/            agent-runs.mjs (real agent runs), record-replay.mjs (records a trial replay),
+                      generate-sample-statement.mjs (the sample PDF)
 portal/               fictional supplier portal (Cloudflare Worker + Durable Object)
 my-app/               accounts and waitlist Worker (/auth/*, /waitlist) called by the app
 video/                the 69 s film as code (HyperFrames): SPEC.md, compositions/, recorded

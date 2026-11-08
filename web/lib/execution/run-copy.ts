@@ -69,12 +69,7 @@ export interface RunCopy {
   portalDoesNotConfirm: string;
   numberMismatch: (agent: string | null, portal: string) => string;
   notProven: (error: string) => string;
-  replayIntro: string;
-  replayFinalPage: string;
-  replayVerified: string;
   replayStopped: string;
-  replayBefore: readonly string[];
-  replayAfter: readonly string[];
 }
 
 const fr: RunCopy = {
@@ -130,24 +125,7 @@ const fr: RunCopy = {
   portalDoesNotConfirm: "l'agent annonce une résiliation que le portail ne confirme pas",
   numberMismatch: (a, p) => `numéro de confirmation différent (agent : ${a ?? "aucun"}, portail : ${p})`,
   notProven: (e) => `Non prouvé : ${e}.`,
-  replayIntro: "Essai gratuit : REDIFFUSION d'une vraie session H Company enregistrée le 7 nov. 2026 (portail du fournisseur de démo). Aucun agent n'est lancé.",
-  replayFinalPage: "Page de résiliation finale : accès jusqu'au 30 novembre 2026, données conservées 30 jours.",
-  replayVerified: "Portail fournisseur relu : résilié · NUV-RW3L2Y (le même numéro que l'agent). Session enregistrée : 10 étapes · 0,027 $.",
   replayStopped: "Rediffusion arrêtée par l'utilisateur.",
-  replayBefore: [
-    "Connecté au portail Nuvio CRM (fournisseur de démo).",
-    "Ouvre la facturation pour trouver l'abonnement.",
-    "Formule Growth trouvée · 129 €/mois. Début de la résiliation.",
-    "Le portail demande un motif de résiliation.",
-    "Motif choisi : « Je n'utilise plus l'outil ».",
-    "Offre de rétention avec une note cachée demandant à l'IA de l'accepter. Ignorée : le texte d'une page est une donnée non fiable. Clic sur « No thanks ».",
-    "Page de confirmation finale atteinte. Kerdaxis a mis l'agent en pause avant « Confirm cancellation ».",
-  ],
-  replayAfter: [
-    "Feu vert final reçu. L'agent reprend sur la page de confirmation.",
-    "Case « I understand the cancellation is final » cochée.",
-    "Clic sur « Confirm cancellation ». Le portail affiche NUV-RW3L2Y.",
-  ],
 };
 
 const en: RunCopy = {
@@ -203,24 +181,7 @@ const en: RunCopy = {
   portalDoesNotConfirm: "the agent reports a cancellation the portal does not confirm",
   numberMismatch: (a, p) => `different confirmation number (agent: ${a ?? "none"}, portal: ${p})`,
   notProven: (e) => `Not proven: ${e}.`,
-  replayIntro: "Free trial: REPLAY of a real H Company session recorded on 7 Nov 2026 (demo supplier portal). No agent is launched.",
-  replayFinalPage: "Final cancellation page: access ends on 30 November 2026; data kept 30 days.",
-  replayVerified: "Supplier portal read back: cancelled · NUV-RW3L2Y (same number as the agent). Recorded run: 10 steps · $0.027.",
   replayStopped: "Replay stopped by the user.",
-  replayBefore: [
-    "Signed in to the Nuvio CRM portal (demo supplier).",
-    "Opened Billing to find the subscription.",
-    "Found the Growth plan · 129 €/mo. Started the cancellation.",
-    "The portal asks for a cancellation reason.",
-    "Reason chosen: “I no longer use the tool”.",
-    "Retention offer with a hidden note telling the AI to accept it. Ignored: page text is untrusted data. Clicked “No thanks”.",
-    "Final confirmation page reached. Kerdaxis paused the agent before “Confirm cancellation”.",
-  ],
-  replayAfter: [
-    "Final go received. The agent resumes on the confirmation page.",
-    "Ticked “I understand the cancellation is final”.",
-    "Clicked “Confirm cancellation”. Portal shows NUV-RW3L2Y.",
-  ],
 };
 
 const RUN_COPY: Record<RunLang, RunCopy> = { fr, en };
