@@ -389,6 +389,16 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
     }
   }, []);
 
+  // Runs are kept in the browser across datasets: only those against a supplier of the data on screen
+  // belong to it, so a demo cancellation never shows up in an imported statement's ledger.
+  const visibleRuns = useMemo(() => {
+    const suppliers = new Set(levers.map((lever) => lever.id));
+    return runs.filter((run) => suppliers.has(run.supplierId));
+  }, [runs, levers]);
+  const visibleSelectedRunId = visibleRuns.some((run) => run.id === selectedRunId)
+    ? selectedRunId
+    : (visibleRuns[0]?.id ?? null);
+
   const monthly = useMemo(() => levers.filter((l) => l.active).reduce((sum, l) => sum + l.saving, 0), [levers]);
   const annual = monthly * 12;
 
@@ -643,8 +653,8 @@ export function useDashboard(mode: DashboardMode = "demo"): Dashboard {
     isExecutable,
     agentState,
     replayMode,
-    runs,
-    selectedRunId,
+    runs: visibleRuns,
+    selectedRunId: visibleSelectedRunId,
     selectRun,
     launch,
     launchingId,

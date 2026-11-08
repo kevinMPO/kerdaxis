@@ -28,9 +28,7 @@ export function ImportStatementButton({ d, className }: { d: Dashboard; classNam
         ref={inputRef}
         type="file"
         accept="application/pdf,.pdf"
-        className="kd-sr"
-        tabIndex={-1}
-        aria-hidden="true"
+        hidden
         onChange={onChange}
       />
     </>
