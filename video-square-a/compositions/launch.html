@@ -1,0 +1,38 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; color: #0d0d12; }
+    #l-cam { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; transform-origin: 0 0; }
+    #l-cam img { position: absolute; left: 0; top: 0; width: 2000px; height: 1014px; }
+    #l-row { position: absolute; left: 392px; top: 596px; width: 1546px; height: 92px; border: 5px solid #0d0d12; border-radius: 14px; }
+    #l-ring { position: absolute; left: 1650px; top: 604px; width: 284px; height: 70px; border: 6px solid #0d0d12; border-radius: 18px; opacity: 0; }
+    #band { position: absolute; left: 0; top: 0; width: 1080px; height: 230px; background: #0d0d12; color: #f4f4f8; }
+    #eye { position: absolute; left: 60px; top: 46px; font-family: "Fira Code", monospace; font-size: 28px; letter-spacing: 0.12em; color: #d4f53c; white-space: nowrap; }
+    #line { position: absolute; left: 60px; top: 92px; width: 960px; font-weight: 800; font-size: 54px; line-height: 1.12; letter-spacing: -0.03em; }
+    #you { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .cur-svg { position: absolute; left: 0; top: 0; width: 52px; height: 74px; }
+    .pill { position: absolute; left: 56px; top: 56px; height: 44px; padding: 0 16px; border-radius: 22px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 28px; line-height: 44px; white-space: nowrap; }
+  </style>
+  <div id="root" data-composition-id="launch" data-width="1080" data-height="1080">
+    <div id="l-cam"><img src="assets/media/dashboard.jpg" alt="Kerdaxis dashboard (demo data): Cancel Nuvio CRM, Cancel with H Company" />
+      <div id="l-row" data-layout-allow-overflow></div><div id="l-ring" data-layout-allow-overflow></div></div>
+    <div id="band"><div id="eye">KERDAXIS · YOUR AI CFO</div><div id="line">You approve. Our AI agent takes it from here.</div></div>
+    <div id="you" data-layout-allow-occlusion data-layout-allow-overflow><svg viewBox="0 0 26 37" class="cur-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="pill">You</div></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // b0-b4. Frame 0: the real "Cancel Nuvio CRM" line with its "Cancel with H Company" button. You click on b2 (0.97).
+      gsap.set("#l-cam", { x: -254, y: 200, scale: 0.7 });
+      tl.to("#l-cam", { x: -1700, y: -500, scale: 1.6, duration: 0.85, ease: "power3.in" }, 1.09);
+      gsap.set("#you", { x: 900, y: 1100 });
+      tl.to("#you", { x: 975, y: 640, duration: 0.7, ease: "power2.out" }, 0.2);
+      tl.fromTo("#l-ring", { opacity: 0, scale: 1.1, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.2, ease: "expo.out" }, 0.8);
+      tl.to("#you", { scale: 0.85, transformOrigin: "0% 0%", duration: 0.06 }, 0.97);
+      tl.to("#you", { scale: 1, duration: 0.12 }, 1.03);
+      tl.to("#you", { opacity: 0, duration: 0.15 }, 1.09);
+      tl.set({}, {}, 1.94);
+      window.__timelines["launch"] = tl;
+    })();
+  </script>
+</template>

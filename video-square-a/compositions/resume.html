@@ -1,0 +1,50 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; background: #f7f7f9; font-family: "Plus Jakarta Sans", sans-serif; }
+    #m-cam { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; }
+    #m-cam img { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; opacity: 0; }
+    #m-box { position: absolute; left: 487px; top: 198px; width: 203px; height: 56px; border: 4px solid #0d0d12; border-radius: 10px; opacity: 0; }
+    #ag { position: absolute; left: 0; top: 0; width: 34px; height: 48px; }
+    .ag-svg { position: absolute; left: 0; top: 0; width: 34px; height: 48px; }
+    .ag-pill { position: absolute; left: 36px; top: 30px; height: 40px; padding: 0 14px 0 12px; border-radius: 20px; background: #0d0d12; color: #f4f4f8;
+      font-weight: 700; font-size: 26px; line-height: 40px; white-space: nowrap; }
+    .ag-pill i { display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 5px; background: #d4f53c; vertical-align: 2px; }
+    #m-stamp { position: absolute; left: 0; top: 850px; width: 1080px; text-align: center; opacity: 0; }
+    #m-stamp span { display: inline-block; padding: 12px 36px; border: 6px solid #0d0d12; border-radius: 18px; background: #0b7a48; color: #ffffff;
+      font-weight: 800; font-size: 64px; white-space: nowrap; }
+    #band { position: absolute; left: 0; top: 0; width: 1080px; height: 230px; background: #0d0d12; color: #f4f4f8; }
+    #eye { position: absolute; left: 60px; top: 46px; font-family: "Fira Code", monospace; font-size: 28px; letter-spacing: 0.12em; color: #d4f53c; white-space: nowrap; }
+    #line { position: absolute; left: 60px; top: 92px; width: 960px; font-weight: 800; font-size: 54px; line-height: 1.12; letter-spacing: -0.03em; }
+  </style>
+  <div id="root" data-composition-id="resume" data-width="1080" data-height="1080">
+    <div id="m-cam">
+      <img id="c1" src="assets/shots/obs-08-184349-confirm-resumed.png" alt="Supplier portal: final confirmation, resumed after the human green light" />
+      <img id="c2" src="assets/shots/obs-09-184354-confirm-checked.png" alt="Supplier portal: box ticked" />
+      <img id="c3" src="assets/shots/obs-10-184357-done.png" alt="Supplier portal: cancellation confirmed, NUV-RW3L2Y" />
+      <div id="m-box"></div>
+    </div>
+    <div id="ag" data-layout-allow-occlusion data-layout-allow-overflow data-layout-allow-overlap><svg viewBox="0 0 26 37" class="ag-svg"><path d="M1.5 1.5 L1.5 30 L8.6 23.4 L13.4 34.5 L18.4 32.4 L13.7 21.6 L23.3 21.6 Z" fill="#0D0D12" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" /></svg><div class="ag-pill"><i></i>H Company agent</div></div>
+    <div id="m-stamp" data-layout-allow-overlap><span>✓ SUPPLIER-CONFIRMED</span></div>
+    <div id="band"><div id="eye">AFTER YOUR GREEN LIGHT</div><div id="line">It finishes. The supplier confirms.</div></div>
+  </div>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // abs = local + 11.66 (b24). Tick the box on b25 (0.48), Confirm on b26 (0.97), the confirmation page on b26.5, stamp b27.5.
+      const click = (t) => { tl.to("#ag", { scale: 0.82, transformOrigin: "0% 0%", duration: 0.05 }, t); tl.to("#ag", { scale: 1, duration: 0.12, ease: "power3.out" }, t + 0.05); };
+      gsap.set("#m-cam", { x: 0, y: -10, scale: 1.15 });
+      tl.set("#c1", { opacity: 1 }, 0);
+      gsap.set("#ag", { x: 470, y: 640 });
+      tl.to("#ag", { x: 335, y: 549, duration: 0.35, ease: "power2.inOut" }, 0.05); click(0.48);
+      tl.set("#c2", { opacity: 1 }, 0.5); tl.set("#c1", { opacity: 0 }, 0.5);
+      tl.to("#ag", { x: 445, y: 605, duration: 0.35, ease: "power2.inOut" }, 0.55); click(0.97);
+      tl.set("#c3", { opacity: 1 }, 1.21); tl.set("#c2", { opacity: 0 }, 1.21); tl.set("#ag", { opacity: 0 }, 1.21);
+      tl.set("#m-cam", { x: -134, y: 300 }, 1.21);
+      tl.to("#m-cam", { x: -150, y: 292, scale: 1.17, duration: 1.7, ease: "none" }, 1.21);
+      tl.fromTo("#m-box", { opacity: 0, scale: 1.2, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.18, ease: "back.out(1.6)" }, 1.45);
+      tl.fromTo("#m-stamp", { opacity: 0, scale: 1.8, rotation: 6, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, rotation: -3, duration: 0.18, ease: "back.out(1.6)" }, 1.7);
+      tl.set({}, {}, 2.91);
+      window.__timelines["resume"] = tl;
+    })();
+  </script>
+</template>
