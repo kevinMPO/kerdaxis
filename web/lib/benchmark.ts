@@ -28,6 +28,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { assertNoPii, redactForLogs, sanitizeMerchantQuery } from "@/lib/privacy/egress";
 import type { Lang } from "./types";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 const MODEL = process.env.ARGENTIER_MODEL || "claude-sonnet-5";
 const WEB_SEARCH = { type: "web_search_20260209", name: "web_search", max_uses: 5 };
@@ -96,6 +97,7 @@ async function searchLinkup(
   // une détection signifie que le nettoyage a été contourné — il faut que ça
   // casse bruyamment, pas que ça parte quand même.
   assertNoPii(corps, "recherche Linkup");
+  void recordAccess({ service: "linkup", operation: "price search", direction: "sent", sent: `${merchant} · ${category}` });
 
   const res = await fetch("https://api.linkup.so/v1/search", {
     method: "POST",
@@ -306,6 +308,7 @@ export async function benchmark(
         },
       ];
       assertNoPii(messages, "recherche web Anthropic (passe 1)");
+      void recordAccess({ service: "anthropic", operation: "price search", direction: "sent", sent: `${marchandSortant} · ${categorieSortante}` });
 
       const search = (await client.messages.create({
         model: MODEL,
@@ -357,6 +360,7 @@ export async function benchmark(
       { system: systemeExtraction, messages: messagesExtraction },
       "extraction de prix Anthropic (passe 2)",
     );
+    void recordAccess({ service: "anthropic", operation: "price extraction", direction: "sent", sent: `public web results about ${marchandSortant}'s alternatives` });
 
     const extract = (await client.messages.create({
       model: MODEL,

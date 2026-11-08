@@ -5,19 +5,23 @@ import { natureLabel } from "@/lib/i18n";
 import type { Dashboard } from "./use-dashboard";
 import { ledgerValues } from "./ledger";
 import { LedgerBar } from "./LedgerBar";
+import { useAccessLog, type AccessEntryView } from "./use-access-log";
 
-const AUDIT_ROWS = [
-  { tool: "mcp__qonto__get_organization", out: false },
-  { tool: "mcp__qonto__list_transactions", out: false },
-  { tool: "mcp__linkup__linkup-search", out: true },
-] as const;
+const SERVICE_LABEL: Record<AccessEntryView["service"], string> = {
+  qonto: "Qonto",
+  anthropic: "Anthropic",
+  linkup: "Linkup",
+  hcompany: "H Company",
+  gladia: "Gladia",
+  elevenlabs: "ElevenLabs",
+};
 
 export function LedgerView({ d }: { d: Dashboard }): React.ReactElement {
   const { copy, eur, data, lang, loc, levers, runs, runViews } = d;
   const values = useMemo(() => ledgerValues(levers, runs, runViews), [levers, runs, runViews]);
   const natureTotal = data.natures.reduce((sum, n) => sum + n.amount, 0) || 1;
   const maxPole = Math.max(1, ...data.poles.map((p) => p.amount));
-  const isFr = lang === "fr";
+  const access = useAccessLog();
 
   return (
     <section className="kd-page kd-ledger">
@@ -91,23 +95,26 @@ export function LedgerView({ d }: { d: Dashboard }): React.ReactElement {
         <h2 id="audit" className="kd-h2">
           {copy.auditLog}
         </h2>
-        <ul className="kd-audit">
-          {AUDIT_ROWS.map((row) => (
-            <li key={row.tool}>
-              <code className="kd-mono">{row.tool}</code>
-              <span className={row.out ? "kd-audit-out" : "kd-muted"}>
-                {row.out
-                  ? isFr
-                    ? "envoyé : « Figma · design » (marchand + catégorie)"
-                    : "sent: “Figma · design” (merchant + category)"
-                  : isFr
-                    ? "lecture, reste dans la machine"
-                    : "read, stays in the machine"}
-              </span>
-            </li>
-          ))}
-        </ul>
         <p className="kd-muted kd-small">{copy.auditNote}</p>
+        {access.failed && access.entries.length === 0 ? (
+          <p className="kd-muted">{copy.auditFailed}</p>
+        ) : access.loaded && access.entries.length === 0 ? (
+          <p className="kd-muted">{copy.auditEmpty}</p>
+        ) : (
+          <ul className="kd-audit">
+            {access.entries.map((entry) => (
+              <li key={entry.id}>
+                <span className="kd-mono kd-muted">{new Date(entry.at).toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
+                <code className="kd-mono">
+                  {SERVICE_LABEL[entry.service]} · {entry.operation}
+                </code>
+                <span className={entry.direction === "sent" ? "kd-audit-out" : "kd-muted"}>
+                  {entry.direction === "sent" ? `${copy.auditSent} ${entry.sent ?? ""}` : copy.auditRead}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </section>
   );

@@ -18,13 +18,14 @@ import {
   verifierDebit,
 } from "@/lib/api/rate-limit";
 import type { Lang } from "@/lib/types";
+import { withAccessScope } from "@/lib/privacy/access-log";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // la recherche web peut prendre quelques secondes
 
 const LANGS: Lang[] = ["fr", "en", "de", "es", "it"];
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   // Avant TOUT travail payant : le contrôle de débit.
   const debit = await verifierDebit(request, "benchmark");
   if (!debit.autorise) {
@@ -73,4 +74,8 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ ...result, bestSaving, bestAlternative });
+}
+
+export async function POST(request: Request) {
+  return withAccessScope(request, () => handlePost(request));
 }

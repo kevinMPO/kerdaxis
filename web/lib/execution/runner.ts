@@ -48,6 +48,7 @@ import { finalLabelOf, guideFromResearch, researchCancelPath, type CancelResearc
 import { createPortalTarget, openPortalSession } from "./stripe-portal";
 import { getSupplier, reachableByAgent, readSupplierState, supplierLoginUrl, type PathRule, type Supplier } from "./suppliers";
 import { appendEvent, keepAlive, mergeLaunch, recentExecutions, TERMINAL_STATUSES, type Execution, type PlaybookView } from "./store";
+import { recordAccess } from "@/lib/privacy/access-log";
 
 export interface Playbook {
   finalStepPath: PathRule;
@@ -315,6 +316,7 @@ async function openAgentSession(exec: Execution, startUrl: string, attempt: numb
   const { vendor, plan, account, allowedHost } = exec.params;
   const guide = exec.launchGuide;
   if (!guide) throw new Error("consignes de mission absentes");
+  void recordAccess({ service: "hcompany", operation: "browser agent session", direction: "sent", sent: `cancellation mission on ${allowedHost} (${vendor}, ${plan})` });
   const session = await createSession(
     {
       agent: {
@@ -635,6 +637,7 @@ export async function decideFinal(exec: Execution, decision: "approve" | "refuse
     // ne le lit qu'une fois reprise. Message d'abord, reprise ensuite : l'agent
     // se réveille avec le feu vert déjà dans sa file.
     await sendMessage(exec.sessionId, MESSAGE_APPROVED(button));
+    void recordAccess({ service: "hcompany", operation: "final go", direction: "sent", sent: "APPROVED, after a click in the interface" });
   }
   if (exec.paused) await resumeSession(exec.sessionId).catch(() => undefined);
   exec.paused = false;
