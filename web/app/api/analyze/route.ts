@@ -28,8 +28,8 @@ import { MOCK } from "@/lib/mock";
 import { build, toMerchantInputs } from "@/lib/engine";
 import {
   categorizeByRules,
-  categorizeWithClaude,
-  hasAnthropicKey,
+  categorizeWithHolo,
+  hasHoloKey,
   type MerchantInput,
 } from "@/lib/categorize";
 import { jetonValide, renouveler } from "@/lib/auth/access";
@@ -45,7 +45,7 @@ import {
   type QontoAuth,
 } from "@/lib/mcp/qonto-read-client";
 import { BindingManquantError, baseD1, bindingsKerdaxis } from "@/lib/runtime/bindings";
-import type { Localized, MerchantVerdict, Tx } from "@/lib/types";
+import type { Categorizer, Localized, MerchantVerdict, Tx } from "@/lib/types";
 import { withAccessScope } from "@/lib/privacy/access-log";
 import { recordAccess } from "@/lib/privacy/access-log";
 
@@ -75,13 +75,13 @@ async function runPipeline(
   );
 
   let verdicts: MerchantVerdict[];
-  let categorized: "claude" | "rules" = "rules";
-  if (hasAnthropicKey() && inputs.length > 0) {
+  let categorized: Categorizer = "rules";
+  if (hasHoloKey() && inputs.length > 0) {
     try {
-      verdicts = await categorizeWithClaude(inputs);
-      categorized = "claude";
+      verdicts = await categorizeWithHolo(inputs);
+      categorized = "hcompany";
     } catch (err) {
-      console.error("Catégorisation Claude échouée, fallback règles :", err);
+      console.error("Catégorisation H Company échouée, fallback règles :", err);
       verdicts = categorizeByRules(inputs);
     }
   } else {

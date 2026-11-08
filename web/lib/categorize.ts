@@ -1,11 +1,13 @@
 // ---------------------------------------------------------------------------
-// Catégorisation des marchands via Claude (PRD §5.2).
+// Catégorisation des marchands via un modèle Holo de H Company (PRD §5.2),
+// par la Models API de H (compatible OpenAI, même clé HAI_API_KEY que l'agent).
 //
-// RÈGLE : le LLM CLASSE (nature, pôle, action, risque, ratio d'économie).
-// Il ne calcule JAMAIS un montant en euros — c'est engine.ts qui multiplie.
+// RÈGLE : le LLM CLASSE (nature, pôle, action, risque). Il ne calcule JAMAIS un
+// montant en euros ni un ratio : c'est le moteur qui applique RATIO_ECONOMIE.
 //
-// Sans ANTHROPIC_API_KEY, on retombe sur un classifieur déterministe par
-// mots-clés (categorizeByRules) : l'app reste démontrable hors-ligne.
+// Sans HAI_API_KEY, ou si l'appel échoue, on retombe sur un classifieur
+// déterministe par mots-clés (categorizeByRules) : l'app reste démontrable
+// hors-ligne.
 //
 // RÈGLE 3 (zéro PII) : le nom du marchand vient de `clean_counterparty_name`
 // SINON du `label` Qonto brut, qui contient couramment le nom d'une personne
@@ -15,12 +17,17 @@
 // étiquettes et un ratio, il n'a jamais eu besoin du montant pour cela.
 // ---------------------------------------------------------------------------
 
-import Anthropic from "@anthropic-ai/sdk";
+import { z } from "zod";
+import { HaiError, haiConfigured } from "@/lib/execution/hcompany";
 import { assertNoPii, sanitizeMerchantQuery } from "@/lib/privacy/egress";
 import type { MerchantVerdict, Nature, Pole, Risk, LeverAction } from "./types";
 import { recordAccess } from "@/lib/privacy/access-log";
 
-const MODEL = process.env.ARGENTIER_MODEL || "claude-sonnet-5";
+const HOLO_BASE_URL = (process.env.HAI_MODELS_BASE_URL ?? "https://api.hcompany.ai/v1").replace(/\/+$/, "");
+const HOLO_MODEL = process.env.HAI_CATEGORIZE_MODEL || "holo4-27b";
+/** Au-delà, /api/analyze retombe sur les règles plutôt que de faire attendre le dashboard. */
+const HOLO_TIMEOUT_MS = 30_000;
+const RISKS: Risk[] = ["safe", "med", "hard"];
 
 const NATURES: Nature[] = ["pilotable", "structurel", "ponctuel", "perso"];
 const POLES: Pole[] = [
@@ -92,7 +99,7 @@ const SCHEMA = {
           isSubscription: { type: "boolean" },
           action: { type: "string", enum: ACTIONS },
           alternative: { type: "string" },
-          risk: { type: "string", enum: ["safe", "med", "hard"] },
+          risk: { type: "string", enum: RISKS },
         },
         required: [
           "name",
@@ -111,8 +118,27 @@ const SCHEMA = {
   additionalProperties: false,
 } as const;
 
-export function hasAnthropicKey(): boolean {
-  return !!process.env.ANTHROPIC_API_KEY;
+/** Ce qui revient du modèle est une donnée externe : revalidé avant d'atteindre le moteur. */
+const VerdictsSchema = z.object({
+  verdicts: z.array(
+    z.object({
+      name: z.string(),
+      nature: z.enum(NATURES),
+      pole: z.enum(POLES),
+      isSubscription: z.boolean(),
+      action: z.enum(ACTIONS),
+      alternative: z.string(),
+      risk: z.enum(RISKS),
+    }),
+  ),
+});
+
+interface HoloChatCompletion {
+  choices?: Array<{ message?: { content?: string | null } }>;
+}
+
+export function hasHoloKey(): boolean {
+  return haiConfigured();
 }
 
 /** Un marchand et le nom, nettoyé, sous lequel il a le droit de sortir. */
@@ -134,12 +160,10 @@ function nettoyerNom(nom: string): string | null {
   }
 }
 
-/** Classifieur LLM. Renvoie un verdict par marchand fourni. */
-export async function categorizeWithClaude(
+/** Classifieur LLM (H Company Holo). Renvoie un verdict par marchand fourni. */
+export async function categorizeWithHolo(
   merchants: MerchantInput[],
 ): Promise<MerchantVerdict[]> {
-  const client = new Anthropic();
-
   // Charge utile sortante : nom nettoyé, nombre d'occurrences, récurrence.
   // Pas de montant, pas d'identifiant, pas de date (règle 3).
   const sortants: MarchandSortant[] = merchants.map((m) => ({
@@ -159,41 +183,52 @@ export async function categorizeWithClaude(
   }));
 
   // Dernière barrière avant le réseau.
-  assertNoPii(userPayload, "catégorisation Anthropic");
+  assertNoPii(userPayload, "catégorisation H Company");
   void recordAccess({
-    service: "anthropic",
+    service: "hcompany",
     operation: "categorize",
     direction: "sent",
     sent: `${userPayload.length} merchant names, occurrence counts, recurring flag: ${userPayload.map((m) => m.name).join(", ")}`,
   });
 
-  // Structured outputs (output_config.format) : le champ peut ne pas être typé
-  // selon la version du SDK — on cast les params, la réponse reste un Message.
-  const params = {
-    model: MODEL,
-    max_tokens: 8000,
-    output_config: {
-      effort: "low",
-      format: { type: "json_schema", schema: SCHEMA },
+  const corps = {
+    model: HOLO_MODEL,
+    temperature: 0,
+    // Classification en un coup : la trace de raisonnement ne ferait que ralentir.
+    chat_template_kwargs: { enable_thinking: false },
+    response_format: {
+      type: "json_schema",
+      json_schema: { name: "merchant_verdicts", schema: SCHEMA },
     },
-    system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
     messages: [
+      { role: "system", content: SYSTEM },
       {
         role: "user",
-        content:
-          "Classe chacun de ces marchands. Renvoie un verdict par marchand, même ordre.\n\n" +
-          JSON.stringify(userPayload, null, 2),
+        content: `Classe chacun de ces marchands. Renvoie un verdict par marchand, même ordre.\n\n${JSON.stringify(userPayload, null, 2)}`,
       },
     ],
   };
 
-  const response = (await client.messages.create(
-    params as unknown as Anthropic.MessageCreateParamsNonStreaming,
-  )) as Anthropic.Message;
+  const res = await fetch(`${HOLO_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.HAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(corps),
+    cache: "no-store",
+    signal: AbortSignal.timeout(HOLO_TIMEOUT_MS),
+  });
+  if (!res.ok) {
+    // Extrait court du corps pour le diagnostic, jamais les en-têtes (la clé).
+    const extrait = (await res.text().catch(() => "")).slice(0, 300);
+    throw new HaiError(res.status, `http_${res.status}`, `H Company Models API ${res.status} : ${extrait}`);
+  }
 
-  const text = response.content.find((b) => b.type === "text");
-  if (!text || text.type !== "text") throw new Error("Réponse Claude vide");
-  const parsed = JSON.parse(text.text) as { verdicts: MerchantVerdict[] };
+  const completion = (await res.json()) as HoloChatCompletion;
+  const contenu = completion.choices?.[0]?.message?.content;
+  if (!contenu) throw new HaiError(502, "empty_completion", "Réponse Holo vide");
+  const parsed = VerdictsSchema.parse(JSON.parse(contenu));
   return recomposer(parsed.verdicts, sortants);
 }
 
@@ -224,7 +259,7 @@ function recomposer(
   });
 }
 
-// --- Fallback déterministe (pas de clé Anthropic) --------------------------
+// --- Fallback déterministe (pas de clé H Company, ou appel en échec) --------
 const PERSO = [
   "carrefour", "monoprix", "leclerc", "franprix", "auchan", "lidl", "intermarche",
   "grand frais", "boulangerie", "mcdonald", "starbucks", "uber eats", "deliveroo",

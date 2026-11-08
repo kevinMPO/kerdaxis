@@ -133,16 +133,16 @@ The rule behind every box: **the LLM labels, the engine counts, the human decide
 flowchart TB
     subgraph IN["Read and research · zero PII out"]
       direction LR
-      Q[("Qonto Business API<br/>OAuth · read-only guard")]
-      AN["Anthropic · Claude"]
+      Q[("Bank account<br/>read-only · e.g. Qonto")]
+      AN["LLM<br/>labels merchants · e.g. H Company Holo"]
       LK["Linkup"]
-      GOV["BODACC · recherche-entreprises"]
+      GOV["Public company registries<br/>e.g. BODACC"]
     end
 
     subgraph APP["Kerdaxis app · Next.js 15 · web/"]
       LBL["Categorize<br/>LLM returns labels only<br/>rules as fallback"]
       BM["Benchmark<br/>source + date or dropped"]
-      RISK["Risk agent<br/>Mastra orchestrates · engine scores"]
+      RISK["Supplier risk agent<br/>LLM explains · engine scores"]
       ENG["Deterministic engine<br/>lib/engine · every euro"]
       AP["Autopilot<br/>approval = action hash · 10 min · single use"]
       EX["Execution runner<br/>two-turn mission · watchdog pause"]
@@ -153,12 +153,12 @@ flowchart TB
     subgraph OUT["Act · never without a human click"]
       direction LR
       H["H Company Agents API<br/>computer-use agent"]
-      P["Supplier portal · portal.kerdaxis.com<br/>Worker + Durable Object"]
+      P["Supplier website<br/>demo: portal.kerdaxis.com"]
     end
 
     U([Human])
     GL["Gladia live STT"]
-    ST["Stripe Checkout · test mode"]
+    ST["Payments<br/>e.g. Stripe, test mode"]
 
     Q -->|transactions| ENG
     AN <-->|merchant + category| LBL
@@ -186,7 +186,7 @@ The same engine is reachable outside the app, always with the same split: Claude
 flowchart LR
     subgraph CC["Claude Code skill · /audit · /verify"]
       direction TB
-      QM[("Qonto MCP<br/>write tools hard-denied")]
+      QM[("Bank MCP<br/>write tools hard-denied · e.g. Qonto")]
       PY["engine.py"]
       LM["Linkup MCP"]
       OUT["drafts/ · data/decisions.json<br/>ready for you to send"]
@@ -194,7 +194,7 @@ flowchart LR
       LM --> OUT
     end
 
-    SL(["Slack · @Claude"]) -->|Claude Tag skill labels| CE["claude-tag/scripts/call_engine.py"]
+    SL(["Team chat<br/>e.g. Slack · @Claude"]) -->|Claude Tag skill labels| CE["claude-tag/scripts/call_engine.py"]
     CE -->|Bearer · Zod strict · 60/min| API["/api/v1/engine<br/>analyze · simulate · health"]
     API --> ENGW["web/lib/engine<br/>deterministic, no LLM, no writes"]
 

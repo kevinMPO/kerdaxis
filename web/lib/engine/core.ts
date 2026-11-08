@@ -18,6 +18,7 @@
 
 import type {
   AnalyzeResult,
+  Categorizer,
   FluxItem,
   Hausse,
   Lever,
@@ -189,7 +190,7 @@ export interface BuildInput {
   verdicts: MerchantVerdict[];
   windowDays: number;
   source: "qonto" | "mock";
-  categorized: "claude" | "rules";
+  categorized: Categorizer;
 }
 
 export function build(input: BuildInput): AnalyzeResult {

@@ -11,7 +11,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { AnalyzeResult, Lang, Lever, Localized, Nature, NatureSlice, Risk } from "@/lib/types";
 import { buildPlanCsv, planFilename } from "@/lib/export";
 import { MOCK } from "@/lib/mock";
-import { detectLang, eur as eurFmt, LANGS, LOCALE, natureLabel, PITCH, riskLabel, tr } from "@/lib/i18n";
+import { categorizerName, detectLang, eur as eurFmt, LANGS, LOCALE, natureLabel, PITCH, riskLabel, tr } from "@/lib/i18n";
 import { EUROPE_PATHS, EUROPE_VIEWBOX, EU_CITY_XY } from "@/lib/europeMap";
 import ExecutionPanel, { launchCancellation } from "./ExecutionPanel";
 import VoiceCommand from "./VoiceCommand";
@@ -138,6 +138,7 @@ export default function Kerdaxis() {
   const [deconnexionEnCours, setDeconnexionEnCours] = useState(false);
 
   const T = tr(lang);
+  const modelName = categorizerName(data.meta?.categorized);
   const eur = (n: number) => eurFmt(n, lang);
   // Résout un texte 5-langues (repli anglais) ; loc() résout un Localized (fr/en only).
   const L = (m: Record<Lang, string>) => pick(lang, m);
@@ -622,7 +623,7 @@ export default function Kerdaxis() {
           </span>
           <span className={"arg-src " + (data.meta?.source === "qonto" ? "live" : "demo")}>
             ● {data.meta?.source === "qonto" ? T.srcLive : T.srcDemo}
-            {data.meta?.categorized === "claude" ? ` · ${T.byClaude}` : ""}
+            {modelName ? ` · ${T.byModel(modelName)}` : ""}
           </span>
         </div>
         <div className="arg-top-right">
@@ -1107,7 +1108,7 @@ export default function Kerdaxis() {
       <footer className="arg-foot">
         {data.meta?.source === "mock"
           ? T.footMock
-          : T.footReal(data.meta?.txCount ?? 0, data.meta?.categorized === "claude")}
+          : T.footReal(data.meta?.txCount ?? 0, modelName)}
         {T.footPrivacy}
         <br />
         <b>

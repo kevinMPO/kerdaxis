@@ -4,9 +4,16 @@
 // eux, renvoyés bilingues (type Localized) ou générés dans la langue demandée.
 // ---------------------------------------------------------------------------
 
-import type { Lang, Nature, Risk } from "./types";
+import type { Categorizer, Lang, Nature, Risk } from "./types";
 
 export const LANGS: Lang[] = ["fr", "en", "de", "es", "it"];
+
+/** Nom affiché du modèle qui a catégorisé, `null` quand ce sont les règles. */
+export function categorizerName(categorizer: Categorizer | undefined): string | null {
+  if (categorizer === "hcompany") return "H Company Holo";
+  if (categorizer === "claude") return "Claude";
+  return null;
+}
 
 /** Locale Intl par langue (formatage monétaire / nombres). */
 export const LOCALE: Record<Lang, string> = {
@@ -86,8 +93,8 @@ export const UI = {
     leverHint: "✎ à côté d'un levier = Kerdaxis te prépare le courrier prêt à envoyer. Tu relis, tu envoies.",
     anomTitle: "Flux nouveaux et anomalies",
     footMock: "Données de démonstration — configure Qonto + Anthropic dans .env pour brancher ton vrai compte. ",
-    footReal: (n: number, claude: boolean) =>
-      `Analyse sur ${n} transactions${claude ? " · catégorisation Claude" : ""}. `,
+    footReal: (n: number, model: string | null) =>
+      `Analyse sur ${n} transactions${model ? ` · catégorisation ${model}` : ""}. `,
     footPrivacy: "Données traitées en Europe, jamais utilisées pour entraîner un modèle. Conseils fiscaux à valider avec ton comptable.",
     letterFor: (name: string) => `Préparer la lettre pour ${name}`,
     drawerEyebrow: "Prêt — à envoyer par toi",
@@ -111,7 +118,7 @@ export const UI = {
     pitchKicker: "Elevator pitch",
     srcLive: "Qonto en direct",
     srcDemo: "Démo",
-    byClaude: "catégorisé par Claude",
+    byModel: (model: string) => `catégorisé par ${model}`,
     trustReadonly: "Lecture seule",
     trustEngine: "Kerdaxis calcule chaque euro",
     trustSourced: "Prix sourcés & datés (Linkup)",
@@ -152,8 +159,8 @@ export const UI = {
     leverHint: "✎ next to a lever = Kerdaxis drafts the ready-to-send letter. You review, you send.",
     anomTitle: "New flows & anomalies",
     footMock: "Demo data — set up Qonto + Anthropic in .env to connect your real account. ",
-    footReal: (n: number, claude: boolean) =>
-      `Analysis over ${n} transactions${claude ? " · Claude categorization" : ""}. `,
+    footReal: (n: number, model: string | null) =>
+      `Analysis over ${n} transactions${model ? ` · ${model} categorization` : ""}. `,
     footPrivacy: "Data processed in Europe, never used to train a model. Tax advice to be confirmed with your accountant.",
     letterFor: (name: string) => `Prepare the letter for ${name}`,
     drawerEyebrow: "Ready — for you to send",
@@ -177,7 +184,7 @@ export const UI = {
     pitchKicker: "Elevator pitch",
     srcLive: "Qonto live",
     srcDemo: "Demo",
-    byClaude: "categorized by Claude",
+    byModel: (model: string) => `categorized by ${model}`,
     trustReadonly: "Read-only",
     trustEngine: "Kerdaxis computes every euro",
     trustSourced: "Sourced & dated prices (Linkup)",
@@ -218,8 +225,8 @@ export const UI = {
     leverHint: "✎ neben einem Hebel = Kerdaxis verfasst das versandfertige Schreiben. Du prüfst, du sendest.",
     anomTitle: "Neue Flüsse & Auffälligkeiten",
     footMock: "Demodaten — richte Qonto + Anthropic in .env ein, um dein echtes Konto zu verbinden. ",
-    footReal: (n: number, claude: boolean) =>
-      `Analyse über ${n} Transaktionen${claude ? " · Kategorisierung durch Claude" : ""}. `,
+    footReal: (n: number, model: string | null) =>
+      `Analyse über ${n} Transaktionen${model ? ` · Kategorisierung durch ${model}` : ""}. `,
     footPrivacy: "Daten werden in Europa verarbeitet und nie zum Training eines Modells verwendet. Steuerhinweise mit deinem Steuerberater abstimmen.",
     letterFor: (name: string) => `Schreiben für ${name} vorbereiten`,
     drawerEyebrow: "Bereit — von dir zu senden",
@@ -243,7 +250,7 @@ export const UI = {
     pitchKicker: "Elevator Pitch",
     srcLive: "Qonto live",
     srcDemo: "Demo",
-    byClaude: "kategorisiert von Claude",
+    byModel: (model: string) => `kategorisiert von ${model}`,
     trustReadonly: "Schreibgeschützt",
     trustEngine: "Kerdaxis berechnet jeden Euro",
     trustSourced: "Belegte & datierte Preise (Linkup)",
@@ -284,8 +291,8 @@ export const UI = {
     leverHint: "✎ junto a una palanca = Kerdaxis prepara la carta lista para enviar. Tú revisas, tú envías.",
     anomTitle: "Flujos nuevos y anomalías",
     footMock: "Datos de demostración — configura Qonto + Anthropic en .env para conectar tu cuenta real. ",
-    footReal: (n: number, claude: boolean) =>
-      `Análisis sobre ${n} transacciones${claude ? " · categorización con Claude" : ""}. `,
+    footReal: (n: number, model: string | null) =>
+      `Análisis sobre ${n} transacciones${model ? ` · categorización con ${model}` : ""}. `,
     footPrivacy: "Datos procesados en Europa, nunca usados para entrenar un modelo. Consejos fiscales a validar con tu asesor.",
     letterFor: (name: string) => `Preparar la carta para ${name}`,
     drawerEyebrow: "Listo — para que lo envíes tú",
@@ -309,7 +316,7 @@ export const UI = {
     pitchKicker: "Elevator pitch",
     srcLive: "Qonto en directo",
     srcDemo: "Demo",
-    byClaude: "categorizado por Claude",
+    byModel: (model: string) => `categorizado por ${model}`,
     trustReadonly: "Solo lectura",
     trustEngine: "Kerdaxis calcula cada euro",
     trustSourced: "Precios con fuente y fecha (Linkup)",
@@ -350,8 +357,8 @@ export const UI = {
     leverHint: "✎ accanto a una leva = Kerdaxis prepara la lettera pronta da inviare. Tu rileggi, tu invii.",
     anomTitle: "Nuovi flussi e anomalie",
     footMock: "Dati dimostrativi — configura Qonto + Anthropic in .env per collegare il tuo conto reale. ",
-    footReal: (n: number, claude: boolean) =>
-      `Analisi su ${n} transazioni${claude ? " · categorizzazione Claude" : ""}. `,
+    footReal: (n: number, model: string | null) =>
+      `Analisi su ${n} transazioni${model ? ` · categorizzazione ${model}` : ""}. `,
     footPrivacy: "Dati trattati in Europa, mai usati per addestrare un modello. Consigli fiscali da validare con il tuo commercialista.",
     letterFor: (name: string) => `Prepara la lettera per ${name}`,
     drawerEyebrow: "Pronto — da inviare tu",
@@ -375,7 +382,7 @@ export const UI = {
     pitchKicker: "Elevator pitch",
     srcLive: "Qonto in diretta",
     srcDemo: "Demo",
-    byClaude: "categorizzato da Claude",
+    byModel: (model: string) => `categorizzato da ${model}`,
     trustReadonly: "Sola lettura",
     trustEngine: "Kerdaxis calcola ogni euro",
     trustSourced: "Prezzi con fonte e data (Linkup)",
