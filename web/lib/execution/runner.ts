@@ -57,8 +57,18 @@ export interface Playbook {
   finalButtonLabel?: string;
 }
 
-/** Au-delà, l'agent part avec la consigne générique ; la recherche finit et se met en cache pour la suite. */
-const RESEARCH_BUDGET_MS = 150_000;
+/**
+ * Au-delà, l'agent part avec la consigne générique. Sur Workers, la préparation
+ * tourne dans `waitUntil`, coupé ~30 s après la réponse : recherche + abonnement
+ * Stripe + ouverture de la session H doivent tenir dedans.
+ */
+const RESEARCH_BUDGET_MS = 15_000;
+
+/**
+ * Une préparation sans nouvelle au-delà de ce délai a été coupée (fin du
+ * `waitUntil`) : le sondage suivant la reprend lui-même, sans recherche.
+ */
+export const PREPARE_STALL_MS = 45_000;
 
 /**
  * H Company démarre parfois une session qui reste à 0 étape (première capture
@@ -224,20 +234,27 @@ async function prepareGuide(exec: Execution, supplier: Supplier): Promise<Guide>
     return { text: guideFromResearch(research), finalLabel };
   } catch (err) {
     const reason = err instanceof Error ? err.message : String(err);
-    exec.playbook = {
-      source: "research",
-      merchant: guide.merchant,
-      officialDocUrl: null,
-      steps: [guide.fallback],
-      finalButtonLabel: supplier.finalButtonLabel,
-      retentionTraps: [],
-      screenshots: null,
-      video: null,
-      fallbackReason: reason,
-    };
     appendEvent(exec, { kind: "warning", message: runCopy(exec.lang).researchUnavailable(reason.slice(0, 120)) });
-    return { text: guide.fallback, finalLabel: supplier.finalButtonLabel };
+    return fallbackGuide(exec, supplier, reason);
   }
+}
+
+/** Consigne sans recherche : le texte du catalogue, ou la consigne générique du fournisseur. */
+function fallbackGuide(exec: Execution, supplier: Supplier, reason: string): Guide {
+  const guide = supplier.guide;
+  const text = guide.source === "catalog" ? guide.text : guide.fallback;
+  exec.playbook = {
+    source: guide.source,
+    merchant: guide.source === "catalog" ? null : guide.merchant,
+    officialDocUrl: null,
+    steps: [text],
+    finalButtonLabel: supplier.finalButtonLabel,
+    retentionTraps: [],
+    screenshots: null,
+    video: null,
+    fallbackReason: reason,
+  };
+  return { text, finalLabel: supplier.finalButtonLabel };
 }
 
 /** Où l'agent commence : lien de connexion du portail, ou portail Stripe d'un abonnement de test neuf. */
@@ -317,9 +334,9 @@ export async function startExecution(approval: Approval, orgId: string, lang: Ru
 
 async function launchSession(exec: Execution, supplier: Supplier): Promise<void> {
   try {
-    const guide = await prepareGuide(exec, supplier);
+    // En parallèle : la recherche n'a pas besoin de l'abonnement, et le tout doit tenir dans `waitUntil`.
+    const [guide, startUrl] = await Promise.all([prepareGuide(exec, supplier), prepareTarget(exec, supplier)]);
     exec.launchGuide = { text: guide.text, finalLabel: guide.finalLabel };
-    const startUrl = await prepareTarget(exec, supplier);
     if (TERMINAL_STATUSES.has(exec.status)) return; // arrêté pendant la préparation
     await openAgentSession(exec, startUrl, 1);
   } catch (err) {
@@ -377,6 +394,37 @@ async function openAgentSession(exec: Execution, startUrl: string, attempt: numb
   }
   exec.status = "running";
   appendEvent(exec, { kind: "system", message: runCopy(exec.lang).sessionStarted(allowedHost, attempt, MAX_SESSION_ATTEMPTS) });
+}
+
+/** Préparation coupée en route : toujours `prepared`, aucune session H, aucune nouvelle depuis PREPARE_STALL_MS. */
+export function isPreparationStalled(exec: Execution, now: number = Date.now()): boolean {
+  if (exec.status !== "prepared" || exec.sessionId || exec.replay) return false;
+  return now - Date.parse(exec.updatedAt) > PREPARE_STALL_MS;
+}
+
+/**
+ * Reprend une préparation coupée, depuis le sondage. Sans recherche (elle ne
+ * tiendrait pas non plus) ; la cible Stripe est idempotente par exécution, et
+ * la session H par accord : une reprise ne crée jamais de doublon.
+ */
+async function resumeStalledPreparation(exec: Execution, supplier: Supplier, now: number = Date.now()): Promise<void> {
+  const t = runCopy(exec.lang);
+  appendEvent(exec, { kind: "warning", message: t.preparationResumed(Math.round((now - Date.parse(exec.updatedAt)) / 1000)) });
+  try {
+    if (!exec.launchGuide) {
+      const guide = fallbackGuide(exec, supplier, "préparation interrompue");
+      exec.launchGuide = { text: guide.text, finalLabel: guide.finalLabel };
+    }
+    const startUrl =
+      supplier.kind === "stripe_portal" && exec.target?.customerId
+        ? await openPortalSession(exec.target.customerId)
+        : await prepareTarget(exec, supplier);
+    await openAgentSession(exec, startUrl, 1);
+  } catch (err) {
+    exec.status = "failed";
+    exec.error = err instanceof Error ? err.message : String(err);
+    appendEvent(exec, { kind: "error", message: t.launchFailed(exec.error) });
+  }
 }
 
 /** La session H tourne mais l'agent n'a encore rien décidé depuis plus de STALL_MS. */
@@ -558,10 +606,15 @@ export async function pauseAtFinalStep(exec: Execution, sessionId: string): Prom
 
 /** Fait avancer l'exécution : lit les nouveautés H, applique la politique, conclut. */
 export async function advanceExecution(exec: Execution, waitForSeconds = 5): Promise<Execution> {
-  if (TERMINAL_STATUSES.has(exec.status) || !exec.sessionId) return exec;
+  if (TERMINAL_STATUSES.has(exec.status)) return exec;
   // Verrou : pris par l'appelant (`withExecution`), une avance à la fois.
   const supplier = getSupplier(exec.params.supplierId);
   if (!supplier) return exec;
+  if (isPreparationStalled(exec)) {
+    await resumeStalledPreparation(exec, supplier);
+    return exec;
+  }
+  if (!exec.sessionId) return exec;
   {
     if (isStalled(exec)) {
       await relaunchStalledSession(exec, supplier);
