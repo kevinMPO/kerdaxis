@@ -1,0 +1,6 @@
+renders/
+.media/
+.thumbnails/
+.waveform-cache/
+.hyperframes/
+.env.local
