@@ -119,6 +119,11 @@ export default function AuthCard({ mode, notice }: { mode: Mode; notice?: string
           </div>
           <button className="ka-btn" type="submit" disabled={busy}>{busy ? "…" : c.cta}</button>
           {err && <p className="ka-err" role="alert">{err}</p>}
+          {mode === "try" && (
+            <p className="ka-fine">
+              No email? <a href="/api/try/guest">See the demo as a guest →</a>
+            </p>
+          )}
           {mode === "signup" && (
             <p className="ka-fine">
               Test mode: no real charge. Use card <span className="ka-mono">4242 4242 4242 4242</span>, any future date, any CVC.

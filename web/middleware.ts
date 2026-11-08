@@ -20,6 +20,7 @@ const PUBLIC = [
   // Documents légaux : publics par obligation (mentions légales, CGV, RGPD).
   /^\/(mentions-legales|confidentialite|cgv|dpa|sous-traitants)$/,
   /^\/api\/(test-login|try|signup|signin|signout|me)$/,
+  /^\/api\/try\/guest$/,
   /^\/api\/billing\/return$/,
   // API moteur : authentifiée par son propre Bearer (ENGINE_API_TOKENS), pas par cookie.
   /^\/api\/v1\/engine\/(analyze|simulate|health)$/,
