@@ -4,7 +4,7 @@
 // eux, renvoyés bilingues (type Localized) ou générés dans la langue demandée.
 // ---------------------------------------------------------------------------
 
-import type { Categorizer, Lang, Nature, Risk } from "./types";
+import type { Categorizer, Lang, Nature, Pole, Risk } from "./types";
 
 export const LANGS: Lang[] = ["fr", "en", "de", "es", "it"];
 
@@ -45,6 +45,63 @@ const NATURE: Record<Lang, Record<Nature, string>> = {
   it: { pilotable: "Gestibile", structurel: "Strutturale", ponctuel: "Una tantum", perso: "Personale" },
 };
 export const natureLabel = (k: Nature, lang: Lang) => NATURE[lang][k];
+
+/** Poles are French keys in the engine; only the screen label is translated. */
+const POLE: Record<Exclude<Lang, "fr">, Record<Pole, string>> = {
+  en: {
+    "IA & Dev": "AI & Dev",
+    "Outbound / Sales": "Outbound / Sales",
+    "Infra / Prod": "Infra / Prod",
+    "Marketing Ads": "Marketing Ads",
+    "Bureau / Telco / Banque": "Office / Telco / Bank",
+    Perso: "Personal",
+    "Sous-traitance": "Subcontracting",
+    Certif: "Certification",
+    Voyage: "Travel",
+    Autre: "Other",
+  },
+  de: {
+    "IA & Dev": "KI & Dev",
+    "Outbound / Sales": "Outbound / Vertrieb",
+    "Infra / Prod": "Infra / Prod",
+    "Marketing Ads": "Marketing-Anzeigen",
+    "Bureau / Telco / Banque": "Büro / Telko / Bank",
+    Perso: "Privat",
+    "Sous-traitance": "Subunternehmer",
+    Certif: "Zertifizierung",
+    Voyage: "Reisen",
+    Autre: "Sonstiges",
+  },
+  es: {
+    "IA & Dev": "IA & Dev",
+    "Outbound / Sales": "Outbound / Ventas",
+    "Infra / Prod": "Infra / Prod",
+    "Marketing Ads": "Anuncios",
+    "Bureau / Telco / Banque": "Oficina / Teleco / Banco",
+    Perso: "Personal",
+    "Sous-traitance": "Subcontratación",
+    Certif: "Certificación",
+    Voyage: "Viajes",
+    Autre: "Otros",
+  },
+  it: {
+    "IA & Dev": "IA & Dev",
+    "Outbound / Sales": "Outbound / Vendite",
+    "Infra / Prod": "Infra / Prod",
+    "Marketing Ads": "Pubblicità",
+    "Bureau / Telco / Banque": "Ufficio / Telco / Banca",
+    Perso: "Personale",
+    "Sous-traitance": "Subappalto",
+    Certif: "Certificazione",
+    Voyage: "Viaggi",
+    Autre: "Altro",
+  },
+};
+
+export function poleLabel(pole: string, lang: Lang): string {
+  if (lang === "fr") return pole;
+  return POLE[lang][pole as Pole] ?? pole;
+}
 
 const RISK: Record<Lang, Record<Risk, string>> = {
   fr: { safe: "sans risque", med: "à valider", hard: "projet" },

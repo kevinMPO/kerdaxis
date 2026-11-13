@@ -341,6 +341,7 @@ export function build(input: BuildInput): AnalyzeResult {
       label: a.name,
       to: v.alternative || v.action,
       toLabel: proposalText(v, action),
+      ...(v.displayName ? { labelText: { fr: v.displayName, en: v.displayName } } : {}),
       saving,
       motif,
       risk,

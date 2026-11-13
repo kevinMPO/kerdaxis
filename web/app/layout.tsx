@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kerdaxis — ton vrai run-rate, pas ton relevé",
+  title: "Kerdaxis: your real run-rate, not your statement",
   description:
     "Agent d'optimisation bancaire et fiscale pour TPE, freelances et EI, branché sur Qonto.",
 };
