@@ -248,6 +248,8 @@ export interface MerchantVerdict {
   alternative: string;
   /** Même texte en anglais, pour l'écran ; absent : on retombe sur `alternative`. */
   alternativeEn?: string;
+  /** Supplier name to show instead of the bank label (e.g. "Nuvio" on the statement, "Nuvio CRM" on screen). */
+  displayName?: string;
   /**
    * Motif du levier, OPTIONNEL. Le LLM ne l'émet pas : le moteur le dérive
    * (récurrence, action, frais de change). L'API moteur peut le fournir pour

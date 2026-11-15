@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import type { Lever } from "@/lib/types";
 import { leverName, leverProposal } from "@/lib/lever-text";
 import type { Dashboard } from "./use-dashboard";
-import { ledgerValues } from "./ledger";
+import { foundMonthly, ledgerValues } from "./ledger";
 import { LaunchButton } from "./RunsView";
 import { StatusPill } from "./StatusPill";
 import { Icon } from "./Icon";
@@ -31,13 +31,13 @@ export function TodayView({ d }: { d: Dashboard }): React.ReactElement {
   const vat = data.tvaPerdue;
 
   const itemCount = waiting.length + toApprove.length + (toClarify.length > 0 ? 1 : 0) + (vat ? 1 : 0);
-  const activeCount = levers.filter((l) => l.active).length;
+  const foundCount = levers.filter((l) => l.saving > 0).length;
 
   return (
     <section className="kd-page kd-today">
       <header className="kd-today-head">
         <h1 className="kd-headline">{copy.headline(keepTogether(eur(values.potential)), values.confirmed > 0 ? keepTogether(eur(values.confirmed)) : null)}</h1>
-        <p className="kd-lede">{copy.headlineSub(eur(d.monthly), activeCount)}</p>
+        <p className="kd-lede">{copy.headlineSub(eur(foundMonthly(levers)), foundCount)}</p>
         <LedgerBar values={values} d={d} />
       </header>
 

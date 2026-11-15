@@ -19,7 +19,7 @@ import type { MerchantVerdict, Tx } from "@/lib/types";
 
 export const DEMO_WINDOW_DAYS = 60;
 
-export const DEMO_ACCOUNT = { name: "ACME Conseil (démo)", bank: "Qonto", balance: 9380 } as const;
+export const DEMO_ACCOUNT = { name: "ACME Conseil", bank: "Qonto", balance: 9380 } as const;
 
 const DAY_MS = 86_400_000;
 
@@ -110,6 +110,8 @@ export const DEMO_LABELS: readonly MerchantVerdict[] = [
     isSubscription: true,
     action: "cancel",
     alternative: "résilier · CRM en doublon avec HubSpot",
+    alternativeEn: "cancel · CRM duplicates HubSpot",
+    displayName: "Nuvio CRM",
     risk: "med",
   },
   {
@@ -119,6 +121,8 @@ export const DEMO_LABELS: readonly MerchantVerdict[] = [
     isSubscription: true,
     action: "cancel",
     alternative: "résilier · facturé via Stripe",
+    alternativeEn: "cancel · billed through Stripe",
+    displayName: "Lumen Analytics",
     risk: "med",
   },
 ];

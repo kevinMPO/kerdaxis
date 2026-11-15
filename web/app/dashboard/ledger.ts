@@ -14,8 +14,15 @@ export interface LedgerValues {
   verified: number;
 }
 
+/** Monthly euros of every lever the engine priced, ticked or not. */
+export function foundMonthly(levers: Lever[]): number {
+  return levers.reduce((sum, l) => sum + Math.max(l.saving, 0), 0);
+}
+
 export function ledgerValues(levers: Lever[], runs: RunRef[], runViews: Record<string, ExecutionView>): LedgerValues {
-  const potential = levers.filter((l) => l.active).reduce((sum, l) => sum + l.saving, 0) * MONTHS_PER_YEAR;
+  // Potential is what the engine found. Ticking levers in Subscriptions is a simulation and
+  // must not shrink it, or an approved cancellation would exceed the potential it came from.
+  const potential = foundMonthly(levers) * MONTHS_PER_YEAR;
 
   const approvedSuppliers = new Set(runs.map((r) => r.supplierId));
   const approved = levers.filter((l) => approvedSuppliers.has(l.id)).reduce((sum, l) => sum + l.saving, 0) * MONTHS_PER_YEAR;

@@ -7,7 +7,7 @@ Kerdaxis reads a company's bank account (Qonto, read-only), finds the subscripti
 stops in front of the irreversible button and waits for a human click. A cancellation only counts once the
 supplier's portal shows the confirmation number.
 
-[**kerdaxis.com**](https://kerdaxis.com) (site and 69 s film) · [**Try it free**](https://app.kerdaxis.com/try) (email only) ·
+[**kerdaxis.com**](https://kerdaxis.com) (site and 51 s film) · [**Try it free**](https://app.kerdaxis.com/try) (email only) ·
 [Demo supplier portal](https://portal.kerdaxis.com) (fictional "Nuvio CRM")
 
 > Built for a hackathon. The supplier is fictional. The agent and its run are real.
@@ -38,7 +38,7 @@ supplier's portal shows the confirmation number.
 
 1. **Read.** Kerdaxis reads the bank account through the Qonto MCP. Every write tool is denied. It never moves money.
 2. **Count.** A deterministic engine computes every euro: recurring tools, structural costs, one-offs, the controllable run-rate. The LLM only labels; it never does arithmetic. A saving that depends on a market price (switch, downgrade, renegotiate) stays at 0 € until a price is found on the web with its source and date (see [Pricing a lever](#pricing-a-lever-observed-or-sourced)).
-3. **Decide.** The Autopilot card names one action, for example *Nuvio CRM: nobody has logged in for 90 days, 129 €/mo → 1,548 €/yr*. A human approves it.
+3. **Decide.** The Autopilot card names one action, for example *Nuvio CRM: a second CRM next to HubSpot, 129 €/mo → 1,548 €/yr*. A human approves it.
 4. **Act.** If Linkup finds in the supplier's official docs that the cancellation can be done online, an H Company agent opens the supplier's portal in its own cloud browser. It finds the subscription, gives a reason, declines the retention offer and reaches the final confirmation page. Otherwise, or if the channel cannot be verified, Kerdaxis drafts a letter and the human sends it. This check runs on every subscription, whatever the recommended action, so a renegotiate, switch or downgrade lever that can be cancelled online offers both the agent and its letter. Until a supplier has been checked, its row offers *Check online* instead of a letter.
 5. **Stop.** Kerdaxis pauses the agent before *Confirm cancellation*. The panel shows the page the agent sees and waits for the human's final go.
 6. **Prove.** After the go, the agent confirms. Kerdaxis then reads the supplier's state through the portal's own API: *cancelled · NUV-…*. It does not take the agent's word for it.
@@ -413,7 +413,7 @@ web/                  the Kerdaxis app (Next.js)
                       generate-sample-statement.mjs (the sample PDF)
 portal/               fictional supplier portal (Cloudflare Worker + Durable Object)
 my-app/               accounts and waitlist Worker (/auth/*, /waitlist) called by the app
-video/                the 69 s film as code (HyperFrames): SPEC.md, compositions/, recorded
+video/                the original 69 s film as code (HyperFrames): SPEC.md, compositions/, recorded
                       H session captures, voiceover script (VOICEOVER.md) and voice lines
 video-arch/, video-hackathon/, video-yc/   other cuts: architecture film, hackathon cut, launch cut
 scripts/, security/   secret and bank-data guard, dependency audit and its accepted exceptions
@@ -422,7 +422,7 @@ docs/, PRD + Claude Code/   deployment notes, the Kerdaxis PRD
 
 ## The film
 
-The 69 s film on kerdaxis.com is built as HTML with [HyperFrames](https://hyperframes.dev) in `video/`.
+The original 69 s film is built as HTML with [HyperFrames](https://hyperframes.dev) in `video/`. kerdaxis.com now shows a 51 s v2 cut.
 Every portal screen in it is a capture of the recorded H Company run above. The voiceover is a human
 reading of `video/VOICEOVER.md`.
 

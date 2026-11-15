@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { natureLabel } from "@/lib/i18n";
+import { natureLabel, poleLabel } from "@/lib/i18n";
 import type { Dashboard } from "./use-dashboard";
 import { ledgerValues } from "./ledger";
 import { LedgerBar } from "./LedgerBar";
@@ -66,7 +66,7 @@ export function LedgerView({ d }: { d: Dashboard }): React.ReactElement {
           <ul className="kd-bars">
             {data.poles.map((p) => (
               <li key={p.label}>
-                <span className="kd-bar-label">{p.label}</span>
+                <span className="kd-bar-label">{poleLabel(p.label, lang)}</span>
                 <span className="kd-bar-track" aria-hidden="true">
                   <span className="kd-bar-fill" style={{ width: `${(p.amount / maxPole) * 100}%` }} />
                 </span>
